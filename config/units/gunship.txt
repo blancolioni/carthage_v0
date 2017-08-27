@@ -1,0 +1,31 @@
+index = 74
+category = air
+move = 12
+spot = 5
+camouflage = 4
+agility = 6
+armour = 35
+psy-defence = 30
+attack = { water = { accuracy = 5
+                     strength = 50
+                   }
+           air = { accuracy = 3
+                   strength = 20
+                 }
+           direct = { accuracy = 6
+                      strength = 90
+                    }
+           close = { accuracy = 5
+                     strength = 50
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 50
+credit-cost = 0
+resources = { metal = 30
+              electronics = 5
+            }
+required-building = 3
+turns-to-build = 2
+icon = gunship

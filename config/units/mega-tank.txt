@@ -1,0 +1,30 @@
+index = 62
+category = tread
+move = 6
+spot = 2
+camouflage = 1
+agility = 2
+armour = 80
+psy-defence = 30
+attack = { air = { accuracy = 3
+                   strength = 20
+                 }
+           direct = { accuracy = 6
+                      strength = 75
+                    }
+           close = { accuracy = 5
+                     strength = 70
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 20
+credit-cost = 0
+resources = { metal = 50
+              electronics = 30
+              ceramsteel = 20
+              monopoles = 5
+            }
+required-building = 3
+turns-to-build = 3
+icon = mastif

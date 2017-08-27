@@ -1,0 +1,22 @@
+index = 34
+category = hover
+move = 20
+spot = 7
+camouflage = 6
+agility = 7
+armour = 45
+psy-defence = 50
+attack = { air = { accuracy = 3
+                   strength = 20
+                 }
+           direct = { accuracy = 8
+                      strength = 40
+                    }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 10
+turns-to-build = 1
+icon = vau_bike

@@ -1,0 +1,3 @@
+capital = leagueheim
+colour = { 127 91 69 }
+category = league

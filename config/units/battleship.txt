@@ -1,0 +1,27 @@
+index = 25
+category = naval
+move = 8
+spot = 4
+camouflage = 2
+agility = 3
+armour = 60
+psy-defence = 30
+attack = { indirect = { accuracy = 5
+                        strength = 90
+                      }
+           air = { accuracy = 4
+                   strength = 40
+                 }
+           direct = { accuracy = 6
+                      strength = 60
+                    }
+         }
+combat = yes
+maintenance = 20
+credit-cost = 0
+resources = { metal = 80
+              electronics = 15
+            }
+required-building = 3
+turns-to-build = 3
+icon = efsbatl

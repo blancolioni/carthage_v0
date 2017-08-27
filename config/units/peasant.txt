@@ -1,0 +1,14 @@
+index = 91
+category = foot
+move = 4
+spot = 1
+camouflage = 1
+agility = 2
+armour = 5
+psy-defence = 10
+attack
+can-be-cargo = yes
+maintenance = 0
+credit-cost = 0
+turns-to-build = 1
+icon = peas

@@ -1,0 +1,25 @@
+index = 55
+category = foot
+move = 6
+spot = 8
+camouflage = 7
+agility = 5
+armour = 20
+psy-defence = 75
+attack = { air = { accuracy = 3
+                   strength = 20
+                 }
+           close = { accuracy = 9
+                     strength = 80
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 8
+credit-cost = 0
+resources = { metal = 15
+              electronics = 10
+            }
+required-building = 13
+turns-to-build = 3
+icon = spcl

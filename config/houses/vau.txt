@@ -1,0 +1,3 @@
+capital = vau
+colour = { 182 203 64 }
+category = vau

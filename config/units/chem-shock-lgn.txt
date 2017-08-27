@@ -1,0 +1,29 @@
+index = 84
+category = foot
+move = 6
+spot = 3
+camouflage = 2
+agility = 5
+armour = 25
+psy-defence = 10
+attack = { air = { accuracy = 3
+                   strength = 20
+                 }
+           direct = { accuracy = 3
+                      strength = 20
+                    }
+           close = { accuracy = 6
+                     strength = 50
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 10
+credit-cost = 0
+resources = { metal = 20
+              chemicals = 10
+              bio-chemicals = 30
+            }
+required-building = 13
+turns-to-build = 2
+icon = grims

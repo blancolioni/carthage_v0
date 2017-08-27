@@ -1,0 +1,23 @@
+index = 52
+category = foot
+move = 8
+spot = 10
+camouflage = 10
+agility = 7
+armour = 10
+psy-defence = 50
+attack = { close = { accuracy = 9
+                     strength = 100
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 50
+credit-cost = 3000
+resources = { bio-chemicals = 50
+              electronics = 100
+            }
+required-unit = 51
+required-building = 13
+turns-to-build = 2
+icon = dop

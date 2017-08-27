@@ -1,0 +1,12 @@
+al-malik,Al-Malik
+al-malik-full,House Al-Malik
+church,The Church
+decados-full,House Decados
+hawkwood-full,House Hawkwood
+hazat-full,House Hazat
+imperial,Imperial
+league,The League
+li-halan-full,House Li-Halan
+rebels,The Rebels
+symbiots,Symbiots
+vau,The Vau

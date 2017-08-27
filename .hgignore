@@ -1,0 +1,6 @@
+syntax: glob
+build/*
+carthage.gpr
+carthage.log
+config/eofs.txt
+config/images/*

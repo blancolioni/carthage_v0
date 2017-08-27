@@ -1,0 +1,5 @@
+package Carthage.Options is
+
+   Clear_Import_Cache : Boolean;
+   
+end Carthage.Options;

@@ -1,0 +1,29 @@
+index = 71
+category = tread
+move = 8
+spot = 2
+camouflage = 1
+agility = 3
+armour = 35
+psy-defence = 30
+attack = { indirect = { accuracy = 3
+                        strength = 100
+                      }
+           air = { accuracy = 3
+                   strength = 20
+                 }
+           close = { accuracy = 3
+                     strength = 10
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 20
+credit-cost = 0
+resources = { metal = 40
+              chemicals = 30
+              electronics = 20
+            }
+required-building = 3
+turns-to-build = 2
+icon = roklch1

@@ -1,0 +1,31 @@
+index = 63
+category = hover
+move = 10
+spot = 5
+camouflage = 2
+agility = 6
+armour = 35
+psy-defence = 30
+attack = { air = { accuracy = 3
+                   strength = 20
+                 }
+           direct = { accuracy = 5
+                      strength = 60
+                    }
+           close = { accuracy = 5
+                     strength = 40
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 20
+credit-cost = 0
+resources = { metal = 20
+              chemicals = 10
+              electronics = 30
+              ceramsteel = 20
+              monopoles = 5
+            }
+required-building = 3
+turns-to-build = 2
+icon = hovertnk

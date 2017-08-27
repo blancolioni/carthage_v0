@@ -1,0 +1,28 @@
+index = 18
+category = jump
+move = 3
+spot = 4
+camouflage = 1
+agility = 3
+armour = 75
+psy-defence = 40
+attack = { direct-space = { accuracy = 3
+                            strength = 50
+                          }
+           close-space = { accuracy = 7
+                           strength = 40
+                         }
+         }
+cargo = 4
+combat = yes
+maintenance = 50
+credit-cost = 0
+resources = { metal = 120
+              electronics = 80
+              ceramsteel = 70
+              monopoles = 20
+              singularities = 3
+            }
+required-building = 14
+turns-to-build = 3
+icon = carrier

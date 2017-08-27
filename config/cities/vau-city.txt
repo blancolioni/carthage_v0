@@ -1,0 +1,5 @@
+index = 11
+land = yes
+road = yes
+barren = yes
+value = 100

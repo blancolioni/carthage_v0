@@ -1,0 +1,22 @@
+noble = {
+    cities = {
+       group = {
+          middle = shield
+          cities = { palace fort factory church lab }
+          }
+       farm = 2
+       mine = 2
+    }
+    stacks = {
+       stack = {
+           asset = {
+              unit = noble
+              count = 5
+           }
+           asset = {
+              unit = infantry-lgn
+              count = 5
+           }
+       }
+    }
+}

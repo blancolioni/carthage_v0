@@ -1,0 +1,29 @@
+project_name = Carthage
+source_dir = src
+source_dir = src/assets
+source_dir = src/base
+source_dir = src/cities
+source_dir = src/configure
+source_dir = src/driver
+source_dir = src/galaxy
+source_dir = src/houses
+source_dir = src/logging
+source_dir = src/people
+source_dir = src/planets
+source_dir = src/production
+source_dir = src/resources
+source_dir = src/technology
+source_dir = src/ui
+source_dir = src/ui/gtk
+source_dir = src/ui/models
+source_dir = src/units
+depend = { project = Tropos version = any }
+depend = { project = Wlib version = any }
+depend = { project = Lith version = any }
+depend = { project = Memor version = any }
+depend = { project = Lui version = any }
+depend = { project = gtkada external = yes }
+main_unit = carthage-driver
+exec_name = carthage
+config_dir = config
+path_unit = { unit = Carthage.Paths path = src/carthage-paths.ads }

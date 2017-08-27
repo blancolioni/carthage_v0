@@ -1,0 +1,2 @@
+price = 60
+unit = { 1 t }

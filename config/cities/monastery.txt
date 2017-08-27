@@ -1,0 +1,5 @@
+index = 3
+land = yes
+barren = yes
+build-time = 3
+value = 100

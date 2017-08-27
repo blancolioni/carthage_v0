@@ -1,0 +1,21 @@
+index = 27
+category = naval
+move = 8
+spot = 3
+camouflage = 2
+agility = 3
+armour = 40
+psy-defence = 30
+attack = { air = { accuracy = 4
+                   strength = 40
+                 }
+         }
+combat = yes
+maintenance = 20
+credit-cost = 0
+resources = { metal = 70
+              electronics = 20
+            }
+required-building = 3
+turns-to-build = 2
+icon = efscarry

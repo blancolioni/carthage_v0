@@ -1,0 +1,23 @@
+index = 51
+category = foot
+move = 6
+spot = 8
+camouflage = 9
+agility = 6
+armour = 10
+psy-defence = 50
+attack = { close = { accuracy = 8
+                     strength = 80
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 50
+credit-cost = 2000
+resources = { bio-chemicals = 50
+              electronics = 100
+            }
+required-unit = 51
+required-building = 13
+turns-to-build = 2
+icon = asasin

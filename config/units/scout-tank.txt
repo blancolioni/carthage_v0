@@ -1,0 +1,28 @@
+index = 59
+category = tread
+move = 10
+spot = 7
+camouflage = 4
+agility = 5
+armour = 20
+psy-defence = 30
+attack = { air = { accuracy = 3
+                   strength = 20
+                 }
+           direct = { accuracy = 5
+                      strength = 40
+                    }
+           close = { accuracy = 5
+                     strength = 40
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 20
+credit-cost = 0
+resources = { metal = 40
+              electronics = 5
+            }
+required-building = 3
+turns-to-build = 2
+icon = scout01

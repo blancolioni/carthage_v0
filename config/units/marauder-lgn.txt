@@ -1,0 +1,30 @@
+index = 79
+category = foot
+move = 4
+spot = 4
+camouflage = 2
+agility = 3
+armour = 40
+psy-defence = 50
+attack = { direct = { accuracy = 5
+                      strength = 50
+                    }
+           close = { accuracy = 8
+                     strength = 90
+                   }
+           close-space = { accuracy = 8
+                           strength = 90
+                         }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 10
+credit-cost = 0
+resources = { metal = 20
+              electronics = 25
+              ceramsteel = 60
+              monopoles = 10
+            }
+required-building = 13
+turns-to-build = 2
+icon = space

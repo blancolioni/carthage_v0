@@ -1,0 +1,8 @@
+index = 13
+land = yes
+road = yes
+barren = yes
+build = yes
+build-time = 4
+value = 100
+enabled-by = cyclotron

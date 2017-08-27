@@ -1,0 +1,25 @@
+index = 31
+category = air
+move = 30
+spot = 6
+camouflage = 6
+agility = 8
+armour = 30
+psy-defence = 50
+attack = { air = { accuracy = 7
+                   strength = 60
+                 }
+           direct = { accuracy = 6
+                      strength = 40
+                    }
+           close = { accuracy = 4
+                     strength = 30
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 10
+turns-to-build = 1
+icon = v_fght3

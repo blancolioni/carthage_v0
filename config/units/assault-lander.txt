@@ -1,0 +1,27 @@
+index = 20
+category = lander
+move = 3
+spot = 3
+camouflage = 2
+agility = 3
+armour = 40
+psy-defence = 40
+attack = { air = { accuracy = 4
+                   strength = 40
+                 }
+           close = { accuracy = 4
+                     strength = 40
+                   }
+         }
+cargo = 2
+combat = yes
+maintenance = 50
+credit-cost = 0
+resources = { metal = 100
+              electronics = 60
+              ceramsteel = 100
+              singularities = 1
+            }
+required-building = 14
+turns-to-build = 2
+icon = asltld5

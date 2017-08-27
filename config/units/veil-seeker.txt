@@ -1,0 +1,18 @@
+index = 6
+category = jump
+move = 3
+spot = 6
+camouflage = 2
+agility = 3
+armour = 80
+psy-defence = 50
+attack = { direct-space = { accuracy = 7
+                            strength = 70
+                          }
+         }
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 10
+turns-to-build = 3
+icon = vdest

@@ -1,0 +1,22 @@
+index = 50
+category = foot
+move = 6
+spot = 8
+camouflage = 8
+agility = 5
+armour = 10
+psy-defence = 50
+attack = { close = { accuracy = 7
+                     strength = 80
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 50
+credit-cost = 4000
+resources = { electronics = 100
+            }
+required-unit = 51
+required-building = 13
+turns-to-build = 2
+icon = spy

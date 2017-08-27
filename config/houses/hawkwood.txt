@@ -1,0 +1,3 @@
+colour = { 4 99 165 }
+capital = delphi
+category = noble

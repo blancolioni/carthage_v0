@@ -1,0 +1,18 @@
+index = 27
+land = yes
+barren = yes
+neutral = yes
+value = 100
+bonus = { normal-ocean = 5
+          normal-desert = 10
+          normal-hill = 10
+          jungle-ocean = 3
+          jungle-desert = 5
+          jungle-hill = 10
+          frozen-ocean = 20
+          frozen-desert = 20
+          frozen-hill = 10
+          barren-ocean = 20
+          barren-desert = 20
+          barren-hill = 10
+        }

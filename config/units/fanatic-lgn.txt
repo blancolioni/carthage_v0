@@ -1,0 +1,29 @@
+index = 86
+category = foot
+move = 6
+spot = 3
+camouflage = 1
+agility = 5
+armour = 10
+psy-defence = 75
+attack = { air = { accuracy = 3
+                   strength = 20
+                 }
+           direct = { accuracy = 4
+                      strength = 30
+                    }
+           close = { accuracy = 5
+                     strength = 50
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 1
+credit-cost = 0
+resources = { metal = 8
+              chemicals = 5
+              electronics = 5
+            }
+required-building = 13
+turns-to-build = 3
+icon = fan

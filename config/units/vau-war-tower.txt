@@ -1,0 +1,25 @@
+index = 36
+category = hover
+move = 5
+spot = 9
+camouflage = 2
+agility = 2
+armour = 85
+psy-defence = 50
+attack = { indirect = { accuracy = 4
+                        strength = 90
+                      }
+           air = { accuracy = 5
+                   strength = 60
+                 }
+           direct = { accuracy = 7
+                      strength = 100
+                    }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 10
+turns-to-build = 1
+icon = vtower

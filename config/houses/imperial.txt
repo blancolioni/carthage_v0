@@ -1,0 +1,3 @@
+capital = byzantium_secundus
+colour = { 200 200 200 }
+category = imperial

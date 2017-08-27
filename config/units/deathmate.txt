@@ -1,0 +1,19 @@
+index = 9
+category = jump
+move = 3
+spot = 7
+camouflage = 4
+agility = 6
+armour = 35
+psy-defence = 50
+attack = { close-space = { accuracy = 9
+                           strength = 40
+                         }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 10
+turns-to-build = 3
+icon = v_intrcp

@@ -1,0 +1,3 @@
+colour = { 60 93 40 }
+capital = severus
+category = noble

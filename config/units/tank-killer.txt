@@ -1,0 +1,27 @@
+index = 66
+category = tread
+move = 8
+spot = 4
+camouflage = 2
+agility = 4
+armour = 30
+psy-defence = 30
+attack = { air = { accuracy = 3
+                   strength = 20
+                 }
+           direct = { accuracy = 7
+                      strength = 70
+                    }
+           close = { accuracy = 3
+                     strength = 20
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 20
+credit-cost = 0
+resources = { metal = 40
+            }
+required-building = 3
+turns-to-build = 2
+icon = spatgrid

@@ -1,0 +1,26 @@
+index = 57
+category = crawler
+move = 2
+spot = 5
+camouflage = 1
+agility = 1
+armour = 80
+psy-defence = 35
+attack = { direct = { accuracy = 2
+                      strength = 40
+                    }
+           ranged-space = { accuracy = 6
+                            strength = 40
+                          }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 8
+credit-cost = 0
+resources = { metal = 45
+              electronics = 20
+              monopoles = 10
+            }
+required-building = 3
+turns-to-build = 3
+icon = laser

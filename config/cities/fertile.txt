@@ -1,0 +1,14 @@
+index = 30
+water = yes
+land = yes
+barren = yes
+neutral = yes
+value = 100
+bonus = { normal-ocean = 50
+          normal-grass = 20
+          normal-river = 50
+          jungle-grass = 10
+          jungle-river = 20
+          frozen-grass = 30
+          barren-grass = 30
+        }

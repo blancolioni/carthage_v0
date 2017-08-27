@@ -1,0 +1,8 @@
+index = 15
+land = yes
+road = yes
+barren = yes
+build = yes
+build-time = 3
+value = 100
+enabled-by = "composite-armor"

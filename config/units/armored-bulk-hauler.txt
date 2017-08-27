@@ -1,0 +1,24 @@
+index = 23
+category = jump
+move = 3
+spot = 3
+camouflage = 1
+agility = 2
+armour = 75
+psy-defence = 40
+attack = { close-space = { accuracy = 3
+                           strength = 40
+                         }
+         }
+cargo = 4
+combat = yes
+maintenance = 25
+credit-cost = 0
+resources = { metal = 250
+              electronics = 40
+              ceramsteel = 200
+              singularities = 2
+            }
+required-building = 14
+turns-to-build = 4
+icon = bulk05

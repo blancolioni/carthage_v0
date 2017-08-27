@@ -1,0 +1,21 @@
+index = 89
+category = hover
+move = 4
+spot = 1
+camouflage = 7
+agility = 2
+armour = 20
+psy-defence = 100
+attack
+can-be-cargo = yes
+combat = yes
+maintenance = 0
+credit-cost = 0
+resources = { metal = 100
+              chemicals = 100
+              bio-chemicals = 200
+              electronics = 10
+            }
+required-building = 23
+turns-to-build = 2
+icon = jabombl

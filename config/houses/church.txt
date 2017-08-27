@@ -1,0 +1,3 @@
+capital = holy_terra
+colour = { 68 81 134 }
+category = church

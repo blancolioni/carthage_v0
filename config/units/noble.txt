@@ -1,0 +1,21 @@
+index = 46
+category = foot
+move = 8
+spot = 4
+camouflage = 1
+agility = 3
+armour = 20
+psy-defence = 60
+attack = { air = { accuracy = 3
+                   strength = 20
+                 }
+           close = { accuracy = 6
+                     strength = 50
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 50
+credit-cost = 0
+turns-to-build = 1
+icon = noble

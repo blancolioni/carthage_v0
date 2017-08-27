@@ -1,0 +1,18 @@
+index = 1
+category = jump
+move = 3
+spot = 5
+camouflage = 6
+agility = 3
+armour = 50
+psy-defence = 10
+attack = { close-space = { accuracy = 8
+                           strength = 100
+                         }
+         }
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 7
+turns-to-build = 3
+icon = grap

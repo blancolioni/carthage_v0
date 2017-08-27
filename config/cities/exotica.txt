@@ -1,0 +1,12 @@
+index = 29
+water = yes
+land = yes
+neutral = yes
+value = 100
+bonus = { normal-tree = 3
+          jungle-ice = 10
+          jungle-tundra = 10
+          jungle-tree = 20
+          frozen-tree = 10
+          barren-tree = 10
+        }

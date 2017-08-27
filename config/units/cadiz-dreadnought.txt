@@ -1,0 +1,27 @@
+index = 13
+category = jump
+move = 3
+spot = 5
+camouflage = 1
+agility = 3
+armour = 90
+psy-defence = 40
+attack = { ranged-space = { accuracy = 4
+                            strength = 90
+                          }
+           direct-space = { accuracy = 4
+                            strength = 80
+                          }
+         }
+combat = yes
+maintenance = 100
+credit-cost = 0
+resources = { metal = 200
+              electronics = 100
+              ceramsteel = 100
+              monopoles = 50
+              singularities = 4
+            }
+required-building = 14
+turns-to-build = 5
+icon = batlshp

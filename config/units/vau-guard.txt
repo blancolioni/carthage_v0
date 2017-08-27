@@ -1,0 +1,19 @@
+index = 33
+category = foot
+move = 8
+spot = 7
+camouflage = 2
+agility = 3
+armour = 35
+psy-defence = 80
+attack = { close = { accuracy = 8
+                     strength = 100
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 10
+turns-to-build = 1
+icon = vguard

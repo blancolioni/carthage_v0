@@ -1,0 +1,14 @@
+colours = { normal = 32
+            city = 32
+            ice = 32
+            jungle = 32
+            barren = 151
+            desert = 151
+          }
+road-cost = { normal = 1
+              city = 1
+              ice = 1
+              jungle = 1
+              barren = 1
+              desert = 1
+            }

@@ -1,0 +1,6 @@
+index = 89
+enabled-by = 88
+enabled-by = 8
+enabled-by = 24
+cost = 300
+like = 5

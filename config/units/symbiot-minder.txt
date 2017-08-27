@@ -1,0 +1,22 @@
+index = 40
+category = foot
+move = 8
+spot = 5
+camouflage = 6
+agility = 4
+armour = 20
+psy-defence = 90
+attack = { close = { accuracy = 9
+                     strength = 30
+                   }
+           psy = { accuracy = 10
+                   strength = 80
+                 }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 7
+turns-to-build = 1
+icon = mindr

@@ -1,0 +1,7 @@
+index = 1
+land = yes
+road = yes
+barren = yes
+build = yes
+build-time = 4
+value = 100

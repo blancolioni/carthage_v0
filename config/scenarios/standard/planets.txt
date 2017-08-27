@@ -1,0 +1,6 @@
+height-terrain = {
+   ocean = 40%
+   grass = 30%
+   hill = 20%
+   mountain = 10%
+}

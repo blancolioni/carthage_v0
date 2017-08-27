@@ -1,0 +1,18 @@
+index = 5
+category = jump
+move = 3
+spot = 6
+camouflage = 1
+agility = 3
+armour = 90
+psy-defence = 50
+attack = { ranged-space = { accuracy = 4
+                            strength = 100
+                          }
+         }
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 10
+turns-to-build = 3
+icon = v_cruz2

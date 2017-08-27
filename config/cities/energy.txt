@@ -1,0 +1,20 @@
+index = 32
+water = yes
+land = yes
+barren = yes
+neutral = yes
+value = 100
+bonus = { normal-ocean = 20
+          normal-desert = 10
+          normal-tundra = 10
+          jungle-ocean = 15
+          jungle-desert = 15
+          jungle-tundra = 10
+          jungle-tree = 5
+          frozen-ocean = 30
+          frozen-desert = 20
+          frozen-tree = 10
+          barren-ocean = 30
+          barren-desert = 20
+          barren-tree = 10
+        }

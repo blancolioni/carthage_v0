@@ -1,0 +1,22 @@
+index = 39
+category = air
+move = 15
+spot = 9
+camouflage = 5
+agility = 8
+armour = 10
+psy-defence = 10
+attack = { air = { accuracy = 9
+                   strength = 100
+                 }
+           close = { accuracy = 6
+                     strength = 60
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 7
+turns-to-build = 2
+icon = s_ftr

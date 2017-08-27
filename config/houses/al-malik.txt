@@ -1,0 +1,3 @@
+capital = istakhr
+colour = { 75 66 111 }
+category = noble

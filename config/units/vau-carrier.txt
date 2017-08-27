@@ -1,0 +1,15 @@
+index = 10
+category = jump
+move = 3
+spot = 6
+camouflage = 2
+agility = 3
+armour = 80
+psy-defence = 50
+attack
+cargo = 4
+combat = yes
+maintenance = 0
+credit-cost = 0
+turns-to-build = 1
+icon = v_carri2

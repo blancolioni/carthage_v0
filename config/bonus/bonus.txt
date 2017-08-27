@@ -1,0 +1,4 @@
+farm = {
+   fertile = { food = 2 }
+   exotica = { exotica = 1 }
+}

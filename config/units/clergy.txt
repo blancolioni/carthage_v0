@@ -1,0 +1,17 @@
+index = 53
+category = foot
+move = 6
+spot = 2
+camouflage = 2
+agility = 2
+armour = 10
+psy-defence = 50
+attack
+can-be-cargo = yes
+maintenance = 0
+credit-cost = 0
+resources = { gems = 5
+            }
+required-unit = 51
+turns-to-build = 1
+icon = clergy

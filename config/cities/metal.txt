@@ -1,0 +1,14 @@
+index = 31
+land = yes
+barren = yes
+neutral = yes
+value = 100
+bonus = { normal-mountain = 20
+          normal-hill = 10
+          jungle-mountain = 5
+          jungle-hill = 5
+          frozen-mountain = 30
+          frozen-hill = 20
+          barren-mountain = 30
+          barren-hill = 20
+        }

@@ -1,0 +1,25 @@
+index = 41
+category = tread
+move = 8
+spot = 2
+camouflage = 4
+agility = 3
+armour = 50
+psy-defence = 10
+attack = { air = { accuracy = 9
+                   strength = 60
+                 }
+           direct = { accuracy = 9
+                      strength = 60
+                    }
+           close = { accuracy = 10
+                     strength = 100
+                   }
+         }
+can-be-cargo = yes
+combat = yes
+maintenance = 0
+credit-cost = 0
+required-building = 7
+turns-to-build = 2
+icon = s_tank

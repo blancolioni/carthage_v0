@@ -1,0 +1,26 @@
+index = 23
+category = space
+move = 3
+spot = 5
+camouflage = 1
+agility = 1
+armour = 90
+psy-defence = 40
+attack = { ranged-space = { accuracy = 3
+                            strength = 70
+                          }
+           direct-space = { accuracy = 4
+                            strength = 80
+                          }
+         }
+combat = yes
+maintenance = 0
+credit-cost = 0
+resources = { metal = 250
+              electronics = 50
+              ceramsteel = 120
+              monopoles = 20
+            }
+required-building = 14
+turns-to-build = 3
+icon = spc_city
