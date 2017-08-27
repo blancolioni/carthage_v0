@@ -211,7 +211,7 @@ package body Carthage.Import is
       Reader : Bitmaps.Bitmap_Image_Reader;
       Config : Tropos.Configuration;
    begin
-      Reader.Read (Carthage.Paths.Config_File ("images/bincolours.bmp"),
+      Reader.Read (Carthage.Paths.Config_File ("ui/bincolours.bmp"),
                    Image);
       for I in Word_8 loop
          Palette (I) := Image.Color (Pixel_X_Range (I mod 16 + 1),

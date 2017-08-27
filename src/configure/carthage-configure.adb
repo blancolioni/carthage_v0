@@ -912,19 +912,6 @@ package body Carthage.Configure is
               (Fading_Suns_Data_File ("TECH")));
       end if;
 
-      for House_Index in Character range '1' .. '5' loop
-         Carthage.Import.Import_Bin_File
-           (Image_Width      => 100,
-            Image_Height     => 100,
-            Bin_File_Path    =>
-              Carthage.Configure.Fading_Suns_Bin_File
-                ("HOUSE" & House_Index),
-            Destination_Path =>
-              Carthage.Paths.Config_File
-                ("images/houses"),
-            Base_Name        => "house" & House_Index);
-      end loop;
-
       Ada.Text_IO.Put_Line ("  technology");
       Load_Directory_Configuration
         ("technology",
