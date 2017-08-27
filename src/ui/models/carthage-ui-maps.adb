@@ -74,8 +74,7 @@ package body Carthage.UI.Maps is
    procedure Get_Terrain_Resources
      (Planet        : Carthage.Planets.Planet_Type;
       Tile          : Carthage.Tiles.Tile_Type;
-      Base_Index    : out Tile_Index;
-      Feature_Index : out Tile_Index);
+      Layers        : in out Tile_Layers'Class);
 
    function Make_Resource_Name
      (Planet : Carthage.Planets.Planet_Type;
@@ -164,6 +163,8 @@ package body Carthage.UI.Maps is
                      elsif Key = "none" then
                         Item.Indices (Direction_Flags'First) :=
                           Tile_Index (Natural'(Item_Config.Value));
+                     elsif Key = "fade" then
+                        null;
                      else
                         declare
                            Index : constant Tile_Index :=
@@ -247,8 +248,7 @@ package body Carthage.UI.Maps is
    procedure Get_Terrain_Resources
      (Planet        : Carthage.Planets.Planet_Type;
       Tile          : Carthage.Tiles.Tile_Type;
-      Base_Index    : out Tile_Index;
-      Feature_Index : out Tile_Index)
+      Layers        : in out Tile_Layers'Class)
    is
 
       use Carthage.Terrain;
@@ -257,6 +257,28 @@ package body Carthage.UI.Maps is
 
       Base : Terrain_Type := Tile.Terrain (Base_Layer);
       Feature : Terrain_Type := Tile.Terrain (Feature_Layer);
+
+      Feature_Index : Tile_Index;
+      Base_Index    : Tile_Index;
+
+      procedure Add
+        (Index      : Tile_Index);
+
+      ---------
+      -- Add --
+      ---------
+
+      procedure Add
+        (Index : Tile_Index)
+      is
+      begin
+         if Index /= 0 then
+            Layers.List.Append
+              (Make_Hex_Tile_Resource
+                 (Make_Resource_Name (Planet, Index)));
+         end if;
+      end Add;
+
    begin
 
       for Priority of Feature_Priority loop
@@ -269,6 +291,40 @@ package body Carthage.UI.Maps is
          end if;
          exit when Priority = Feature;
       end loop;
+
+      if Base = null
+        or else not Tile_Map.Contains (Base.Identifier)
+      then
+         Base_Index := 0;
+      else
+         declare
+            Tile_Info : constant Tile_Resource_Access :=
+                          Tile_Map.Element (Base.Identifier);
+
+         begin
+            Base_Index := Tile_Info.Base;
+            Add (Base_Index);
+
+            if Base_Index /= 0 then
+               declare
+                  Ns     : constant Carthage.Planets.Array_Of_Positions :=
+                             Planet.Neighbours (Tile.Position);
+               begin
+                  for Neighbour of Ns loop
+                     if Planet.Tile (Neighbour).Terrain (Feature_Layer)
+                       /= Feature
+                     then
+                        Add (Base_Index + 1 +
+                               Direction'Pos
+                                 (Direction_Of
+                                    (Tile.Position, Neighbour)));
+                     end if;
+                  end loop;
+               end;
+            end if;
+
+         end;
+      end if;
 
       if Feature = null
         or else not Tile_Map.Contains (Feature.Identifier)
@@ -296,18 +352,7 @@ package body Carthage.UI.Maps is
          end;
       end if;
 
-      if Base = null
-        or else not Tile_Map.Contains (Base.Identifier)
-      then
-         Base_Index := 0;
-      else
-         declare
-            Tile_Info : constant Tile_Resource_Access :=
-                          Tile_Map.Element (Base.Identifier);
-         begin
-            Base_Index := Tile_Info.Base;
-         end;
-      end if;
+      Add (Feature_Index);
 
    end Get_Terrain_Resources;
 
@@ -321,7 +366,6 @@ package body Carthage.UI.Maps is
       Layers   : in out Tile_Layers'Class)
    is
       Tile : constant Carthage.Tiles.Tile_Type := Planet.Tile (Position);
-      Terrain_Index, Base_Index : Tile_Index;
 
       procedure Add
         (Index      : Tile_Index);
@@ -343,33 +387,7 @@ package body Carthage.UI.Maps is
 
    begin
 
-      Get_Terrain_Resources (Planet, Tile, Base_Index, Terrain_Index);
-
---        declare
---           Bg_Resource : constant String :=
---                           "bg-" & Planet.Category_Name
---                           & "-" & Tile.Terrain.Identifier;
---        begin
---           Layers.List.Append
---             ((Bg_Resource'Length, Background_Hex_Tile, Bg_Resource,
---              Tile.Terrain.Colour (Planet.Category_Name)));
---        end;
-
---        declare
---           use Carthage.Terrain;
---           Base : constant Terrain_Type := Tile.Terrain (Base);
---
---        begin
---           Planet.Log ("tile:" & Position.X'Img & Position.Y'Img & ": "
---                       & (if Tile.Base_Terrain /= null
---                         then Tile.Base_Terrain.Identifier else "[]")
---                       & "/"
---                       & (if Tile.Feature_Terrain /= null
---                         then Tile.Feature_Terrain.Identifier else "[]"));
---        end;
-
-      Add (Base_Index);
-      Add (Terrain_Index);
+      Get_Terrain_Resources (Planet, Tile, Layers);
 
       if Tile.Has_Road then
 
