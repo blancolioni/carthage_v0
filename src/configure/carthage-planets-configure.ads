@@ -11,14 +11,15 @@ package Carthage.Planets.Configure is
      (Planet_Id : String;
       X, Y      : Coordinate);
 
-   procedure Import_Planet
+   function Import_Planet
      (Name     : String;
       X, Y     : Natural;
       Tile_Set : Natural;
       Create_Tile : not null access
         function (X : Tile_X;
                   Y : Tile_Y)
-      return Carthage.Tiles.Tile_Type);
+      return Carthage.Tiles.Tile_Type)
+      return Planet_Type;
 
    procedure Import_Jump_Gate
      (X1, Y1, X2, Y2 : Natural);

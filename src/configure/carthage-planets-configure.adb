@@ -266,7 +266,7 @@ package body Carthage.Planets.Configure is
    -- Import_Planet --
    -------------------
 
-   procedure Import_Planet
+   function Import_Planet
      (Name        : String;
       X, Y        : Natural;
       Tile_Set    : Natural;
@@ -274,6 +274,7 @@ package body Carthage.Planets.Configure is
         function (X : Tile_X;
                   Y : Tile_Y)
       return Carthage.Tiles.Tile_Type)
+      return Planet_Type
    is
 
       function Identifier_To_Name (Identifier : String) return String;
@@ -351,7 +352,7 @@ package body Carthage.Planets.Configure is
       end Identifier_To_Name;
 
    begin
-      Db.Create (Create'Access);
+      return Db.Create (Create'Access);
    end Import_Planet;
 
 end Carthage.Planets.Configure;

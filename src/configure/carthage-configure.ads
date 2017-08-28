@@ -22,4 +22,8 @@ package Carthage.Configure is
      (Name : String)
       return String;
 
+private
+
+   procedure Load_Standard_Houses;
+
 end Carthage.Configure;

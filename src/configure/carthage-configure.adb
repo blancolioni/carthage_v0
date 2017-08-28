@@ -567,20 +567,24 @@ package body Carthage.Configure is
      (Config : Tropos.Configuration)
    is
 
-      Index : Natural := 0;
+      Index     : Natural := 0;
+      Sub_Index : Natural;
 
-      At_Index : Boolean := False;
-      At_Name  : Boolean := False;
-      At_Stats : Boolean := False;
-      At_Art   : Boolean := False;
+      At_Index  : Boolean := False;
+      At_Name   : Boolean := False;
+      At_Abbrev : Boolean := False;
+      At_Stats  : Boolean := False;
+      At_Art    : Boolean := False;
 
-      Name_Config : Tropos.Configuration;
-      Output      : Tropos.Configuration;
-
+      Name_Config   : Tropos.Configuration with Unreferenced;
+      Abbrev_Config : Tropos.Configuration;
+      Output        : Tropos.Configuration;
    begin
       for Unit_Config of Config loop
 
          At_Index := True;
+         Index := Index + 1;
+         Sub_Index := 0;
 
          for Field_Config of Unit_Config loop
             declare
@@ -588,6 +592,8 @@ package body Carthage.Configure is
             begin
                if Field = "name" then
                   At_Name := True;
+               elsif Field = "abbrev" then
+                  At_Abbrev := True;
                elsif Field = "stats" then
                   At_Stats := True;
                elsif Field = "art" then
@@ -598,6 +604,9 @@ package body Carthage.Configure is
                elsif At_Name then
                   Name_Config := Field_Config;
                   At_Name := False;
+               elsif At_Abbrev then
+                  Abbrev_Config := Field_Config;
+                  At_Abbrev := False;
                elsif At_Art then
                   Output.Add ("icon", Ada.Directories.Base_Name (Field));
                   Tropos.Writer.Write_Config
@@ -608,10 +617,16 @@ package body Carthage.Configure is
                elsif At_Stats then
 
                   At_Stats := False;
+                  Sub_Index := Sub_Index + 1;
 
                   declare
                      Id          : constant String :=
-                                     To_Carthage_Id (Name_Config.Config_Name);
+                                     To_Carthage_Id
+                                       (Abbrev_Config.Config_Name)
+                                     & Integer'Image (-Index)
+                                     & (if Sub_Index > 1
+                                        then Integer'Image (-Sub_Index)
+                                        else "");
                      Stats       : constant String := Field;
                      Start_Index : Positive := Stats'First;
 
@@ -697,7 +712,6 @@ package body Carthage.Configure is
                      Tech_4                : constant Natural := Next_Number;
                   begin
                      Output := Tropos.New_Config (Id);
-                     Index := Index + 1;
                      Output.Add ("index", Index);
                      Output.Add ("category", Category);
                      Output.Add ("move", Move);
@@ -1149,6 +1163,18 @@ package body Carthage.Configure is
            (Carthage.Paths.Config_File
                 ("scenarios/" & Scenario_Name & "/" & File_Name & ".txt")));
    end Load_Scenario_Configuration;
+
+   --------------------------
+   -- Load_Standard_Houses --
+   --------------------------
+
+   procedure Load_Standard_Houses is
+   begin
+      Load_Directory_Configuration
+        (Directory_Name => "scenarios/standard/houses",
+         Configure      =>
+           Carthage.Houses.Configure.Configure_House'Access);
+   end Load_Standard_Houses;
 
    --------------------
    -- To_Carthage_Id --

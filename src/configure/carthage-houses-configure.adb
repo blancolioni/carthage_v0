@@ -74,9 +74,6 @@ package body Carthage.Houses.Configure is
                        (House.Capital, Set_Owner'Access);
                   end;
 
-               else
-                  raise Constraint_Error with
-                  House.Name & ": no such capital planet: " & Capital;
                end if;
             end if;
          end;

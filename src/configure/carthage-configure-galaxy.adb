@@ -46,6 +46,7 @@ package body Carthage.Configure.Galaxy is
    Map_Height : constant := 48;
 
    End_Of_Section : constant := 16#FFFE#;
+   End_Of_Group   : constant := 16#FFFD#;
 
    Planet_Orbit_Stacks : constant := 8;
    Planet_Name_Length  : constant := 32;
@@ -68,15 +69,21 @@ package body Carthage.Configure.Galaxy is
 
    Tree_Mask       : constant := 2#1000#;
 
+   Unit_On_Ground_Mask : constant := 16#0001#;
+   Unit_Sentry_Mask    : constant := 16#0004#;
+   Unit_Cargo_Mask     : constant := 16#0040#;
+
    House_Map  : array (Word_8) of Carthage.Houses.House_Type;
    Planet_Map : array (Word_8) of Carthage.Planets.Planet_Type;
+   Next_Planet : Word_8 := 0;
 
    procedure Read_Galaxy_File
      (File : in out File_Type);
 
-   procedure Read_Planet
+   function Read_Planet
      (File           : in out File_Type;
-      Galaxy_Version : Word_32);
+      Galaxy_Version : Word_32)
+      return Boolean;
 
    function Read_Jump_Gate
      (File : in out File_Type)
@@ -99,6 +106,26 @@ package body Carthage.Configure.Galaxy is
    is
       File : File_Type;
    begin
+
+      --  Galaxy file has no houses, so pull them from the standard scenario
+      Load_Standard_Houses;
+
+      House_Map (0) := Carthage.Houses.Get ("li-halan");
+      House_Map (1) := Carthage.Houses.Get ("hazat");
+      House_Map (2) := Carthage.Houses.Get ("decados");
+      House_Map (3) := Carthage.Houses.Get ("hawkwood");
+      House_Map (4) := Carthage.Houses.Get ("al-malik");
+      House_Map (5) := Carthage.Houses.Get ("league");
+      House_Map (6) := Carthage.Houses.Get ("church");
+      House_Map (7) := Carthage.Houses.Get ("symbiots");
+      House_Map (8) := Carthage.Houses.Get ("vau");
+      House_Map (9) := Carthage.Houses.Get ("imperial");
+      House_Map (10) := Carthage.Houses.Get ("fleet");
+      House_Map (11) := Carthage.Houses.Get ("stigmata");
+      House_Map (12) := Carthage.Houses.Get ("spy");
+      House_Map (13) := Carthage.Houses.Get ("neutral");
+      House_Map (14) := Carthage.Houses.Get ("rebels");
+
       Ada.Text_IO.Put_Line
         ("importing galaxy from: " & Path);
 
@@ -130,16 +157,8 @@ package body Carthage.Configure.Galaxy is
          end loop;
       end loop;
 
-      loop
-         Read_Planet (File, Version);
-
-         declare
-            End_Flag : Word_16;
-         begin
-            Read (File, End_Flag);
-            exit when End_Flag = End_Of_Section;
-            Set_Offset (File, Current_Offset (File) - 2);
-         end;
+      while Read_Planet (File, Version) loop
+         null;
       end loop;
 
       while Read_Jump_Gate (File) loop
@@ -184,9 +203,10 @@ package body Carthage.Configure.Galaxy is
    -- Read_Planet --
    -----------------
 
-   procedure Read_Planet
+   function Read_Planet
      (File           : in out File_Type;
       Galaxy_Version : Word_32)
+      return Boolean
    is
       X, Y, R          : Word_16;
       Orbiting_Stacks  : array (1 .. Planet_Orbit_Stacks) of Word_32;
@@ -204,6 +224,11 @@ package body Carthage.Configure.Galaxy is
    begin
 
       Read (File, X);
+
+      if X = End_Of_Section then
+         return False;
+      end if;
+
       Read (File, Y);
       Read (File, R);
 
@@ -225,16 +250,10 @@ package body Carthage.Configure.Galaxy is
          end loop;
       end;
 
-      Ada.Text_IO.Put_Line ("loading: " & Name (1 .. Name_Length)
-                            & " at" & X'Img & Y'Img);
-
       Read (File, Owner);
       Read (File, Sect);
       Read (File, Flags);
       Read (File, Tile_Set);
-
-      Ada.Text_IO.Put_Line ("  owner:" & Owner'Img);
-      Ada.Text_IO.Put_Line ("  tile set:" & Tile_Set'Img);
 
       if Galaxy_Version < 961024 then
          Skip (File, 12);
@@ -337,12 +356,17 @@ package body Carthage.Configure.Galaxy is
                Terrain  => Ts (1 .. Count));
          end Create_Tile;
 
+         Planet : constant Carthage.Planets.Planet_Type :=
+                    Carthage.Planets.Configure.Import_Planet
+                      (Name (1 .. Name_Length),
+                       Natural (X), Natural (Y), Natural (Tile_Set),
+                       Create_Tile'Access);
       begin
-         Carthage.Planets.Configure.Import_Planet
-           (Name (1 .. Name_Length),
-            Natural (X), Natural (Y), Natural (Tile_Set),
-            Create_Tile'Access);
+         Planet_Map (Next_Planet) := Planet;
+         Next_Planet := Next_Planet + 1;
       end;
+
+      return True;
 
    end Read_Planet;
 
@@ -361,6 +385,11 @@ package body Carthage.Configure.Galaxy is
       Read (File, Check_Section);
       if Check_Section = End_Of_Section then
          return False;
+      elsif Check_Section = End_Of_Group then
+         Read (File, Check_Section);
+         if Check_Section = End_Of_Section then
+            return False;
+         end if;
       end if;
 
       Unit.Planet := Check_Section;
@@ -394,7 +423,7 @@ package body Carthage.Configure.Galaxy is
          Asset : constant Carthage.Assets.Asset_Type :=
                    Carthage.Assets.Create.New_Asset
                      (Unit    =>
-                         Carthage.Units.Get (Natural (Unit.U_Type) + 1),
+                         Carthage.Units.Get (Natural (Unit.U_Type)),
                       Owner   => House_Map (Unit.Owner),
                       XP      =>
                         Carthage.Assets.Asset_Experience'Val
@@ -402,21 +431,37 @@ package body Carthage.Configure.Galaxy is
                       Loyalty =>
                         Carthage.Assets.Asset_Loyalty (Unit.Loyalty),
                       Health  =>
-                        Carthage.Assets.Asset_Health (Unit.Health));
+                        Carthage.Assets.Asset_Health
+                          (Unit.Health));
+         In_Space : constant Boolean :=
+                      (Unit.Flags and Unit_On_Ground_Mask) = 0;
+         Sentry   : constant Boolean :=
+                      (Unit.Flags and Unit_Sentry_Mask)
+                      = Unit_Sentry_Mask
+           with Unreferenced;
+         Cargo    : constant Boolean :=
+                      (Unit.Flags and Unit_Cargo_Mask)
+                      = Unit_Cargo_Mask;
          Planet : constant Carthage.Planets.Planet_Type :=
                     Planet_Map (Word_8 (Unit.Planet));
-         Tile   : constant Carthage.Tiles.Tile_Type :=
-                    Planet.Tile ((Tile_X (Unit.X + 1),
-                                 Tile_Y (Unit.Y + 1)));
-         Stack : constant Carthage.Stacks.Stack_Type :=
-                    (if Tile.Has_Stack
-                     then Tile.Stack
-                     else Carthage.Stacks.Create.New_Ground_Stack
-                       (Asset.Owner, Planet, Tile));
+         Tile     : constant Carthage.Tiles.Tile_Type :=
+                      (if In_Space or else Cargo then null
+                       else Planet.Tile
+                         ((Tile_X (Unit.X + 1),
+                          Tile_Y (Unit.Y / 2 + 1))));
+         Stack    : constant Carthage.Stacks.Stack_Type :=
+                      (if In_Space
+                       then null
+                       elsif Tile.Has_Stack
+                       then Tile.Stack
+                       else Carthage.Stacks.Create.New_Ground_Stack
+                         (Asset.Owner, Planet, Tile));
       begin
-         Carthage.Stacks.Add_Asset (Stack, Asset);
-         if not Tile.Has_Stack then
-            Carthage.Tiles.Set_Stack (Tile, Stack);
+         if not In_Space then
+            Carthage.Stacks.Add_Asset (Stack, Asset);
+            if not Tile.Has_Stack then
+               Carthage.Tiles.Set_Stack (Tile, Stack);
+            end if;
          end if;
       end;
 
