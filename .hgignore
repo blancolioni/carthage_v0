@@ -4,3 +4,6 @@ carthage.gpr
 carthage.log
 config/eofs.txt
 src/carthage-paths.ads
+config/cities
+config/technology
+config/units
