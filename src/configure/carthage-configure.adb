@@ -996,11 +996,6 @@ package body Carthage.Configure is
            (Carthage.Paths.Config_File
                 ("bonus/bonus.txt")));
 
-      Ada.Text_IO.Put_Line ("  planets");
-      Load_Directory_Configuration
-        ("planets", Carthage.Planets.Configure.Configure_Planet'Access);
-      Ada.Text_IO.New_Line;
-
       declare
          Unit_Path : constant String :=
                        Carthage.Paths.Config_File
@@ -1020,10 +1015,6 @@ package body Carthage.Configure is
                  (Fading_Suns_Data_File ("UNIT")));
          end if;
       end;
-
-      Ada.Text_IO.Put_Line ("  houses");
-      Load_Directory_Configuration
-        ("houses", Carthage.Houses.Configure.Configure_House'Access);
 
       Ada.Text_IO.Put_Line ("  units");
       Load_Directory_Configuration
@@ -1101,6 +1092,18 @@ package body Carthage.Configure is
 
    begin
       Ada.Text_IO.Put_Line ("loading scenario: " & Name);
+
+      Ada.Text_IO.Put_Line ("  planets");
+      Load_Directory_Configuration
+        ("scenarios/" & Name & "/planets",
+         Carthage.Planets.Configure.Configure_Planet'Access);
+      Ada.Text_IO.New_Line;
+
+      Ada.Text_IO.Put_Line ("  houses");
+      Load_Directory_Configuration
+        ("scenarios/" & Name & "/houses",
+          Carthage.Houses.Configure.Configure_House'Access);
+
       Ada.Text_IO.Put_Line ("  gates");
       Carthage.Galaxy.Configure.Configure_Gates
         (Tropos.Reader.Read_Config
