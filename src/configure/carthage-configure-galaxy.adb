@@ -2,11 +2,45 @@ with Ada.Text_IO;
 
 with WL.Binary_IO;                     use WL.Binary_IO;
 
+with Carthage.Assets.Create;
+with Carthage.Houses;
+with Carthage.Stacks;
 with Carthage.Terrain;
 with Carthage.Tiles.Configure;
 with Carthage.Planets.Configure;
+with Carthage.Stacks.Create;
+with Carthage.Units;
 
 package body Carthage.Configure.Galaxy is
+
+   type File_Unit is
+      record
+         Planet          : Word_16;
+         X, Y            : Word_16;
+         Owner           : Word_8;
+         U_Type          : Word_8;
+         Unknown_1       : Word_8;
+         Loyalty         : Word_8;
+         Orders          : Word_16;
+         Experience      : Word_8;
+         Move_Points     : Word_8;
+         Relic           : Word_8;
+         Quantity        : Word_16;
+         Health          : Word_8;
+         Sect            : Word_8;
+         Unknown_2       : Word_8;
+         Unit_Number     : Word_32;
+         Flags           : Word_32;
+         Used_Unit_Type  : Word_8;
+         Used_Unit_Level : Word_8;
+         Camouflage      : Word_8;
+         Destination_X   : Word_8;
+         Destination_Y   : Word_8;
+         Unknown_3       : Word_8;
+         Task_Force      : Word_8;
+         Unknown_4       : Word_16;
+         Wait_Level      : Word_8;
+      end record;
 
    Map_Width  : constant := 50;
    Map_Height : constant := 48;
@@ -34,6 +68,9 @@ package body Carthage.Configure.Galaxy is
 
    Tree_Mask       : constant := 2#1000#;
 
+   House_Map  : array (Word_8) of Carthage.Houses.House_Type;
+   Planet_Map : array (Word_8) of Carthage.Planets.Planet_Type;
+
    procedure Read_Galaxy_File
      (File : in out File_Type);
 
@@ -46,6 +83,12 @@ package body Carthage.Configure.Galaxy is
       return Boolean;
    --  Read a jump gate from the file.  Return False if there are
    --  no more gates
+
+   function Read_Unit
+     (File : in out File_Type)
+      return Boolean;
+   --  Read a unit from the file.  Return False if there are
+   --  no more units
 
    -------------------
    -- Import_Galaxy --
@@ -100,6 +143,10 @@ package body Carthage.Configure.Galaxy is
       end loop;
 
       while Read_Jump_Gate (File) loop
+         null;
+      end loop;
+
+      while Read_Unit (File) loop
          null;
       end loop;
 
@@ -298,5 +345,83 @@ package body Carthage.Configure.Galaxy is
       end;
 
    end Read_Planet;
+
+   ---------------
+   -- Read_Unit --
+   ---------------
+
+   function Read_Unit
+     (File : in out File_Type)
+      return Boolean
+   is
+
+      Unit : File_Unit;
+      Check_Section : Word_16;
+   begin
+      Read (File, Check_Section);
+      if Check_Section = End_Of_Section then
+         return False;
+      end if;
+
+      Unit.Planet := Check_Section;
+      Read (File, Unit.X);
+      Read (File, Unit.Y);
+      Read (File, Unit.Owner);
+      Read (File, Unit.U_Type);
+      Read (File, Unit.Unknown_1);
+      Read (File, Unit.Loyalty);
+      Read (File, Unit.Orders);
+      Read (File, Unit.Experience);
+      Read (File, Unit.Move_Points);
+      Read (File, Unit.Relic);
+      Read (File, Unit.Quantity);
+      Read (File, Unit.Health);
+      Read (File, Unit.Sect);
+      Read (File, Unit.Unknown_2);
+      Read (File, Unit.Unit_Number);
+      Read (File, Unit.Flags);
+      Read (File, Unit.Used_Unit_Type);
+      Read (File, Unit.Used_Unit_Level);
+      Read (File, Unit.Camouflage);
+      Read (File, Unit.Destination_X);
+      Read (File, Unit.Destination_Y);
+      Read (File, Unit.Unknown_3);
+      Read (File, Unit.Task_Force);
+      Read (File, Unit.Unknown_4);
+      Read (File, Unit.Wait_Level);
+
+      declare
+         Asset : constant Carthage.Assets.Asset_Type :=
+                   Carthage.Assets.Create.New_Asset
+                     (Unit    =>
+                         Carthage.Units.Get (Natural (Unit.U_Type) + 1),
+                      Owner   => House_Map (Unit.Owner),
+                      XP      =>
+                        Carthage.Assets.Asset_Experience'Val
+                          (Unit.Experience),
+                      Loyalty =>
+                        Carthage.Assets.Asset_Loyalty (Unit.Loyalty),
+                      Health  =>
+                        Carthage.Assets.Asset_Health (Unit.Health));
+         Planet : constant Carthage.Planets.Planet_Type :=
+                    Planet_Map (Word_8 (Unit.Planet));
+         Tile   : constant Carthage.Tiles.Tile_Type :=
+                    Planet.Tile ((Tile_X (Unit.X + 1),
+                                 Tile_Y (Unit.Y + 1)));
+         Stack : constant Carthage.Stacks.Stack_Type :=
+                    (if Tile.Has_Stack
+                     then Tile.Stack
+                     else Carthage.Stacks.Create.New_Ground_Stack
+                       (Asset.Owner, Planet, Tile));
+      begin
+         Carthage.Stacks.Add_Asset (Stack, Asset);
+         if not Tile.Has_Stack then
+            Carthage.Tiles.Set_Stack (Tile, Stack);
+         end if;
+      end;
+
+      return True;
+
+   end Read_Unit;
 
 end Carthage.Configure.Galaxy;

@@ -8,7 +8,7 @@ limited with Carthage.Stacks;
 
 package Carthage.Tiles is
 
-   type Terrain_Layer is range 1 .. 2;
+   type Terrain_Layer is range 1 .. 3;
 
    type Tile_Record is
      new Carthage.Objects.Root_Carthage_Object with private;

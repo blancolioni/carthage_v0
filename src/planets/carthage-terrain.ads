@@ -14,6 +14,10 @@ package Carthage.Terrain is
      (Terrain : Terrain_Record)
       return Boolean;
 
+   function Ocean
+     (Terrain : Terrain_Record)
+      return Boolean;
+
    function Colour
      (Terrain  : Terrain_Record;
       Category : String)
@@ -23,6 +27,11 @@ package Carthage.Terrain is
      (Terrain  : Terrain_Record;
       Category : String)
       return Natural;
+
+   function Base
+     (Terrain : Terrain_Record)
+      return Boolean;
+   --  This terrain is a 'base' terrain type
 
    subtype Terrain_Class is Terrain_Record'Class;
 
@@ -52,6 +61,8 @@ private
      new Carthage.Objects.Localised.Root_Localised_Object with
       record
          Water     : Boolean;
+         Ocean     : Boolean;
+         Base      : Boolean;
          Cat_Info  : Terrain_Category_Maps.Map;
       end record;
 
@@ -80,6 +91,16 @@ private
      (Terrain : Terrain_Record)
       return Boolean
    is (Terrain.Water);
+
+   function Ocean
+     (Terrain : Terrain_Record)
+      return Boolean
+   is (Terrain.Ocean);
+
+   function Base
+     (Terrain : Terrain_Record)
+      return Boolean
+   is (Terrain.Base);
 
    function Colour
      (Terrain  : Terrain_Record;

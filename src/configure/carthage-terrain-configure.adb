@@ -18,7 +18,9 @@ package body Carthage.Terrain.Configure is
       procedure Create (Terrain : in out Terrain_Class) is
       begin
          Terrain.Create_With_Identity (Config.Config_Name);
-         Terrain.Water := Config.Config_Name = "ocean";
+         Terrain.Ocean := Config.Config_Name = "ocean";
+         Terrain.Water := Terrain.Ocean or else Config.Get ("water");
+         Terrain.Base := Config.Get ("base");
          for Item of Config.Child ("colours") loop
             Terrain.Cat_Info.Insert
               (Key      => Item.Config_Name,
