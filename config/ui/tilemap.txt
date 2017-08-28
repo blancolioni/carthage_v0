@@ -36,10 +36,12 @@ tree = {
 
 ocean = {
    default = 50
+   base = 50
 }
 
 grass = {
    base = 74
+   fade = 75
 }
 
 arid_grass = {
