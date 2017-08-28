@@ -35,6 +35,11 @@ package Carthage.Houses is
    procedure Scan
      (Process : not null access procedure (House : House_Type));
 
+   function Exists (Id : String) return Boolean;
+
+   function Get (Id : String) return House_Type
+     with Pre => Exists (Id);
+
 private
 
    type House_Record is
@@ -78,5 +83,11 @@ private
      (House : House_Record)
       return access constant Carthage.Planets.Planet_Record'Class
    is (House.Capital);
+
+   function Exists (Id : String) return Boolean
+   is (Db.Exists (Id));
+
+   function Get (Id : String) return House_Type
+   is (Db.Get (Id));
 
 end Carthage.Houses;
