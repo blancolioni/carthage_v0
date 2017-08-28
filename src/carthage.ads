@@ -1,7 +1,7 @@
 package Carthage is
 
    Planet_Width  : constant := 44;
-   Planet_Height : constant := 34;
+   Planet_Height : constant := 32;
 
    type Tile_X is range 1 .. Planet_Width;
    type Tile_Y is range 1 .. Planet_Height;
