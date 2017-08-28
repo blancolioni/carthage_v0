@@ -1,5 +1,0 @@
-index = 16
-land = yes
-barren = yes
-neutral = yes
-value = 100

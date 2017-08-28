@@ -1,4 +1,0 @@
-index = 56
-enabled-by = 55
-cost = 125
-like = 10

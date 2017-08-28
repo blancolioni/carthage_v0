@@ -1,7 +1,0 @@
-index = 12
-land = yes
-road = yes
-barren = yes
-build = yes
-build-time = 2
-value = 100

@@ -1,6 +1,0 @@
-index = 22
-water = yes
-land = yes
-road = yes
-barren = yes
-neutral = yes

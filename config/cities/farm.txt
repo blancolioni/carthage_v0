@@ -1,9 +1,0 @@
-index = 25
-harvester = yes
-production = farm
-land = yes
-road = yes
-build = yes
-area = 2
-build-time = 1
-value = 100

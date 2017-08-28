@@ -1,9 +1,0 @@
-index = 18
-water = yes
-land = yes
-road = yes
-barren = yes
-build = yes
-build-time = 5
-value = 100
-enabled-by = "discontinuity-field-generator"

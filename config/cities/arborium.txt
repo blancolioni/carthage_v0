@@ -1,9 +1,0 @@
-index = 26
-land = yes
-road = yes
-barren = yes
-build = yes
-area = 2
-build-time = 2
-value = 100
-enabled-by = "advanced-bacteriology"

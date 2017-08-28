@@ -1,8 +1,0 @@
-index = 21
-land = yes
-road = yes
-barren = yes
-build = yes
-build-time = 3
-value = 100
-enabled-by = monopols
