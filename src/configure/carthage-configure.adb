@@ -901,16 +901,25 @@ package body Carthage.Configure is
       Ada.Text_IO.Put_Line ("  surface graph");
       Carthage.Planets.Configure.Create_Surface_Graph;
 
-      if Carthage.Options.Clear_Import_Cache
-        or else not Ada.Directories.Exists
-          (Carthage.Paths.Config_File
-             ("technology/nothing.txt"))
-      then
-         Ada.Text_IO.Put_Line ("  importing fading suns tech");
-         Import_Technology
-           (Tropos.Reader.Read_Config
-              (Fading_Suns_Data_File ("TECH")));
-      end if;
+      declare
+         Technology_Path : constant String :=
+                             Carthage.Paths.Config_File
+                               ("technology");
+      begin
+         if not Ada.Directories.Exists (Technology_Path) then
+            Ada.Directories.Create_Directory (Technology_Path);
+         end if;
+
+         if Carthage.Options.Clear_Import_Cache
+           or else not Ada.Directories.Exists
+             (Technology_Path & "/nothing.txt")
+         then
+            Ada.Text_IO.Put_Line ("  importing fading suns tech");
+            Import_Technology
+              (Tropos.Reader.Read_Config
+                 (Fading_Suns_Data_File ("TECH")));
+         end if;
+      end;
 
       Ada.Text_IO.Put_Line ("  technology");
       Load_Directory_Configuration
@@ -924,20 +933,29 @@ package body Carthage.Configure is
       Load_Directory_Configuration
         ("resources", Carthage.Resources.Configure.Configure_Resource'Access);
 
-      if Carthage.Options.Clear_Import_Cache
-        or else not Ada.Directories.Exists
-          (Carthage.Paths.Config_File
-             ("terrain/ocean.txt"))
-      then
-         Ada.Text_IO.Put_Line ("  importing fading suns terrain");
-         Import_Terrain
-           (Colour_Config    =>
-              Tropos.Reader.Read_Config
-                (Fading_Suns_Data_File ("TERCOLOR")),
-            Road_Cost_Config =>
-              Tropos.Reader.Read_Config
-                (Fading_Suns_Data_File ("ROADCOST")));
-      end if;
+      declare
+         Terrain_Path : constant String :=
+                          Carthage.Paths.Config_File
+                            ("terrain");
+      begin
+         if not Ada.Directories.Exists (Terrain_Path) then
+            Ada.Directories.Create_Directory (Terrain_Path);
+         end if;
+
+         if Carthage.Options.Clear_Import_Cache
+           or else not Ada.Directories.Exists
+             (Terrain_Path & "/grass.txt")
+         then
+            Ada.Text_IO.Put_Line ("  importing fading suns terrain");
+            Import_Terrain
+              (Colour_Config    =>
+                 Tropos.Reader.Read_Config
+                   (Fading_Suns_Data_File ("TERCOLOR")),
+               Road_Cost_Config =>
+                 Tropos.Reader.Read_Config
+                   (Fading_Suns_Data_File ("ROADCOST")));
+         end if;
+      end;
 
       Ada.Text_IO.Put_Line ("  terrain");
       Load_Directory_Configuration
@@ -948,16 +966,25 @@ package body Carthage.Configure is
         ("worlds",
          Carthage.Worlds.Configure.Configure_World'Access);
 
-      if Carthage.Options.Clear_Import_Cache
-        or else not Ada.Directories.Exists
-          (Carthage.Paths.Config_File
-             ("cities/palace.txt"))
-      then
-         Ada.Text_IO.Put_Line ("  importing fading suns structures");
-         Import_Cities
-           (Tropos.Reader.Read_Config
-              (Fading_Suns_Data_File ("STRBUILD")));
-      end if;
+      declare
+         Structure_Path : constant String :=
+                            Carthage.Paths.Config_File
+                              ("cities");
+      begin
+         if not Ada.Directories.Exists (Structure_Path) then
+            Ada.Directories.Create_Directory (Structure_Path);
+         end if;
+
+         if Carthage.Options.Clear_Import_Cache
+           or else not Ada.Directories.Exists
+             (Structure_Path & "/palace.txt")
+         then
+            Ada.Text_IO.Put_Line ("  importing fading suns structures");
+            Import_Cities
+              (Tropos.Reader.Read_Config
+                 (Fading_Suns_Data_File ("STRBUILD")));
+         end if;
+      end;
 
       Ada.Text_IO.Put_Line ("  structures");
       Load_Directory_Configuration
@@ -974,16 +1001,25 @@ package body Carthage.Configure is
         ("planets", Carthage.Planets.Configure.Configure_Planet'Access);
       Ada.Text_IO.New_Line;
 
-      if Carthage.Options.Clear_Import_Cache
-        or else not Ada.Directories.Exists
-          (Carthage.Paths.Config_File
-             ("units/peasant.txt"))
-      then
-         Ada.Text_IO.Put_Line ("  importing fading suns units");
-         Import_Units
-           (Tropos.Reader.Read_Config
-              (Fading_Suns_Data_File ("UNIT")));
-      end if;
+      declare
+         Unit_Path : constant String :=
+                       Carthage.Paths.Config_File
+                         ("units");
+      begin
+         if not Ada.Directories.Exists (Unit_Path) then
+            Ada.Directories.Create_Directory (Unit_Path);
+         end if;
+
+         if Carthage.Options.Clear_Import_Cache
+           or else not Ada.Directories.Exists
+             (Unit_Path & "/noble.txt")
+         then
+            Ada.Text_IO.Put_Line ("  importing fading suns units");
+            Import_Units
+              (Tropos.Reader.Read_Config
+                 (Fading_Suns_Data_File ("UNIT")));
+         end if;
+      end;
 
       Ada.Text_IO.Put_Line ("  houses");
       Load_Directory_Configuration
