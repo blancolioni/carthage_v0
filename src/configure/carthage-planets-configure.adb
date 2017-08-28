@@ -5,9 +5,14 @@ with Carthage.Cities.Create;
 with Carthage.Planets.Surfaces;
 with Carthage.Structures.Configure;
 
+with Carthage.Galaxy.Configure;
+
 package body Carthage.Planets.Configure is
 
    Current_Planet_Count : Natural := 0;
+
+   function To_Coordinate (X : Natural) return Coordinate
+   is (Coordinate (Float (X) / 50.0));
 
    procedure Create_Bonus_Tiles (Planet : in out Planet_Class);
 
@@ -212,5 +217,141 @@ package body Carthage.Planets.Configure is
          end loop;
       end loop;
    end Create_Surface_Graph;
+
+   ----------------------
+   -- Import_Jump_Gate --
+   ----------------------
+
+   procedure Import_Jump_Gate
+     (X1, Y1, X2, Y2 : Natural)
+   is
+      function Find_Nearest (X, Y : Natural) return Planet_Type;
+
+      function Find_Nearest (X, Y : Natural) return Planet_Type is
+         XX : constant Coordinate := To_Coordinate (X);
+         YY : constant Coordinate := To_Coordinate (Y);
+         Nearest_Planet : Planet_Type := null;
+         Shortest_Distance : Float := Float'Last;
+
+         procedure Check (Planet : Planet_Type);
+
+         -----------
+         -- Check --
+         -----------
+
+         procedure Check (Planet : Planet_Type) is
+            D : constant Float :=
+                  (Float (Planet.X) - Float (XX)) ** 2
+                  + (Float (Planet.Y) - Float (YY)) ** 2;
+         begin
+            if Nearest_Planet = null or else D < Shortest_Distance then
+               Nearest_Planet := Planet;
+               Shortest_Distance := D;
+            end if;
+         end Check;
+
+      begin
+         Db.Scan (Check'Access);
+         return Nearest_Planet;
+      end Find_Nearest;
+
+      From : constant Planet_Type := Find_Nearest (X1, Y1);
+      To   : constant Planet_Type := Find_Nearest (X2, Y2);
+   begin
+      Carthage.Galaxy.Configure.Import_Gate
+        (From.Index, To.Index);
+   end Import_Jump_Gate;
+
+   -------------------
+   -- Import_Planet --
+   -------------------
+
+   procedure Import_Planet
+     (Name        : String;
+      X, Y        : Natural;
+      Tile_Set    : Natural;
+      Create_Tile : not null access
+        function (X : Tile_X;
+                  Y : Tile_Y)
+      return Carthage.Tiles.Tile_Type)
+   is
+
+      function Identifier_To_Name (Identifier : String) return String;
+
+      procedure Create (Planet : in out Planet_Class);
+
+      ------------
+      -- Create --
+      ------------
+
+      procedure Create (Planet : in out Planet_Class) is
+      begin
+
+         Current_Planet_Count := Current_Planet_Count + 1;
+
+         Planet.Create_With_Identity (Name);
+         Planet.Set_Name (Identifier_To_Name (Name));
+
+         Planet.Log ("creating");
+
+         Planet.Index := Current_Planet_Count;
+
+         Planet.Category :=
+           Carthage.Worlds.Get
+             (case Tile_Set is
+                 when 0 => "normal",
+                 when 1 => "city",
+                 when 2 => "ice",
+                 when 3 => "jungle",
+                 when 4 => "barren",
+                 when others =>
+                    raise Constraint_Error with
+                      Planet.Name & ": bad tileset:" & Tile_Set'Img);
+
+         Planet.X := To_Coordinate (X);
+         Planet.Y := To_Coordinate (Y);
+
+         Planet.Megacity := Tile_Set = 1;
+
+         for Y in Planet.Tiles'Range (2) loop
+            for X in Planet.Tiles'Range (1) loop
+               Planet.Tiles (X, Y) := Create_Tile (X, Y);
+               Planet.Log (X'Img & Y'Img & ": "
+                           & Planet.Tiles (X, Y).Description);
+            end loop;
+         end loop;
+
+         Planet.Log ("created " & Planet.Name);
+         Ada.Text_IO.Put (" " & Planet.Name);
+         Ada.Text_IO.Flush;
+      end Create;
+
+      ------------------------
+      -- Identifier_To_Name --
+      ------------------------
+
+      function Identifier_To_Name (Identifier : String) return String is
+         Result        : String := Identifier;
+         At_Word_Start : Boolean := True;
+         function To_Upper (Ch : Character) return Character
+                            renames Ada.Characters.Handling.To_Upper;
+      begin
+         for Ch of Result loop
+            if At_Word_Start then
+               Ch := To_Upper (Ch);
+               At_Word_Start := False;
+            elsif Ch = '-' then
+               At_Word_Start := True;
+            elsif Ch = '_' then
+               Ch := ' ';
+               At_Word_Start := True;
+            end if;
+         end loop;
+         return Result;
+      end Identifier_To_Name;
+
+   begin
+      Db.Create (Create'Access);
+   end Import_Planet;
 
 end Carthage.Planets.Configure;

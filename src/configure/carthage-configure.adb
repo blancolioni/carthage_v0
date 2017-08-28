@@ -24,6 +24,8 @@ with Carthage.UI.Maps;
 
 with Carthage.Options;
 
+with Carthage.Configure.Galaxy;
+
 package body Carthage.Configure is
 
    Init_Config  : Tropos.Configuration;
@@ -1044,6 +1046,16 @@ package body Carthage.Configure is
          Configure => Configure);
    end Load_Directory_Configuration;
 
+   -------------------------------
+   -- Load_Fading_Suns_Scenario --
+   -------------------------------
+
+   procedure Load_Fading_Suns_Scenario is
+   begin
+      Carthage.Configure.Galaxy.Import_Galaxy
+        (Eofs_Config.Get ("path") & "/GALAXY.GAL");
+   end Load_Fading_Suns_Scenario;
+
    -----------------------
    -- Load_Localisation --
    -----------------------
@@ -1061,6 +1073,7 @@ package body Carthage.Configure is
    -------------------
 
    procedure Load_Scenario (Name : String) is
+
       Start_Config : constant Tropos.Configuration :=
                        Tropos.Reader.Read_Config
                          (Scenario_File (Name, "start.txt"));

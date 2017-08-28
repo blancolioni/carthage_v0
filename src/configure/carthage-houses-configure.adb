@@ -102,6 +102,16 @@ package body Carthage.Houses.Configure is
       Shield_Position : Tile_Position;
       Available       : Carthage.Planets.Surface_Tiles;
 
+      Minimum_Harvester_Distance : constant Natural :=
+                                     Start_Config.Get
+                                       ("minimum-harvester-start-distance",
+                                        4)
+        with Unreferenced;
+      Maximum_Harvester_Distance : constant Natural :=
+                                     Start_Config.Get
+                                       ("maximum-harvester-start-distance",
+                                        15);
+
       procedure Configure_City_Group
         (Middle_Structure  : String;
          Inner_Structures : Tropos.Configuration);
@@ -263,7 +273,8 @@ package body Carthage.Houses.Configure is
             declare
                Reachable : Surface_Tiles;
             begin
-               Planet.Get_Tiles (Planet.Tile (Position), 1, 20,
+               Planet.Get_Tiles (Planet.Tile (Position),
+                                 1, Maximum_Harvester_Distance,
                                  Is_Land_Tile'Access, Reachable);
                Carthage.Planets.Remove_Tiles
                  (Reachable, Is_City_Tile'Access);
@@ -398,7 +409,8 @@ package body Carthage.Houses.Configure is
                & " at" & Shield_Position.X'Img
                & Shield_Position.Y'Img);
 
-            Planet.Get_Tiles (Planet.Tile (Shield_Position), 1, 20,
+            Planet.Get_Tiles (Planet.Tile (Shield_Position),
+                              1, Maximum_Harvester_Distance,
                               Is_Land_Tile'Access, Available);
             Carthage.Planets.Remove_Tiles
               (Available, Is_City_Tile'Access);

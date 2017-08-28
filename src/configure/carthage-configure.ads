@@ -2,6 +2,8 @@ package Carthage.Configure is
 
    procedure Load_Configuration;
 
+   procedure Load_Fading_Suns_Scenario;
+
    procedure Load_Scenario (Name : String);
 
    function Fading_Suns_Bin_File

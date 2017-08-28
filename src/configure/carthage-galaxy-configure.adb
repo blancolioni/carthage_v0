@@ -149,4 +149,34 @@ package body Carthage.Galaxy.Configure is
 
    end Configure_Positions;
 
+   -----------------
+   -- Import_Gate --
+   -----------------
+
+   procedure Import_Gate
+     (From, To : Positive)
+   is
+   begin
+      if Graph.Last_Vertex_Index = 0 then
+         declare
+            procedure Append (Planet : Carthage.Planets.Planet_Type);
+
+            ------------
+            -- Append --
+            ------------
+
+            procedure Append (Planet : Carthage.Planets.Planet_Type) is
+            begin
+               Graph.Append (Planet);
+            end Append;
+
+         begin
+            Carthage.Planets.Scan (Append'Access);
+         end;
+      end if;
+
+      Graph.Connect (From, To, 1.0);
+      Graph.Connect (To, From, 1.0);
+   end Import_Gate;
+
 end Carthage.Galaxy.Configure;
