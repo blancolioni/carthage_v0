@@ -3,5 +3,4 @@ build/*
 carthage.gpr
 carthage.log
 config/eofs.txt
-config/images/*
 src/carthage-paths.ads
