@@ -1,4 +1,5 @@
 with Ada.Characters.Handling;
+with Ada.Directories;
 with Ada.Text_IO;
 
 with WL.Binary_IO;                     use WL.Binary_IO;
@@ -14,6 +15,8 @@ with Carthage.Tiles.Configure;
 with Carthage.Planets.Configure;
 with Carthage.Stacks.Create;
 with Carthage.Units;
+
+with Carthage.Paths;
 
 package body Carthage.Configure.Galaxy is
 
@@ -164,6 +167,49 @@ package body Carthage.Configure.Galaxy is
       Open (File, In_File, Path);
       Read_Galaxy_File (File);
       Close (File);
+
+      if not Ada.Directories.Exists
+        (Carthage.Paths.Config_File
+           ("localisation/english/planets.txt"))
+      then
+         declare
+            use Ada.Text_IO;
+
+            File : Ada.Text_IO.File_Type;
+
+            procedure Write (Planet : Carthage.Planets.Planet_Type);
+
+            -----------
+            -- Write --
+            -----------
+
+            procedure Write (Planet : Carthage.Planets.Planet_Type) is
+               Name : String := Planet.Identifier;
+               First : Boolean := True;
+            begin
+               for Ch of Name loop
+                  if First then
+                     Ch := Ada.Characters.Handling.To_Upper (Ch);
+                     First := False;
+                  elsif Ch = '-' then
+                     Ch := ' ';
+                     First := True;
+                  end if;
+               end loop;
+
+               Put_Line (File,
+                         Planet.Identifier & "," & Name);
+            end Write;
+
+         begin
+            Create (File, Out_File,
+                    Carthage.Paths.Config_File
+                      ("localisation/english/planets.txt"));
+            Carthage.Planets.Scan (Write'Access);
+            Close (File);
+         end;
+      end if;
+
    end Import_Galaxy;
 
    ---------------
@@ -215,11 +261,6 @@ package body Carthage.Configure.Galaxy is
                        Carthage.Structures.Get
                          (Natural (City.C_Type) + 1);
       begin
-         Ada.Text_IO.Put_Line
-           ("New city " & Structure.Identifier
-            & " on " & Planet.Name & " at"
-            & City.X'Img & City.Y'Img);
-
          Carthage.Cities.Create.New_City
            (Planet    => Planet,
             Tile      => Tile,

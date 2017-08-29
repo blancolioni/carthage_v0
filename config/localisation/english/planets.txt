@@ -1,0 +1,40 @@
+holy-terra,Holy Terra
+byzantium-ii,Byzantium Secundus
+chernobog,Chernobog
+absolution,Absolution
+daishan,Daishan
+stigmata,Stigmata
+nowhere,Nowhere
+bannockburn,Bannockburn
+vril-ya,Vril-Ya
+manitou,Manitou
+severus,Severus
+de-moley,De Moley
+cadavus,Cadavus
+cadiz,Cadiz
+kish,Kish
+vau,Vau
+apshai,Apshai
+malignatius,Malignatius
+aylon,Aylon
+criticorum,Criticorum
+gwynneth,Gwynneth
+istakhr,Istakhr
+icon,Icon
+pandemonium,Pandemonium
+rampart,Rampart
+pyre,Pyre
+pentateuch,Pentateuch
+shaprut,Shaprut
+leminkainen,Leminkainen
+ravenna,Ravenna
+delphi,Delphi
+tethys,Tethys
+artemis,Artemis
+sutek,Sutek
+madoc,Madoc
+grail,Grail
+aragon,Aragon
+midian,Midian
+leagueheim,Leagueheim
+vera-cruz,Vera Cruz
