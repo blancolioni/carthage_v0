@@ -1,5 +1,7 @@
 package Carthage.Options is
 
-   Clear_Import_Cache : Boolean;
+   Clear_Import_Cache  : Boolean;
+   Trace_Planet_Import : Boolean;
+   Trace_Unit_Import   : Boolean;
    
 end Carthage.Options;
