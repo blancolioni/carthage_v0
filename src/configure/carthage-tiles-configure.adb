@@ -38,7 +38,9 @@ package body Carthage.Tiles.Configure is
    function Create_Tile
      (Index    : Positive;
       Position : Tile_Position;
-      Terrain  : Terrain_Array)
+      Terrain  : Terrain_Array;
+      Road     : Boolean;
+      River    : Boolean)
       return Tile_Type
    is
       procedure Create (Tile : in out Tile_Class);
@@ -53,6 +55,8 @@ package body Carthage.Tiles.Configure is
          Tile.Index := Index;
          Tile.Position := Position;
          Tile.Height := 0;
+         Tile.Road := Road;
+         Tile.River := River;
 
          if not Ts (1).Base then
             for I in 2 .. Ts'Last loop
@@ -74,7 +78,6 @@ package body Carthage.Tiles.Configure is
             Tile.Terrain (Terrain_Layer (I)) := Ts (I);
          end loop;
 
-         Tile.Road := False;
       end Create;
 
    begin

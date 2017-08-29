@@ -14,7 +14,9 @@ package Carthage.Tiles.Configure is
    function Create_Tile
      (Index    : Positive;
       Position : Tile_Position;
-      Terrain  : Terrain_Array)
+      Terrain  : Terrain_Array;
+      Road     : Boolean;
+      River    : Boolean)
       return Tile_Type;
 
 end Carthage.Tiles.Configure;

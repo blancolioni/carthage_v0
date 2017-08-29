@@ -88,6 +88,7 @@ private
          Height    : Integer;
          Terrain   : Terrain_Layer_Array;
          Road      : Boolean;
+         River     : Boolean;
          City      : access constant
            Carthage.Cities.City_Record'Class;
          Stack     : access constant
