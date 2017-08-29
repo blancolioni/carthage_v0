@@ -24,6 +24,7 @@ package body Carthage.Cities.Create is
          City.Planet := Planet;
          City.Tile := Tile;
          City.Structure := Structure;
+         Carthage.Houses.Clear (City.Seen);
       end Create;
 
       City : constant City_Type :=

@@ -25,6 +25,8 @@ package body Carthage.Tiles.Configure is
          Tile.Height := Height;
          Tile.Terrain := (Base_Terrain, Feature_Terrain, null);
          Tile.Road := False;
+         Tile.River := False;
+         Carthage.Houses.Clear (Tile.Seen);
       end Create;
 
    begin
@@ -61,6 +63,7 @@ package body Carthage.Tiles.Configure is
          for I in Ts'Range loop
             Tile.Terrain (Terrain_Layer (I)) := Ts (I);
          end loop;
+         Carthage.Houses.Clear (Tile.Seen);
 
       end Create;
 
