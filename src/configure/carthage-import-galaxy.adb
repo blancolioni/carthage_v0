@@ -16,10 +16,11 @@ with Carthage.Planets.Configure;
 with Carthage.Stacks.Create;
 with Carthage.Units;
 
+with Carthage.Configure;
 with Carthage.Options;
 with Carthage.Paths;
 
-package body Carthage.Configure.Galaxy is
+package body Carthage.Import.Galaxy is
 
    type File_Unit is
       record
@@ -147,7 +148,7 @@ package body Carthage.Configure.Galaxy is
    begin
 
       --  Galaxy file has no houses, so pull them from the standard scenario
-      Load_Standard_Houses;
+      Carthage.Configure.Load_Standard_Houses;
 
       House_Map (0) := Carthage.Houses.Get ("li-halan");
       House_Map (1) := Carthage.Houses.Get ("hazat");
@@ -682,4 +683,4 @@ package body Carthage.Configure.Galaxy is
 
    end Read_Unit;
 
-end Carthage.Configure.Galaxy;
+end Carthage.Import.Galaxy;

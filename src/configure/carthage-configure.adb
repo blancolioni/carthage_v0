@@ -24,7 +24,7 @@ with Carthage.UI.Maps;
 
 with Carthage.Options;
 
-with Carthage.Configure.Galaxy;
+with Carthage.Import.Galaxy;
 
 package body Carthage.Configure is
 
@@ -1066,7 +1066,7 @@ package body Carthage.Configure is
 
    procedure Load_Fading_Suns_Scenario is
    begin
-      Carthage.Configure.Galaxy.Import_Galaxy
+      Carthage.Import.Galaxy.Import_Galaxy
         (Eofs_Config.Get ("path") & "/GALAXY.GAL");
    end Load_Fading_Suns_Scenario;
 
