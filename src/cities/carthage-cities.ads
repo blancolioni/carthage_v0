@@ -28,6 +28,11 @@ package Carthage.Cities is
      (City : City_Record)
       return Carthage.Houses.House_Type;
 
+   function Seen_By
+     (City  : City_Record;
+      House : Carthage.Houses.House_Type)
+      return Boolean;
+
    subtype City_Class is City_Record'Class;
 
    type City_Type is access constant City_Record'Class;
@@ -37,15 +42,20 @@ package Carthage.Cities is
       Process : not null access
         procedure (City : City_Type));
 
+   procedure Set_Seen_By
+     (City  : City_Type;
+      House : Carthage.Houses.House_Type);
+
 private
 
    type City_Record is
      new Carthage.Objects.Root_Named_Object with
       record
-         Owner    : Carthage.Houses.House_Type;
-         Planet   : Carthage.Planets.Planet_Type;
-         Tile     : Carthage.Tiles.Tile_Type;
+         Owner     : Carthage.Houses.House_Type;
+         Planet    : Carthage.Planets.Planet_Type;
+         Tile      : Carthage.Tiles.Tile_Type;
          Structure : Carthage.Structures.Structure_Type;
+         Seen      : Carthage.Houses.House_Set;
       end record;
 
    overriding function Object_Database
@@ -82,5 +92,11 @@ private
      (City : City_Record)
       return Carthage.Houses.House_Type
    is (City.Owner);
+
+   function Seen_By
+     (City  : City_Record;
+      House : Carthage.Houses.House_Type)
+      return Boolean
+   is (Carthage.Houses.Element (City.Seen, House));
 
 end Carthage.Cities;

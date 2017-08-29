@@ -3,6 +3,8 @@ private with Memor.Database;
 with Carthage.Objects;
 with Carthage.Terrain;
 
+with Carthage.Houses;
+
 limited with Carthage.Cities;
 limited with Carthage.Stacks;
 
@@ -35,6 +37,11 @@ package Carthage.Tiles is
    function Index
      (Tile : Tile_Record)
       return Positive;
+
+   function Seen_By
+     (Tile  : Tile_Record;
+      House : Carthage.Houses.House_Type)
+      return Boolean;
 
    function Is_Water (Tile : Tile_Record) return Boolean;
 
@@ -70,6 +77,10 @@ package Carthage.Tiles is
      (Tile : Tile_Type;
       Road : Boolean);
 
+   procedure Set_Seen_By
+     (Tile  : Tile_Type;
+      House : Carthage.Houses.House_Type);
+
    --     procedure Update
 --       (Tile : Tile_Type;
 --        Update : not null access
@@ -86,6 +97,7 @@ private
          Index     : Positive;
          Position  : Tile_Position;
          Height    : Integer;
+         Seen      : Carthage.Houses.House_Set;
          Terrain   : Terrain_Layer_Array;
          Road      : Boolean;
          River     : Boolean;
@@ -153,5 +165,11 @@ private
      (Tile : Tile_Record)
       return Tile_Position
    is (Tile.Position);
+
+   function Seen_By
+     (Tile  : Tile_Record;
+      House : Carthage.Houses.House_Type)
+      return Boolean
+   is (Carthage.Houses.Element (Tile.Seen, House));
 
 end Carthage.Tiles;

@@ -70,6 +70,29 @@ package body Carthage.Tiles is
       Db.Update (Tile.Reference, Update'Access);
    end Set_Road;
 
+   -----------------
+   -- Set_Seen_By --
+   -----------------
+
+   procedure Set_Seen_By
+     (Tile  : Tile_Type;
+      House : Carthage.Houses.House_Type)
+   is
+      procedure Update (Rec : in out Tile_Class);
+
+      ------------
+      -- Update --
+      ------------
+
+      procedure Update (Rec : in out Tile_Class) is
+      begin
+         Carthage.Houses.Insert (Rec.Seen, House);
+      end Update;
+
+   begin
+      Db.Update (Tile.Reference, Update'Access);
+   end Set_Seen_By;
+
    ---------------
    -- Set_Stack --
    ---------------
