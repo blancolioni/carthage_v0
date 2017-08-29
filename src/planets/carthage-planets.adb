@@ -2,6 +2,17 @@ with Carthage.Terrain;
 
 package body Carthage.Planets is
 
+   ----------------------
+   -- Clear_Visibility --
+   ----------------------
+
+   procedure Clear_Visibility (Planet : in out Planet_Class) is
+   begin
+      for Tile of Planet.Tiles loop
+         Carthage.Tiles.Clear_Visibility (Tile);
+      end loop;
+   end Clear_Visibility;
+
    ---------------
    -- Find_Path --
    ---------------

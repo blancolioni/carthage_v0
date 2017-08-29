@@ -2,6 +2,28 @@ with Carthage.Cities;
 
 package body Carthage.Tiles is
 
+   ----------------------
+   -- Clear_Visibility --
+   ----------------------
+
+   procedure Clear_Visibility
+     (Tile  : Tile_Type)
+   is
+      procedure Update (Rec : in out Tile_Class);
+
+      ------------
+      -- Update --
+      ------------
+
+      procedure Update (Rec : in out Tile_Class) is
+      begin
+         Carthage.Houses.Clear (Rec.Visible);
+      end Update;
+
+   begin
+      Db.Update (Tile.Reference, Update'Access);
+   end Clear_Visibility;
+
    -----------------
    -- Description --
    -----------------
@@ -46,6 +68,30 @@ package body Carthage.Tiles is
    begin
       Db.Update (Tile.Reference, Update'Access);
    end Set_City;
+
+   ------------------------------
+   -- Set_Currently_Visible_To --
+   ------------------------------
+
+   procedure Set_Currently_Visible_To
+     (Tile  : Tile_Type;
+      House : Carthage.Houses.House_Type)
+   is
+      procedure Update (Rec : in out Tile_Class);
+
+      ------------
+      -- Update --
+      ------------
+
+      procedure Update (Rec : in out Tile_Class) is
+      begin
+         Carthage.Houses.Insert (Rec.Visible, House);
+         Carthage.Houses.Insert (Rec.Seen, House);
+      end Update;
+
+   begin
+      Db.Update (Tile.Reference, Update'Access);
+   end Set_Currently_Visible_To;
 
    --------------
    -- Set_Road --

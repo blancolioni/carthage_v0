@@ -43,6 +43,11 @@ package Carthage.Tiles is
       House : Carthage.Houses.House_Type)
       return Boolean;
 
+   function Currently_Visible_To
+     (Tile  : Tile_Record;
+      House : Carthage.Houses.House_Type)
+      return Boolean;
+
    function Is_Water (Tile : Tile_Record) return Boolean;
 
    function Has_City (Tile : Tile_Record) return Boolean;
@@ -81,6 +86,13 @@ package Carthage.Tiles is
      (Tile  : Tile_Type;
       House : Carthage.Houses.House_Type);
 
+   procedure Set_Currently_Visible_To
+     (Tile  : Tile_Type;
+      House : Carthage.Houses.House_Type);
+
+   procedure Clear_Visibility
+     (Tile  : Tile_Type);
+
    --     procedure Update
 --       (Tile : Tile_Type;
 --        Update : not null access
@@ -98,6 +110,7 @@ private
          Position  : Tile_Position;
          Height    : Integer;
          Seen      : Carthage.Houses.House_Set;
+         Visible   : Carthage.Houses.House_Set;
          Terrain   : Terrain_Layer_Array;
          Road      : Boolean;
          River     : Boolean;
@@ -171,5 +184,11 @@ private
       House : Carthage.Houses.House_Type)
       return Boolean
    is (Carthage.Houses.Element (Tile.Seen, House));
+
+   function Currently_Visible_To
+     (Tile  : Tile_Record;
+      House : Carthage.Houses.House_Type)
+      return Boolean
+   is (Carthage.Houses.Element (Tile.Visible, House));
 
 end Carthage.Tiles;

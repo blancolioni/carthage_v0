@@ -155,6 +155,8 @@ package Carthage.Planets is
    function Get (Id : String) return Planet_Type
      with Pre => Exists (Id);
 
+   procedure Clear_Visibility (Planet : in out Planet_Class);
+
    procedure Scan
      (Process : not null access procedure (Planet : Planet_Type));
 
