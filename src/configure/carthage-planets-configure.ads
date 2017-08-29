@@ -12,9 +12,9 @@ package Carthage.Planets.Configure is
       X, Y      : Coordinate);
 
    function Import_Planet
-     (Name     : String;
-      X, Y     : Natural;
-      Tile_Set : Natural;
+     (Id          : String;
+      X, Y        : Natural;
+      Tile_Set    : Natural;
       Create_Tile : not null access
         function (X : Tile_X;
                   Y : Tile_Y)

@@ -4,7 +4,8 @@ private with Memor.Database;
 
 with Carthage.Colours;
 
-with Carthage.Objects;
+with Carthage.Objects.Localised;
+
 with Carthage.Houses;
 with Carthage.Worlds;
 with Carthage.Tiles;
@@ -16,7 +17,7 @@ package Carthage.Planets is
    type Array_Of_Positions is array (Positive range <>) of Tile_Position;
 
    type Planet_Record is
-     new Carthage.Objects.Root_Named_Object with private;
+     new Carthage.Objects.Localised.Root_Localised_Object with private;
 
    function Index
      (Planet : Planet_Record)
@@ -186,7 +187,7 @@ private
    Surface_Graph : Tile_Graphs.Graph;
 
    type Planet_Record is
-     new Carthage.Objects.Root_Named_Object with
+     new Carthage.Objects.Localised.Root_Localised_Object with
       record
          Index    : Positive;
          X, Y     : Coordinate;

@@ -1,4 +1,3 @@
-with Ada.Characters.Handling;
 with Ada.Text_IO;
 
 with Carthage.Cities.Create;
@@ -24,8 +23,6 @@ package body Carthage.Planets.Configure is
      (Config : Tropos.Configuration)
    is
 
-      function Identifier_To_Name (Identifier : String) return String;
-
       procedure Create (Planet : in out Planet_Class);
 
       ------------
@@ -39,7 +36,6 @@ package body Carthage.Planets.Configure is
 
          Planet.Create_With_Identity
            (Config.Config_Name);
-         Planet.Set_Name (Identifier_To_Name (Config.Config_Name));
 
          Planet.Log ("creating");
 
@@ -62,30 +58,6 @@ package body Carthage.Planets.Configure is
          Ada.Text_IO.Put (" " & Planet.Name);
          Ada.Text_IO.Flush;
       end Create;
-
-      ------------------------
-      -- Identifier_To_Name --
-      ------------------------
-
-      function Identifier_To_Name (Identifier : String) return String is
-         Result : String := Identifier;
-         At_Word_Start : Boolean := True;
-         function To_Upper (Ch : Character) return Character
-                            renames Ada.Characters.Handling.To_Upper;
-      begin
-         for Ch of Result loop
-            if At_Word_Start then
-               Ch := To_Upper (Ch);
-               At_Word_Start := False;
-            elsif Ch = '-' then
-               At_Word_Start := True;
-            elsif Ch = '_' then
-               Ch := ' ';
-               At_Word_Start := True;
-            end if;
-         end loop;
-         return Result;
-      end Identifier_To_Name;
 
    begin
       Db.Create (Create'Access);
@@ -267,7 +239,7 @@ package body Carthage.Planets.Configure is
    -------------------
 
    function Import_Planet
-     (Name        : String;
+     (Id          : String;
       X, Y        : Natural;
       Tile_Set    : Natural;
       Create_Tile : not null access
@@ -276,8 +248,6 @@ package body Carthage.Planets.Configure is
       return Carthage.Tiles.Tile_Type)
       return Planet_Type
    is
-
-      function Identifier_To_Name (Identifier : String) return String;
 
       procedure Create (Planet : in out Planet_Class);
 
@@ -290,8 +260,7 @@ package body Carthage.Planets.Configure is
 
          Current_Planet_Count := Current_Planet_Count + 1;
 
-         Planet.Create_With_Identity (Name);
-         Planet.Set_Name (Identifier_To_Name (Name));
+         Planet.Create_With_Identity (Id);
 
          Planet.Log ("creating");
 
@@ -326,30 +295,6 @@ package body Carthage.Planets.Configure is
          Ada.Text_IO.Put (" " & Planet.Name);
          Ada.Text_IO.Flush;
       end Create;
-
-      ------------------------
-      -- Identifier_To_Name --
-      ------------------------
-
-      function Identifier_To_Name (Identifier : String) return String is
-         Result        : String := Identifier;
-         At_Word_Start : Boolean := True;
-         function To_Upper (Ch : Character) return Character
-                            renames Ada.Characters.Handling.To_Upper;
-      begin
-         for Ch of Result loop
-            if At_Word_Start then
-               Ch := To_Upper (Ch);
-               At_Word_Start := False;
-            elsif Ch = '-' then
-               At_Word_Start := True;
-            elsif Ch = '_' then
-               Ch := ' ';
-               At_Word_Start := True;
-            end if;
-         end loop;
-         return Result;
-      end Identifier_To_Name;
 
    begin
       return Db.Create (Create'Access);
