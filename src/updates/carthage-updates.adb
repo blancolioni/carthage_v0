@@ -1,4 +1,5 @@
 with Carthage.Cities;
+with Carthage.Managers;
 with Carthage.Planets;
 with Carthage.Stacks;
 with Carthage.Structures;
@@ -128,6 +129,8 @@ package body Carthage.Updates is
 
       Carthage.Stacks.Scan_Stacks
         (Stack_Look'Access);
+
+      Carthage.Managers.Before_Start_Of_Turn;
 
    end Before_Turn;
 

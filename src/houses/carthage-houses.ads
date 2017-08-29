@@ -1,5 +1,6 @@
 private with Memor.Database;
 
+limited with Carthage.Managers;
 limited with Carthage.Planets;
 
 with Carthage.Colours;
@@ -31,6 +32,11 @@ package Carthage.Houses is
 
    function Number_Of_Houses
      return Natural;
+
+   procedure Set_House_Manager
+     (House : House_Type;
+      Manager : not null access
+        Carthage.Managers.Manager_Record'Class);
 
    procedure Scan
      (Process : not null access procedure (House : House_Type));
@@ -64,6 +70,7 @@ private
          Capital  : access constant Carthage.Planets.Planet_Record'Class;
          Colour   : Carthage.Colours.Colour_Type;
          Set_Flag : House_Set;
+         Manager  : access Carthage.Managers.Manager_Record'Class;
       end record;
 
    overriding function Object_Database

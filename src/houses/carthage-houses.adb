@@ -42,4 +42,28 @@ package body Carthage.Houses is
       Db.Scan (Process);
    end Scan;
 
+   -----------------------
+   -- Set_House_Manager --
+   -----------------------
+
+   procedure Set_House_Manager
+     (House   : House_Type;
+      Manager : not null access
+        Carthage.Managers.Manager_Record'Class)
+   is
+      procedure Update (Rec : in out House_Class);
+
+      ------------
+      -- Update --
+      ------------
+
+      procedure Update (Rec : in out House_Class) is
+      begin
+         Rec.Manager := Manager;
+      end Update;
+
+   begin
+      Db.Update (House.Reference, Update'Access);
+   end Set_House_Manager;
+
 end Carthage.Houses;
