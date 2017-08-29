@@ -50,29 +50,13 @@ package body Carthage.Tiles.Configure is
       ------------
 
       procedure Create (Tile : in out Tile_Class) is
-         Ts : Terrain_Array (1 .. Terrain'Length) := Terrain;
+         Ts : constant Terrain_Array (1 .. Terrain'Length) := Terrain;
       begin
          Tile.Index := Index;
          Tile.Position := Position;
          Tile.Height := 0;
          Tile.Road := Road;
          Tile.River := River;
-
-         if not Ts (1).Base then
-            for I in 2 .. Ts'Last loop
-               if Ts (I).Base then
-                  declare
-                     It : constant Carthage.Terrain.Terrain_Type :=
-                            Ts (1);
-                  begin
-                     Ts (1) := Ts (I);
-                     Ts (I) := It;
-                  end;
-                  exit;
-               end if;
-            end loop;
-         end if;
-
          Tile.Terrain := (others => null);
          for I in Ts'Range loop
             Tile.Terrain (Terrain_Layer (I)) := Ts (I);

@@ -28,11 +28,6 @@ package Carthage.Terrain is
       Category : String)
       return Natural;
 
-   function Base
-     (Terrain : Terrain_Record)
-      return Boolean;
-   --  This terrain is a 'base' terrain type
-
    subtype Terrain_Class is Terrain_Record'Class;
 
    type Terrain_Type is access constant Terrain_Record'Class;
@@ -62,7 +57,6 @@ private
       record
          Water     : Boolean;
          Ocean     : Boolean;
-         Base      : Boolean;
          Cat_Info  : Terrain_Category_Maps.Map;
       end record;
 
@@ -96,11 +90,6 @@ private
      (Terrain : Terrain_Record)
       return Boolean
    is (Terrain.Ocean);
-
-   function Base
-     (Terrain : Terrain_Record)
-      return Boolean
-   is (Terrain.Base);
 
    function Colour
      (Terrain  : Terrain_Record;
