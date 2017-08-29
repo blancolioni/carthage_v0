@@ -16,6 +16,7 @@ with Carthage.Planets.Configure;
 with Carthage.Stacks.Create;
 with Carthage.Units;
 
+with Carthage.Options;
 with Carthage.Paths;
 
 package body Carthage.Configure.Galaxy is
@@ -95,6 +96,9 @@ package body Carthage.Configure.Galaxy is
    Tundra_Tile     : constant := 2#0101#;
    Mountain_Tile   : constant := 2#0110#;
    Hill_Tile       : constant := 2#0111#;
+
+   Road_Mask       : constant := 2#1011#;
+   Road_Tile       : constant := 2#1011#;
 
    Tree_Mask       : constant := 2#1000#;
 
@@ -446,6 +450,12 @@ package body Carthage.Configure.Galaxy is
          end;
       end loop;
 
+      if Carthage.Options.Trace_Planet_Import then
+         Ada.Text_IO.New_Line;
+         Ada.Text_IO.Put_Line
+           ("--- " & Name (Name_Start .. Name_End) & " ---");
+      end if;
+
       declare
          function Create_Tile
            (X : Tile_X;
@@ -482,8 +492,27 @@ package body Carthage.Configure.Galaxy is
             end Add;
 
             Index : constant Positive := To_File_Map (X, Y);
-            Flag  : constant Word_32  := Map (Index);
+            Flag  : Word_32  := Map (Index);
+            Road  : constant Boolean := (Flag and Road_Mask) = Road_Tile;
          begin
+
+            if Carthage.Options.Trace_Planet_Import then
+               if X = Tile_X'First then
+                  Ada.Text_IO.Put (Y'Img & ":");
+                  Ada.Text_IO.Set_Col (11);
+               end if;
+
+               Ada.Text_IO.Put (" " & Hex_Image (Flag));
+
+               if X = Tile_X'Last then
+                  Ada.Text_IO.New_Line;
+               end if;
+            end if;
+
+            if Road then
+               Flag := Flag / 2 ** 9;
+            end if;
+
             if (Flag and Ocean_Mask) = Ocean_Tile then
                Add ("ocean");
             else
@@ -514,7 +543,9 @@ package body Carthage.Configure.Galaxy is
             return Carthage.Tiles.Configure.Create_Tile
               (Index    => Positive (X) + Planet_Width * (Natural (Y - 1)),
                Position => (X, Y),
-               Terrain  => Ts (1 .. Count));
+               Terrain  => Ts (1 .. Count),
+               Road     => Road,
+               River    => False);
          end Create_Tile;
 
          Planet : constant Carthage.Planets.Planet_Type :=
@@ -528,6 +559,10 @@ package body Carthage.Configure.Galaxy is
          Planet_Map (Next_Planet) := Planet;
          Next_Planet := Next_Planet + 1;
       end;
+
+      if Carthage.Options.Trace_Planet_Import then
+         Ada.Text_IO.New_Line;
+      end if;
 
       return True;
 
@@ -621,6 +656,19 @@ package body Carthage.Configure.Galaxy is
                          (Asset.Owner, Planet, Tile));
       begin
          if not In_Space then
+            declare
+               use type Carthage.Stacks.Asset_Count;
+            begin
+               if Stack.Count = 0 then
+                  if Carthage.Options.Trace_Unit_Import then
+                     Ada.Text_IO.Put_Line
+                       ("new stack on "
+                        & Planet.Name
+                        & " " & Tile.Description
+                        & " at" & Tile.Position.X'Img & Tile.Position.Y'Img);
+                  end if;
+               end if;
+            end;
             Carthage.Stacks.Add_Asset (Stack, Asset);
             if not Tile.Has_Stack then
                Carthage.Tiles.Set_Stack (Tile, Stack);
