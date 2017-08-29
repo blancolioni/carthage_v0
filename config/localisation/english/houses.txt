@@ -6,7 +6,19 @@ hawkwood-full,House Hawkwood
 hazat-full,House Hazat
 imperial,Imperial
 league,The League
+league-adjective,League
 li-halan-full,House Li-Halan
-rebels,The Rebels
+rebels,Rebels
 symbiots,Symbiots
 vau,The Vau
+imperial,Imperial
+spy,The Eye
+spy-full,The Imperial Eye
+spy-adjective,Imperial Eye
+fleet,The Fleet
+fleet-full,The Imperial Fleet
+fleet-adjective,Fleet
+stigmata,Stigmata
+stigmata-full,The Stigmata Garrison
+stigmata-adjective,Stigmata
+
