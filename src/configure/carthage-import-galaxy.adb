@@ -652,13 +652,15 @@ package body Carthage.Import.Galaxy is
                           Tile_Y (Unit.Y / 2 + 1))));
          Stack    : constant Carthage.Stacks.Stack_Type :=
                       (if In_Space
-                       then null
+                       then Planet.Stack (Asset.Owner)
                        elsif Tile.Has_Stack
                        then Tile.Stack
                        else Carthage.Stacks.Create.New_Ground_Stack
                          (Asset.Owner, Planet, Tile));
       begin
-         if not In_Space then
+         if In_Space then
+            Carthage.Stacks.Add_Asset (Stack, Asset);
+         else
             declare
                use type Carthage.Stacks.Asset_Count;
             begin
