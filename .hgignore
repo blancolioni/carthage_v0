@@ -7,3 +7,4 @@ src/carthage-paths.ads
 config/cities
 config/technology
 config/units
+config/terrain/
