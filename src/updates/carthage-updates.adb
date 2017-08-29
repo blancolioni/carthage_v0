@@ -90,6 +90,7 @@ package body Carthage.Updates is
       procedure Stack_Look
         (Stack : Carthage.Stacks.Stack_Type)
       is
+         use type Carthage.Stacks.Asset_Count;
          Tiles : Carthage.Planets.Surface_Tiles;
       begin
 
@@ -106,7 +107,7 @@ package body Carthage.Updates is
                  (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
                   House => Stack.Owner);
             end loop;
-         elsif Stack.In_Space then
+         elsif Stack.In_Space and then Stack.Count > 0 then
             Stack.Planet.Get_Tiles (Tiles);
             for I in 1 .. Carthage.Planets.Tile_Count (Tiles) loop
                Carthage.Tiles.Set_Seen_By
