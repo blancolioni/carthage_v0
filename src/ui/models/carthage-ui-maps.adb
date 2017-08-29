@@ -432,7 +432,7 @@ package body Carthage.UI.Maps is
 
          Layers.List.Append
            (Make_Hex_Tile_Resource
-              (Planet.Category.Identifier
+              (Planet.Tile_Set
                & "-"
                & Tile.City.Structure.Identifier
                & "-"
