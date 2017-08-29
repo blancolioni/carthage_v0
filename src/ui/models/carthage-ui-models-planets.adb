@@ -231,6 +231,9 @@ package body Carthage.UI.Models.Planets is
 
                            when Hex_Tile =>
                               if Draw_Hex_Images then
+                                 pragma Assert
+                                   (Renderer.Have_Resource (Resource));
+
                                  Renderer.Draw_Image
                                    (Screen_X - Tile_Width / 2,
                                     Screen_Y - Tile_Height / 2,
