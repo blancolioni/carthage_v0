@@ -1,3 +1,3 @@
-colour = { 181 18 19 }
+colour = 228
 capital = aragon
 category = noble

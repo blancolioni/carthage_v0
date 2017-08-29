@@ -1,3 +1,3 @@
-colour = { 139 112 147 }
+colour = 131
 capital = midian
 category = noble

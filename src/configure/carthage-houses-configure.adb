@@ -9,6 +9,8 @@ with Carthage.Cities.Create;
 with Carthage.Assets.Create;
 with Carthage.Stacks.Create;
 
+with Carthage.Import;
+
 package body Carthage.Houses.Configure is
 
    Current_House_Flag : House_Set := 0;
@@ -54,7 +56,8 @@ package body Carthage.Houses.Configure is
              (Config.Get ("category"));
          House.Colour :=
            (if Config.Contains ("colour")
-            then Carthage.Colours.Configure (Config.Child ("colour"))
+            then Carthage.Import.Palette_Colour
+              (Config.Get ("colour"))
             else (0.5, 0.5, 0.5, 1.0));
 
          declare
