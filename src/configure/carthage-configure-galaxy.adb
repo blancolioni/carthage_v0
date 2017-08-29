@@ -198,7 +198,8 @@ package body Carthage.Configure.Galaxy is
                end loop;
 
                Put_Line (File,
-                         Planet.Identifier & "," & Name);
+                         Planet.Identifier & ","
+                         & Name (8 .. Name'Last));
             end Write;
 
          begin
@@ -518,7 +519,8 @@ package body Carthage.Configure.Galaxy is
 
          Planet : constant Carthage.Planets.Planet_Type :=
                     Carthage.Planets.Configure.Import_Planet
-                      (Ada.Characters.Handling.To_Lower
+                      ("planet-"
+                       & Ada.Characters.Handling.To_Lower
                          (Name (Name_Start .. Name_End)),
                        Natural (X), Natural (Y), Natural (Tile_Set),
                        Create_Tile'Access);
