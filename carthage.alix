@@ -1,5 +1,6 @@
 project_name = Carthage
 source_dir = src
+source_dir = src/ai
 source_dir = src/assets
 source_dir = src/base
 source_dir = src/cities
@@ -15,6 +16,7 @@ source_dir = src/ui
 source_dir = src/ui/gtk
 source_dir = src/ui/models
 source_dir = src/units
+source_dir = src/updates
 depend = { project = Tropos version = any }
 depend = { project = Wlib version = any }
 depend = { project = Lith version = any }
