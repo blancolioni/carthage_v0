@@ -1,10 +1,14 @@
+with Ada.Characters.Handling;
 with Ada.Text_IO;
 
 with WL.Binary_IO;                     use WL.Binary_IO;
 
 with Carthage.Assets.Create;
+with Carthage.Cities.Create;
+
 with Carthage.Houses;
 with Carthage.Stacks;
+with Carthage.Structures;
 with Carthage.Terrain;
 with Carthage.Tiles.Configure;
 with Carthage.Planets.Configure;
@@ -40,6 +44,28 @@ package body Carthage.Configure.Galaxy is
          Task_Force      : Word_8;
          Unknown_4       : Word_16;
          Wait_Level      : Word_8;
+      end record;
+
+   type File_City is
+      record
+         Planet          : Word_16;
+         X, Y            : Word_16;
+         C_Type          : Word_16;
+         Owner           : Word_16;
+         Unknown_1       : Word_16;
+         Ruin_Type       : Word_16;
+         Production_Info : Word_16;
+         Turns_Left      : Word_16;
+         City_Info       : Word_16;
+         Unknown_2       : Word_16;
+         Unit_Loyalty    : Word_16;
+         Loyalty         : Word_16;
+         Stack_Info      : Word_16;
+         Used_Unit_Level : Word_16;
+         Tech_Type       : Word_16;
+         Health          : Word_16;
+         Sect            : Word_16;
+         Flags           : Word_32;
       end record;
 
    Map_Width  : constant := 50;
@@ -80,16 +106,22 @@ package body Carthage.Configure.Galaxy is
    procedure Read_Galaxy_File
      (File : in out File_Type);
 
-   function Read_Planet
-     (File           : in out File_Type;
-      Galaxy_Version : Word_32)
+   function Read_City
+     (File : in out File_Type)
       return Boolean;
+   --  Read a city from the file.  Return False if there are
+   --  no more cities
 
    function Read_Jump_Gate
      (File : in out File_Type)
       return Boolean;
    --  Read a jump gate from the file.  Return False if there are
    --  no more gates
+
+   function Read_Planet
+     (File           : in out File_Type;
+      Galaxy_Version : Word_32)
+      return Boolean;
 
    function Read_Unit
      (File : in out File_Type)
@@ -134,6 +166,71 @@ package body Carthage.Configure.Galaxy is
       Close (File);
    end Import_Galaxy;
 
+   ---------------
+   -- Read_City --
+   ---------------
+
+   function Read_City
+     (File : in out File_Type)
+      return Boolean
+   is
+
+      City          : File_City;
+      Check_Section : Word_16;
+   begin
+      Read (File, Check_Section);
+      if Check_Section = End_Of_Section then
+         return False;
+      end if;
+
+      City.Planet := Check_Section;
+      Read (File, City.X);
+      Read (File, City.Y);
+      Read (File, City.C_Type);
+      Read (File, City.Owner);
+      Read (File, City.Unknown_1);
+      Read (File, City.Ruin_Type);
+      Read (File, City.Production_Info);
+      Read (File, City.Turns_Left);
+      Read (File, City.City_Info);
+      Read (File, City.Unknown_2);
+      Read (File, City.Unit_Loyalty);
+      Read (File, City.Loyalty);
+      Read (File, City.Stack_Info);
+      Read (File, City.Used_Unit_Level);
+      Read (File, City.Tech_Type);
+      Read (File, City.Health);
+      Read (File, City.Sect);
+      Read (File, City.Flags);
+
+      declare
+         Planet   : constant Carthage.Planets.Planet_Type :=
+                      Planet_Map (Word_8 (City.Planet));
+         Tile     : constant Carthage.Tiles.Tile_Type :=
+                      Planet.Tile
+                        ((Tile_X (City.X + 1),
+                         Tile_Y
+                           (Word_16'Min (City.Y / 2 + 1, Planet_Height))));
+         Structure : constant Carthage.Structures.Structure_Type :=
+                       Carthage.Structures.Get
+                         (Natural (City.C_Type) + 1);
+      begin
+         Ada.Text_IO.Put_Line
+           ("New city " & Structure.Identifier
+            & " on " & Planet.Name & " at"
+            & City.X'Img & City.Y'Img);
+
+         Carthage.Cities.Create.New_City
+           (Planet    => Planet,
+            Tile      => Tile,
+            Structure => Structure,
+            Owner     => House_Map (Word_8 (City.Owner)));
+      end;
+
+      return True;
+
+   end Read_City;
+
    ----------------------
    -- Read_Galaxy_File --
    ----------------------
@@ -166,6 +263,10 @@ package body Carthage.Configure.Galaxy is
       end loop;
 
       while Read_Unit (File) loop
+         null;
+      end loop;
+
+      while Read_City (File) loop
          null;
       end loop;
 
@@ -211,7 +312,8 @@ package body Carthage.Configure.Galaxy is
       X, Y, R          : Word_16;
       Orbiting_Stacks  : array (1 .. Planet_Orbit_Stacks) of Word_32;
       Name             : String (1 .. Planet_Name_Length);
-      Name_Length      : Natural := 0;
+      Name_Start       : Positive := 1;
+      Name_End         : Natural := 0;
       Owner            : Word_16;
       Sect             : Word_16;
       Flags            : Word_32;
@@ -245,7 +347,24 @@ package body Carthage.Configure.Galaxy is
             Done := Done or else X = 0;
             Ch := Character'Val (X);
             if not Done then
-               Name_Length := Name_Length + 1;
+               Name_End := Name_End + 1;
+            end if;
+         end loop;
+      end;
+
+      --  Madoc starts with a space!
+      while Name (Name_Start) = ' ' loop
+         Name_Start := Name_Start + 1;
+      end loop;
+
+      declare
+         use Ada.Characters.Handling;
+      begin
+         for I in Name_Start .. Name_End loop
+            if Is_Upper (Name (I)) then
+               Name (I) := To_Lower (Name (I));
+            elsif Name (I) = ' ' then
+               Name (I) := '-';
             end if;
          end loop;
       end;
@@ -316,7 +435,7 @@ package body Carthage.Configure.Galaxy is
             exception
                when others =>
                   raise Constraint_Error with
-                    "while importing " & Name (1 .. Name_Length)
+                    "while importing " & Name (Name_Start .. Name_End)
                     & ": no such terrain id: " & Id;
             end Add;
 
@@ -358,7 +477,8 @@ package body Carthage.Configure.Galaxy is
 
          Planet : constant Carthage.Planets.Planet_Type :=
                     Carthage.Planets.Configure.Import_Planet
-                      (Name (1 .. Name_Length),
+                      (Ada.Characters.Handling.To_Lower
+                         (Name (Name_Start .. Name_End)),
                        Natural (X), Natural (Y), Natural (Tile_Set),
                        Create_Tile'Access);
       begin
