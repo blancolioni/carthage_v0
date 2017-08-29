@@ -21,6 +21,14 @@ package Carthage.Stacks is
      (Stack : Stack_Record)
       return Carthage.Planets.Planet_Type;
 
+   function Has_Tile
+     (Stack : Stack_Record)
+      return Boolean;
+
+   function In_Space
+     (Stack : Stack_Record)
+      return Boolean;
+
    function Tile
      (Stack : Stack_Record)
       return Carthage.Tiles.Tile_Type;
@@ -44,6 +52,9 @@ package Carthage.Stacks is
       Asset : Carthage.Assets.Asset_Type)
      with Pre => To.Count < Maximum_Stack_Size
        and then Carthage.Houses."=" (To.Owner, Asset.Owner);
+
+   procedure Scan_Stacks
+     (Process : not null access procedure (Stack : Stack_Type));
 
 private
 
@@ -83,6 +94,16 @@ private
      (Stack : Stack_Record)
       return Carthage.Tiles.Tile_Type
    is (Stack.Tile);
+
+   function Has_Tile
+     (Stack : Stack_Record)
+      return Boolean
+   is (Carthage.Tiles."/=" (Stack.Tile, null));
+
+   function In_Space
+     (Stack : Stack_Record)
+      return Boolean
+   is (not Stack.Has_Tile);
 
    function Owner
      (Stack : Stack_Record)

@@ -24,4 +24,15 @@ package body Carthage.Stacks is
       Db.Update (To.Reference, Update'Access);
    end Add_Asset;
 
+   -----------------
+   -- Scan_Stacks --
+   -----------------
+
+   procedure Scan_Stacks
+     (Process : not null access procedure (Stack : Stack_Type))
+   is
+   begin
+      Db.Scan (Process);
+   end Scan_Stacks;
+
 end Carthage.Stacks;
