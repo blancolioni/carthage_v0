@@ -289,8 +289,6 @@ package body Carthage.Planets.Configure is
          for Y in Planet.Tiles'Range (2) loop
             for X in Planet.Tiles'Range (1) loop
                Planet.Tiles (X, Y) := Create_Tile (X, Y);
-               Planet.Log (X'Img & Y'Img & ": "
-                           & Planet.Tiles (X, Y).Description);
             end loop;
          end loop;
 
