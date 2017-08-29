@@ -45,6 +45,13 @@ package Carthage.Planets is
                   Position : Tile_Position)
                   return Carthage.Tiles.Tile_Type;
 
+   function Tile
+     (Planet   : Planet_Record;
+      X        : Tile_X;
+      Y        : Tile_Y)
+      return Carthage.Tiles.Tile_Type
+   is (Planet.Tile ((X, Y)));
+
    function Road_Cost
      (Planet   : Planet_Record;
       Position : Tile_Position)
