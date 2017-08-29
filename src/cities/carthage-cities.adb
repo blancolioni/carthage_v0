@@ -1,5 +1,62 @@
 package body Carthage.Cities is
 
+   -----------------
+   -- Scan_Cities --
+   -----------------
+
+   procedure Scan_Cities
+     (Process : not null access procedure (City : City_Type))
+   is
+   begin
+      Db.Scan (Process);
+   end Scan_Cities;
+
+   -----------------
+   -- Scan_Cities --
+   -----------------
+
+   procedure Scan_Cities
+     (Test    : not null access function (City : City_Type) return Boolean;
+      Process : not null access procedure (City : City_Type))
+   is
+   begin
+      Db.Scan (Test, Process);
+   end Scan_Cities;
+
+   -----------------
+   -- Scan_Cities --
+   -----------------
+
+   procedure Scan_Cities
+     (Structure : Carthage.Structures.Structure_Type;
+      Process   : not null access procedure (City : City_Type))
+   is
+      use type Carthage.Structures.Structure_Type;
+
+      function OK (City : City_Type) return Boolean
+      is (City.Structure = Structure);
+
+   begin
+      Scan_Cities (OK'Access, Process);
+   end Scan_Cities;
+
+   -----------------
+   -- Scan_Cities --
+   -----------------
+
+   procedure Scan_Cities
+     (Owner   : Carthage.Houses.House_Type;
+      Process : not null access procedure (City : City_Type))
+   is
+      use type Carthage.Houses.House_Type;
+
+      function OK (City : City_Type) return Boolean
+      is (City.Owner = Owner);
+
+   begin
+      Scan_Cities (OK'Access, Process);
+   end Scan_Cities;
+
    ------------------------
    -- Scan_Planet_Cities --
    ------------------------

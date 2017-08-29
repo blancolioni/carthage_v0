@@ -46,6 +46,21 @@ package Carthage.Cities is
      (City  : City_Type;
       House : Carthage.Houses.House_Type);
 
+   procedure Scan_Cities
+     (Process : not null access procedure (City : City_Type));
+
+   procedure Scan_Cities
+     (Structure : Carthage.Structures.Structure_Type;
+      Process   : not null access procedure (City : City_Type));
+
+   procedure Scan_Cities
+     (Owner   : Carthage.Houses.House_Type;
+      Process : not null access procedure (City : City_Type));
+
+   procedure Scan_Cities
+     (Test    : not null access function (City : City_Type) return Boolean;
+      Process : not null access procedure (City : City_Type));
+
 private
 
    type City_Record is
