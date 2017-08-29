@@ -304,6 +304,8 @@ package body Carthage.Configure.Galaxy is
          null;
       end loop;
 
+      Ada.Text_IO.New_Line;
+
       while Read_Jump_Gate (File) loop
          null;
       end loop;

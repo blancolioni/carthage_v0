@@ -1,5 +1,8 @@
+with Ada.Text_IO;
+
 with Carthage.Configure;
 with Carthage.Logging;
+with Carthage.Updates;
 
 with Carthage.UI.Gtk_UI;
 
@@ -13,8 +16,14 @@ begin
    else
       Carthage.Configure.Load_Scenario ("standard");
    end if;
-   if True then
+
+   Ada.Text_IO.Put_Line ("setting up first turn");
+   Carthage.Updates.Before_Turn;
+   Ada.Text_IO.Put_Line ("done");
+
+   if False then
       Carthage.UI.Gtk_UI.Start;
    end if;
+
    Carthage.Logging.Stop_Logging;
 end Carthage.Driver;
