@@ -107,13 +107,17 @@ package body Carthage.Updates is
                  (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
                   House => Stack.Owner);
             end loop;
-         elsif Stack.In_Space and then Stack.Count > 0 then
+         elsif Stack.In_Space
+           and then Stack.Count > 0
+             and then not Stack.Planet.Seen_By (Stack.Owner)
+         then
             Stack.Planet.Get_Tiles (Tiles);
             for I in 1 .. Carthage.Planets.Tile_Count (Tiles) loop
                Carthage.Tiles.Set_Seen_By
                  (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
                   House => Stack.Owner);
             end loop;
+            Carthage.Planets.Set_Seen_By (Stack.Planet, Stack.Owner);
          end if;
       end Stack_Look;
 

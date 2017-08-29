@@ -117,6 +117,11 @@ package Carthage.Planets is
      (Planet : in out Planet_Record;
       New_Owner : Carthage.Houses.House_Type);
 
+   function Seen_By
+     (Planet : Planet_Record;
+      House  : Carthage.Houses.House_Type)
+      return Boolean;
+
    type Surface_Tiles is private;
 
    procedure Get_Tiles (Planet : not null access constant Planet_Record'Class;
@@ -180,6 +185,10 @@ package Carthage.Planets is
       Update : not null access
         procedure (Planet : in out Planet_Class));
 
+   procedure Set_Seen_By
+     (Planet : Planet_Type;
+      House  : Carthage.Houses.House_Type);
+
    function Number_Of_Planets return Natural;
 
 private
@@ -218,6 +227,7 @@ private
          Index    : Positive;
          X, Y     : Coordinate;
          Category : Carthage.Worlds.World_Type;
+         Seen     : Carthage.Houses.House_Set;
          Tiles    : Tile_Array;
          Megacity : Boolean;
          Owner    : Carthage.Houses.House_Type;
@@ -303,5 +313,11 @@ private
       Position : Tile_Position)
       return Carthage.Colours.Colour_Type
    is (Planet.Tile (Position).Terrain (1).Colour (Planet.Category_Name));
+
+   function Seen_By
+     (Planet : Planet_Record;
+      House  : Carthage.Houses.House_Type)
+      return Boolean
+   is (Carthage.Houses.Element (Planet.Seen, House));
 
 end Carthage.Planets;

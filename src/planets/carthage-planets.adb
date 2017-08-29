@@ -417,6 +417,29 @@ package body Carthage.Planets is
       Planet.Owner := New_Owner;
    end Set_Owner;
 
+   -----------------
+   -- Set_Seen_By --
+   -----------------
+
+   procedure Set_Seen_By
+     (Planet : Planet_Type;
+      House  : Carthage.Houses.House_Type)
+   is
+      procedure Update (Rec : in out Planet_Class);
+
+      ------------
+      -- Update --
+      ------------
+
+      procedure Update (Rec : in out Planet_Class) is
+      begin
+         Carthage.Houses.Insert (Rec.Seen, House);
+      end Update;
+
+   begin
+      Db.Update (Planet.Reference, Update'Access);
+   end Set_Seen_By;
+
    -----------
    -- Stack --
    -----------
