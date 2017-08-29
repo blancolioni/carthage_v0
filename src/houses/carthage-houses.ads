@@ -40,7 +40,22 @@ package Carthage.Houses is
    function Get (Id : String) return House_Type
      with Pre => Exists (Id);
 
+   type House_Set is private;
+
+   procedure Clear (Set : in out House_Set);
+   procedure Insert (Set   : in out House_Set;
+                     House : House_Type);
+   procedure Remove (Set   : in out House_Set;
+                     House : House_Type);
+   function Element (Set   : House_Set;
+                     House : House_Type)
+                     return Boolean;
+
 private
+
+   Max_Houses : constant := 32;
+
+   type House_Set is mod 2 ** Max_Houses;
 
    type House_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with
@@ -48,6 +63,7 @@ private
          Category : House_Category;
          Capital  : access constant Carthage.Planets.Planet_Record'Class;
          Colour   : Carthage.Colours.Colour_Type;
+         Set_Flag : House_Set;
       end record;
 
    overriding function Object_Database
@@ -89,5 +105,10 @@ private
 
    function Get (Id : String) return House_Type
    is (Db.Get (Id));
+
+   function Element (Set   : House_Set;
+                     House : House_Type)
+                     return Boolean
+   is ((Set and House.Set_Flag) /= 0);
 
 end Carthage.Houses;

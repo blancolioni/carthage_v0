@@ -11,6 +11,8 @@ with Carthage.Stacks.Create;
 
 package body Carthage.Houses.Configure is
 
+   Current_House_Flag : House_Set := 0;
+
    function Is_Land_Tile
      (Tile : Carthage.Tiles.Tile_Type)
       return Boolean
@@ -38,6 +40,15 @@ package body Carthage.Houses.Configure is
       begin
          House.Create_With_Identity
            (Config.Config_Name);
+
+         if Current_House_Flag = 0 then
+            Current_House_Flag := 1;
+         else
+            Current_House_Flag := Current_House_Flag * 2;
+         end if;
+
+         House.Set_Flag := Current_House_Flag;
+
          House.Category :=
            House_Category'Value
              (Config.Get ("category"));
