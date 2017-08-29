@@ -8,7 +8,7 @@ with Carthage.Objects.Localised;
 package Carthage.Houses is
 
    type House_Category is (Noble, Church, League, Imperial,
-                           Vau, Symbiot, Rebels);
+                           Vau, Symbiot, Rebels, Neutral);
 
    type House_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with private;
