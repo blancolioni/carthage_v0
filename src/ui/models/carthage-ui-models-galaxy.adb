@@ -136,8 +136,6 @@ package body Carthage.UI.Models.Galaxy is
 
    type Galaxy_Model_Access is access all Root_Galaxy_Model'Class;
 
-   Local_Model : Galaxy_Model_Access;
-
    ----------------------
    -- After_Transition --
    ----------------------
@@ -303,17 +301,23 @@ package body Carthage.UI.Models.Galaxy is
    ------------------
 
    function Galaxy_Model
-     return Carthage_Model
+     (House : not null access constant Carthage.Houses.House_Class)
+      return Carthage_Model
    is
       use Lui.Models;
 
    begin
-      if Local_Model = null then
-         Local_Model := new Root_Galaxy_Model;
-         Local_Model.Create_Model;
+      if not Have_Model (House, "galaxy") then
+         declare
+            Model : constant Galaxy_Model_Access :=
+                      new Root_Galaxy_Model;
+         begin
+            Model.Create_Model;
+            Set_Model (House, "galaxy", Model);
+         end;
       end if;
 
-      return Carthage_Model (Local_Model);
+      return Get_Model (House, "galaxy");
    end Galaxy_Model;
 
    -------------------------
@@ -542,7 +546,8 @@ package body Carthage.UI.Models.Galaxy is
       if Planet /= null and then Planet /= Model.Selected_Planet then
          Model.Selected_Planet := Planet;
          return Lui.Models.Object_Model
-           (Carthage.UI.Models.Planets.Planet_Model (Planet));
+           (Carthage.UI.Models.Planets.Planet_Model
+              (Model.House, Planet));
       else
          return null;
       end if;

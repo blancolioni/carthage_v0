@@ -266,7 +266,7 @@ package body Carthage.UI.Gtk_UI is
    -- Start --
    -----------
 
-   procedure Start is
+   procedure Start (House : Carthage.Houses.House_Type) is
       Builder : Gtk.Builder.Gtk_Builder;
       UI_Path : constant String :=
                   Carthage.Paths.Config_File
@@ -350,7 +350,9 @@ package body Carthage.UI.Gtk_UI is
 
          Lui.Gtk_UI.Start
            (Main => UI,
-            Top  => Lui.Models.Object_Model (Carthage.UI.Models.Top_Model));
+            Top  =>
+              Lui.Models.Object_Model
+                (Carthage.UI.Models.Top_Model (House)));
          Main_Tab.On_Switch_Page
            (On_Switch_Page'Access, UI);
 

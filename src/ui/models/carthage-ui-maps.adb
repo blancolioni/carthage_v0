@@ -82,6 +82,13 @@ package body Carthage.UI.Maps is
       return String
    is (Planet.Tile_Set & Integer'Image (-(Integer (Tile))) & "-tile");
 
+   function Make_Background_Resource
+     (Resource_Name : String;
+      Colour        : Carthage.Colours.Colour_Type)
+      return Layer_Element
+   is (Resource_Name'Length, Background_Hex_Tile,
+       Resource_Name, Colour);
+
    function Make_Hex_Tile_Resource
      (Resource_Name : String)
       return Layer_Element
@@ -362,6 +369,7 @@ package body Carthage.UI.Maps is
 
    procedure Get_Tile_Layers
      (Planet   : Carthage.Planets.Planet_Type;
+      House    : Carthage.Houses.House_Type;
       Position : Tile_Position;
       Layers   : in out Tile_Layers'Class)
    is
@@ -386,6 +394,10 @@ package body Carthage.UI.Maps is
       end Add;
 
    begin
+
+      if not Tile.Seen_By (House) then
+         return;
+      end if;
 
       Get_Terrain_Resources (Planet, Tile, Layers);
 
@@ -428,17 +440,24 @@ package body Carthage.UI.Maps is
 
       end if;
 
-      if Tile.Has_Stack then
-         declare
-            Background : Carthage.Colours.Colour_Type :=
-                           Tile.Stack.Owner.Colour;
-         begin
-            Background.Alpha := 0.7;
-            Layers.List.Append
-              (Make_Icon_Resource
-                 ("unit" & Integer'Image (-(Tile.Stack.Asset (1).Unit.Index)),
-                  Background));
-         end;
+      if Tile.Currently_Visible_To (House) then
+         if Tile.Has_Stack then
+            declare
+               Background : Carthage.Colours.Colour_Type :=
+                              Tile.Stack.Owner.Colour;
+            begin
+               Background.Alpha := 0.7;
+               Layers.List.Append
+                 (Make_Icon_Resource
+                    ("unit"
+                     & Integer'Image (-(Tile.Stack.Asset (1).Unit.Index)),
+                     Background));
+            end;
+         end if;
+      else
+         Layers.List.Append
+           (Make_Background_Resource
+              ("shadow-hex-tile", (0.0, 0.0, 0.0, 0.4)));
       end if;
 
    end Get_Tile_Layers;

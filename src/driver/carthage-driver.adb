@@ -4,6 +4,7 @@ with Carthage.Configure;
 with Carthage.Logging;
 with Carthage.Updates;
 
+with Carthage.Houses;
 with Carthage.UI.Gtk_UI;
 
 procedure Carthage.Driver is
@@ -21,8 +22,9 @@ begin
    Carthage.Updates.Before_Turn;
    Ada.Text_IO.Put_Line ("done");
 
-   if False then
-      Carthage.UI.Gtk_UI.Start;
+   if True then
+      Carthage.UI.Gtk_UI.Start
+        (Carthage.Houses.Get ("li-halan"));
    end if;
 
    Carthage.Logging.Stop_Logging;

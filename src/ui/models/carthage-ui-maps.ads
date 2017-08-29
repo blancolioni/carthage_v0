@@ -3,6 +3,7 @@ private with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 with Tropos;
 
 with Carthage.Colours;
+with Carthage.Houses;
 with Carthage.Planets;
 
 package Carthage.UI.Maps is
@@ -14,6 +15,7 @@ package Carthage.UI.Maps is
 
    procedure Get_Tile_Layers
      (Planet   : Carthage.Planets.Planet_Type;
+      House    : Carthage.Houses.House_Type;
       Position : Tile_Position;
       Layers   : in out Tile_Layers'Class);
 

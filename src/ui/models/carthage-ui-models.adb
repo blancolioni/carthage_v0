@@ -1,8 +1,53 @@
+with WL.String_Maps;
+
 with Carthage.UI.Models.Galaxy;
 
 package body Carthage.UI.Models is
 
-   Local_Top_Model : Carthage_Model := null;
+   package Model_Maps is new WL.String_Maps (Carthage_Model);
+
+   Model_Map : Model_Maps.Map;
+
+   ---------------
+   -- Get_Model --
+   ---------------
+
+   function Get_Model
+     (House : not null access constant Carthage.Houses.House_Record'Class;
+      Key   : String)
+      return Carthage_Model
+   is
+   begin
+      return Model_Map.Element (House.Identifier & "--" & Key);
+   end Get_Model;
+
+   ----------------
+   -- Have_Model --
+   ----------------
+
+   function Have_Model
+     (House : not null access constant Carthage.Houses.House_Record'Class;
+      Key   : String)
+      return Boolean
+   is
+   begin
+      return Model_Map.Contains (House.Identifier & "--" & Key);
+   end Have_Model;
+
+   ---------------
+   -- Set_Model --
+   ---------------
+
+   procedure Set_Model
+     (House : not null access constant Carthage.Houses.House_Record'Class;
+      Key   : String;
+      Model : not null access Root_Carthage_Model'Class)
+   is
+   begin
+      Model.House := Carthage.Houses.House_Type (House);
+      Model_Map.Insert
+        (House.Identifier & "--" & Key, Carthage_Model (Model));
+   end Set_Model;
 
    -------------------
    -- To_Lui_Colour --
@@ -27,14 +72,21 @@ package body Carthage.UI.Models is
    -- Top_Model --
    ---------------
 
-   function Top_Model return Carthage_Model is
+   function Top_Model
+     (House : not null access constant Carthage.Houses.House_Class)
+      return Carthage_Model
+   is
       use type Lui.Models.Object_Model;
    begin
-      if Local_Top_Model = null then
-         Local_Top_Model := Carthage.UI.Models.Galaxy.Galaxy_Model;
+      if not Model_Map.Contains
+        (House.Identifier)
+      then
+         Model_Map.Insert
+           (House.Identifier,
+            Carthage.UI.Models.Galaxy.Galaxy_Model (House));
       end if;
 
-      return Local_Top_Model;
+      return Model_Map.Element (House.Identifier);
    end Top_Model;
 
 end Carthage.UI.Models;

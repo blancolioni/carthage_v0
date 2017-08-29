@@ -1,5 +1,3 @@
-with WL.String_Maps;
-
 with Lui.Rendering;
 
 with Carthage.Tiles;
@@ -67,20 +65,17 @@ package body Carthage.UI.Models.Planets is
 
    type Planet_Model_Type is access all Root_Planet_Model'Class;
 
-   package Model_Maps is new WL.String_Maps (Planet_Model_Type);
-
-   Model_Table : Model_Maps.Map;
-
    ------------------
    -- Planet_Model --
    ------------------
 
    function Planet_Model
-     (Planet : Carthage.Planets.Planet_Type)
+     (House  : Carthage.Houses.House_Type;
+      Planet : Carthage.Planets.Planet_Type)
       return Carthage_Model
    is
    begin
-      if not Model_Table.Contains (Planet.Identifier) then
+      if not Have_Model (House, Planet.Identifier) then
          declare
             use Carthage.Planets;
             Model : constant Planet_Model_Type := new Root_Planet_Model;
@@ -90,10 +85,10 @@ package body Carthage.UI.Models.Planets is
               (Lui.Colours.To_Colour (200, 200, 200));
             Model.Planet := Planet;
             Model.Centre := (Planet_Width / 2, Planet_Height / 2);
-            Model_Table.Insert (Planet.Identifier, Model);
+            Set_Model (House, Planet.Identifier, Model);
          end;
       end if;
-      return Carthage_Model (Model_Table.Element (Planet.Identifier));
+      return Get_Model (House, Planet.Identifier);
    end Planet_Model;
 
    ------------
@@ -197,7 +192,7 @@ package body Carthage.UI.Models.Planets is
                   end if;
 
                   Carthage.UI.Maps.Get_Tile_Layers
-                    (Model.Planet, Position, Layers);
+                    (Model.Planet, Model.House, Position, Layers);
 
                   declare
                      use Carthage.UI.Maps;
