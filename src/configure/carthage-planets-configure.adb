@@ -6,6 +6,8 @@ with Carthage.Structures.Configure;
 
 with Carthage.Galaxy.Configure;
 
+with Carthage.Stacks.Create;
+
 package body Carthage.Planets.Configure is
 
    Current_Planet_Count : Natural := 0;
@@ -256,6 +258,7 @@ package body Carthage.Planets.Configure is
       ------------
 
       procedure Create (Planet : in out Planet_Class) is
+
       begin
 
          Current_Planet_Count := Current_Planet_Count + 1;
@@ -296,8 +299,37 @@ package body Carthage.Planets.Configure is
          Ada.Text_IO.Flush;
       end Create;
 
+      Planet : constant Planet_Type := Db.Create (Create'Access);
+
+      procedure Create_Stacks
+        (Rec : in out Planet_Class);
+
+      procedure Create_Stacks
+        (Rec : in out Planet_Class)
+      is
+         procedure Create_Stack
+           (House : Carthage.Houses.House_Type);
+
+         ------------------
+         -- Create_Stack --
+         ------------------
+
+         procedure Create_Stack (House : Carthage.Houses.House_Type) is
+         begin
+            Rec.Stacks.Replace_Element
+              (House,
+               Orbital_Stack_Type
+                 (Carthage.Stacks.Create.New_Orbital_Stack
+                      (House, Planet)));
+         end Create_Stack;
+
+      begin
+         Carthage.Houses.Scan (Create_Stack'Access);
+      end Create_Stacks;
+
    begin
-      return Db.Create (Create'Access);
+      Db.Update (Planet.Reference, Create_Stacks'Access);
+      return Planet;
    end Import_Planet;
 
 end Carthage.Planets.Configure;

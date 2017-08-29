@@ -417,6 +417,23 @@ package body Carthage.Planets is
       Planet.Owner := New_Owner;
    end Set_Owner;
 
+   -----------
+   -- Stack --
+   -----------
+
+   function Stack
+     (Planet : Planet_Record;
+      House  : Carthage.Houses.House_Type)
+      return access constant Carthage.Stacks.Stack_Record'Class
+   is
+   begin
+      return Planet.Stacks.Element (House);
+   end Stack;
+
+   --------------
+   -- Tile_Set --
+   --------------
+
    function Tile_Set
      (Planet : Planet_Record)
       return String

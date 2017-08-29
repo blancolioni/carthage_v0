@@ -1,6 +1,7 @@
 private with Ada.Containers.Vectors;
 private with WL.Graphs;
 private with Memor.Database;
+private with Memor.Element_Vectors;
 
 with Carthage.Colours;
 
@@ -9,6 +10,8 @@ with Carthage.Objects.Localised;
 with Carthage.Houses;
 with Carthage.Worlds;
 with Carthage.Tiles;
+
+limited with Carthage.Stacks;
 
 package Carthage.Planets is
 
@@ -147,6 +150,11 @@ package Carthage.Planets is
                       Index : Positive)
                       return Carthage.Tiles.Tile_Type;
 
+   function Stack
+     (Planet : Planet_Record;
+      House  : Carthage.Houses.House_Type)
+      return access constant Carthage.Stacks.Stack_Record'Class;
+
    subtype Planet_Class is Planet_Record'Class;
 
    type Planet_Type is access constant Planet_Record'Class;
@@ -188,6 +196,15 @@ private
 
    Surface_Graph : Tile_Graphs.Graph;
 
+   Orbital_Stack_Count : constant := 8;
+
+   type Orbital_Stack_Type is
+     access constant Carthage.Stacks.Stack_Record'Class;
+
+   package Orbital_Stack_Vectors is
+     new Memor.Element_Vectors
+       (Carthage.Houses.House_Record, Orbital_Stack_Type, null);
+
    type Planet_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with
       record
@@ -197,6 +214,7 @@ private
          Tiles    : Tile_Array;
          Megacity : Boolean;
          Owner    : Carthage.Houses.House_Type;
+         Stacks   : Orbital_Stack_Vectors.Vector;
       end record;
 
    overriding function Object_Database
