@@ -1,4 +1,5 @@
 with Carthage.Cities;
+with Carthage.Houses;
 with Carthage.Managers;
 with Carthage.Planets;
 with Carthage.Stacks;
@@ -11,10 +12,12 @@ package body Carthage.Updates is
    -- Before_Turn --
    -----------------
 
-   procedure Before_Turn is
+   procedure Before_First_Turn is
 
       procedure Reset_Planet_State
         (Planet : Carthage.Planets.Planet_Type);
+
+      procedure Add_Planet_Maps (House : Carthage.Houses.House_Type);
 
       procedure City_Look
         (City : Carthage.Cities.City_Type);
@@ -24,6 +27,36 @@ package body Carthage.Updates is
 
       procedure Set_Planet_Owner
         (Palace : Carthage.Cities.City_Type);
+
+      procedure Reveal_Planet
+        (Planet : Carthage.Planets.Planet_Type;
+         House  : Carthage.Houses.House_Type);
+
+      ---------------------
+      -- Add_Planet_Maps --
+      ---------------------
+
+      procedure Add_Planet_Maps (House : Carthage.Houses.House_Type) is
+
+         procedure Add_Planet (Id : String);
+
+         ----------------
+         -- Add_Planet --
+         ----------------
+
+         procedure Add_Planet (Id : String) is
+            Planet : constant Carthage.Planets.Planet_Type :=
+                       (if Carthage.Planets.Exists (Id)
+                        then Carthage.Planets.Get (Id)
+                        else raise Constraint_Error with
+                          "no such planet: " & Id);
+         begin
+            Reveal_Planet (Planet, House);
+         end Add_Planet;
+
+      begin
+         House.Scan_Known_Planets (Add_Planet'Access);
+      end Add_Planet_Maps;
 
       ---------------
       -- City_Look --
@@ -60,6 +93,25 @@ package body Carthage.Updates is
          Carthage.Planets.Update
            (Planet, Carthage.Planets.Clear_Visibility'Access);
       end Reset_Planet_State;
+
+      -------------------
+      -- Reveal_Planet --
+      -------------------
+
+      procedure Reveal_Planet
+        (Planet : Carthage.Planets.Planet_Type;
+         House  : Carthage.Houses.House_Type)
+      is
+         Tiles : Carthage.Planets.Surface_Tiles;
+      begin
+         Planet.Get_Tiles (Tiles);
+         for I in 1 .. Carthage.Planets.Tile_Count (Tiles) loop
+            Carthage.Tiles.Set_Seen_By
+              (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
+               House => House);
+         end loop;
+         Carthage.Planets.Set_Seen_By (Planet, House);
+      end Reveal_Planet;
 
       ----------------------
       -- Set_Planet_Owner --
@@ -111,19 +163,15 @@ package body Carthage.Updates is
            and then Stack.Count > 0
              and then not Stack.Planet.Seen_By (Stack.Owner)
          then
-            Stack.Planet.Get_Tiles (Tiles);
-            for I in 1 .. Carthage.Planets.Tile_Count (Tiles) loop
-               Carthage.Tiles.Set_Seen_By
-                 (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
-                  House => Stack.Owner);
-            end loop;
-            Carthage.Planets.Set_Seen_By (Stack.Planet, Stack.Owner);
+            Reveal_Planet (Stack.Planet, Stack.Owner);
          end if;
       end Stack_Look;
 
    begin
 
       Carthage.Planets.Scan (Reset_Planet_State'Access);
+
+      Carthage.Houses.Scan (Add_Planet_Maps'Access);
 
       Carthage.Cities.Scan_Cities
         (Carthage.Structures.Get ("palace"),
@@ -137,7 +185,7 @@ package body Carthage.Updates is
 
       Carthage.Managers.Before_Start_Of_Turn;
 
-   end Before_Turn;
+   end Before_First_Turn;
 
    ------------
    -- Update --

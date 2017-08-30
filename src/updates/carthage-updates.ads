@@ -1,6 +1,6 @@
 package Carthage.Updates is
 
-   procedure Before_Turn;
+   procedure Before_First_Turn;
 
    procedure Update;
 
