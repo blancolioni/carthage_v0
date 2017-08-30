@@ -4,6 +4,18 @@ package Carthage.Objects.Localised is
      abstract new Root_Identifier_Object
    with private;
 
+   function Local_Text_Class
+     (Item : Root_Localised_Object)
+      return String
+   is ("");
+
+   function Local_Text_Key
+     (Item : Root_Localised_Object'Class)
+      return String
+   is (if Item.Local_Text_Class = ""
+       then Item.Identifier
+       else Item.Local_Text_Class & "-" & Item.Identifier);
+
    function Name
      (Item : Root_Localised_Object'Class)
       return String;

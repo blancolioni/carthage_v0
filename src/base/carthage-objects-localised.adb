@@ -11,7 +11,8 @@ package body Carthage.Objects.Localised is
       return String
    is
    begin
-      return WL.Localisation.Local_Text (Item.Identifier);
+      return WL.Localisation.Local_Text
+        (Item.Local_Text_Key);
    end Name;
 
    ----------
