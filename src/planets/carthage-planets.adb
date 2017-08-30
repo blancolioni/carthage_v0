@@ -461,7 +461,7 @@ package body Carthage.Planets is
      (Planet : Planet_Record)
       return String
    is (if Planet.Megacity
-       then "megacity"
+       then "city"
        elsif Planet.Category.Identifier = "desert"
        then "barren"
        else Planet.Category.Identifier);

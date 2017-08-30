@@ -238,6 +238,11 @@ private
      (Item : Planet_Record)
       return Memor.Memor_Database;
 
+   overriding function Local_Text_Class
+     (Item : Planet_Record)
+      return String
+   is ("planet");
+
    function Index
      (Planet : Planet_Record)
       return Positive

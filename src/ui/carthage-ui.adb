@@ -209,14 +209,14 @@ package body Carthage.UI is
    begin
       Ada.Text_IO.Put_Line ("loading city resources ...");
       Load_Hexes ("struct0", "normal", Structure_Name_Fn'Access);
-      Load_Hexes ("struct1", "megacity", Structure_Name_Fn'Access);
+      Load_Hexes ("struct1", "city", Structure_Name_Fn'Access);
       Load_Hexes ("struct2", "ice", Structure_Name_Fn'Access);
       Load_Hexes ("struct3", "jungle", Structure_Name_Fn'Access);
       Load_Hexes ("struct4", "barren", Structure_Name_Fn'Access);
 
       Ada.Text_IO.Put_Line ("loading tile resources ...");
       Load_Hexes ("efstile0", "normal", Tile_Name_Fn'Access);
-      Load_Hexes ("efstile1", "megacity", Tile_Name_Fn'Access);
+      Load_Hexes ("efstile1", "city", Tile_Name_Fn'Access);
       Load_Hexes ("efstile2", "ice", Tile_Name_Fn'Access);
       Load_Hexes ("efstile3", "jungle", Tile_Name_Fn'Access);
       Load_Hexes ("efstile4", "barren", Tile_Name_Fn'Access);
