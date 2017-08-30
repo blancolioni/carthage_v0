@@ -21,7 +21,7 @@ begin
    end if;
 
    Ada.Text_IO.Put_Line ("setting up first turn");
-   Carthage.Updates.Before_Turn;
+   Carthage.Updates.Before_First_Turn;
    Ada.Text_IO.Put_Line ("done");
 
    Ada.Text_IO.Put_Line ("setting up house managers");
