@@ -1,3 +1,4 @@
+private with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 private with Memor.Database;
 
 limited with Carthage.Managers;
@@ -25,6 +26,11 @@ package Carthage.Houses is
    function Colour
      (House : House_Record)
       return Carthage.Colours.Colour_Type;
+
+   procedure Scan_Known_Planets
+     (House : House_Record;
+      Process : not null access
+        procedure (Planet_Id : String));
 
    subtype House_Class is House_Record'Class;
 
@@ -63,14 +69,18 @@ private
 
    type House_Set is mod 2 ** Max_Houses;
 
+   package Planet_Id_Lists is
+     new Ada.Containers.Indefinite_Doubly_Linked_Lists (String);
+
    type House_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with
       record
-         Category : House_Category;
-         Capital  : access constant Carthage.Planets.Planet_Record'Class;
-         Colour   : Carthage.Colours.Colour_Type;
-         Set_Flag : House_Set;
-         Manager  : access Carthage.Managers.Manager_Record'Class;
+         Category      : House_Category;
+         Capital       : access constant Carthage.Planets.Planet_Record'Class;
+         Colour        : Carthage.Colours.Colour_Type;
+         Set_Flag      : House_Set;
+         Known_Planets : Planet_Id_Lists.List;
+         Manager       : access Carthage.Managers.Manager_Record'Class;
       end record;
 
    overriding function Object_Database

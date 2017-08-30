@@ -42,6 +42,21 @@ package body Carthage.Houses is
       Db.Scan (Process);
    end Scan;
 
+   ------------------------
+   -- Scan_Known_Planets --
+   ------------------------
+
+   procedure Scan_Known_Planets
+     (House   : House_Record;
+      Process : not null access
+        procedure (Planet_Id : String))
+   is
+   begin
+      for Id of House.Known_Planets loop
+         Process (Id);
+      end loop;
+   end Scan_Known_Planets;
+
    -----------------------
    -- Set_House_Manager --
    -----------------------

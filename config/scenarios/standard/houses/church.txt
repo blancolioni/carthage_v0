@@ -1,3 +1,4 @@
 capital = holy_terra
 colour = 248
 category = church
+reveal = { byzantium-ii holy-terra leagueheim }

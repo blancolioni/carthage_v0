@@ -1,3 +1,2 @@
-capital = vau
 colour = 20
-category = vau
+category = imperial

@@ -92,6 +92,12 @@ package body Carthage.Houses.Configure is
             end if;
          end;
 
+         if Config.Contains ("reveal") then
+            for Revealed_Planet of Config.Child ("reveal") loop
+               House.Known_Planets.Append (Revealed_Planet.Config_Name);
+            end loop;
+         end if;
+
          House.Log ("created " & House.Full_Name);
       end Create;
 

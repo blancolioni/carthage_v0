@@ -1,3 +1,4 @@
 colour = 131
 capital = midian
 category = noble
+reveal = { byzantium-ii holy-terra leagueheim }

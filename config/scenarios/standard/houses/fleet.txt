@@ -1,3 +1,4 @@
-capital = vau
+capital = byzantium-ii
 colour = 20
-category = vau
+category = imperial
+reveal = { byzantium-ii holy-terra leagueheim stigmata }
