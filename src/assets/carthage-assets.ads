@@ -24,6 +24,10 @@ package Carthage.Assets is
      (Asset : Asset_Record)
       return Carthage.Units.Unit_Type;
 
+   function Movement
+     (Asset : Asset_Record)
+      return Natural;
+
    subtype Asset_Class is Asset_Record'Class;
 
    type Asset_Type is access constant Asset_Record'Class;
@@ -38,7 +42,7 @@ private
          Health      : Asset_Health;
          Loyalty     : Asset_Loyalty;
          Experience  : Asset_Experience;
-         Move_Points : Natural;
+         Movement    : Natural;
       end record;
 
    overriding function Object_Database
@@ -65,5 +69,10 @@ private
      (Asset : Asset_Record)
       return Carthage.Houses.House_Type
    is (Asset.Owner);
+
+   function Movement
+     (Asset : Asset_Record)
+      return Natural
+   is (Asset.Unit.Movement);
 
 end Carthage.Assets;

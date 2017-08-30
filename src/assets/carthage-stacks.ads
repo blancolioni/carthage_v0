@@ -1,3 +1,4 @@
+private with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 private with Memor.Database;
 
 with Carthage.Assets;
@@ -37,6 +38,10 @@ package Carthage.Stacks is
      (Stack : Stack_Record)
       return Carthage.Houses.House_Type;
 
+   function Movement
+     (Stack : Stack_Record)
+      return Natural;
+
    function Count (Stack : Stack_Record) return Asset_Count;
    function Asset (Stack : Stack_Record;
                    Index : Asset_Index)
@@ -60,6 +65,26 @@ private
 
    type Asset_Array is array (Asset_Index) of Carthage.Assets.Asset_Type;
 
+   type Stack_Order_Type is
+     (Move_To_Tile,
+      Move_To_Asset,
+      Move_To_Planet);
+
+   type Stack_Order_Record (Order_Type : Stack_Order_Type) is
+      record
+         case Order_Type is
+            when Move_To_Tile =>
+               Destination   : Tile_Position;
+            when Move_To_Asset =>
+               Target_Asset  : Carthage.Assets.Asset_Type;
+            when Move_To_Planet =>
+               Target_Planet : Carthage.Planets.Planet_Type;
+         end case;
+      end record;
+
+   package Stack_Order_Lists is
+     new Ada.Containers.Indefinite_Doubly_Linked_Lists (Stack_Order_Record);
+
    type Stack_Record is
      new Carthage.Objects.Root_Named_Object with
       record
@@ -68,6 +93,7 @@ private
          Tile        : Carthage.Tiles.Tile_Type;
          Count       : Asset_Count;
          Assets      : Asset_Array;
+         Orders      : Stack_Order_Lists.List;
       end record;
 
    overriding function Object_Database

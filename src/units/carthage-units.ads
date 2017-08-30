@@ -29,6 +29,10 @@ package Carthage.Units is
      (Unit : Unit_Record)
       return Unit_Category;
 
+   function Movement
+     (Unit : Unit_Record)
+      return Natural;
+
    function Image_Resource
      (Unit : Unit_Record)
       return String;
@@ -99,6 +103,11 @@ private
      (Unit : Unit_Record)
       return Unit_Category
    is (Unit.Category);
+
+   function Movement
+     (Unit : Unit_Record)
+      return Natural
+   is (Unit.Move);
 
    function Image_Resource
      (Unit : Unit_Record)

@@ -80,7 +80,8 @@ package body Carthage.Configure is
 
    procedure Import_Terrain
      (Colour_Config      : Tropos.Configuration;
-      Road_Cost_Config   : Tropos.Configuration);
+      Road_Cost_Config   : Tropos.Configuration;
+      Move_Cost_Config   : Tropos.Configuration);
 
    procedure Import_Units
      (Config : Tropos.Configuration);
@@ -501,8 +502,10 @@ package body Carthage.Configure is
 
    procedure Import_Terrain
      (Colour_Config      : Tropos.Configuration;
-      Road_Cost_Config   : Tropos.Configuration)
+      Road_Cost_Config   : Tropos.Configuration;
+      Move_Cost_Config   : Tropos.Configuration)
    is
+      pragma Unreferenced (Move_Cost_Config);
       Output : array (1 .. Colour_Config.Child (1).Child_Count / 2)
         of Tropos.Configuration;
 
@@ -510,6 +513,10 @@ package body Carthage.Configure is
         (Config   : in out Tropos.Configuration;
          Name     : String;
          Source   : String);
+
+      ------------------------
+      -- Set_World_Settings --
+      ------------------------
 
       procedure Set_World_Settings
         (Config   : in out Tropos.Configuration;
@@ -969,7 +976,10 @@ package body Carthage.Configure is
                    (Fading_Suns_Data_File ("TERCOLOR")),
                Road_Cost_Config =>
                  Tropos.Reader.Read_Config
-                   (Fading_Suns_Data_File ("ROADCOST")));
+                   (Fading_Suns_Data_File ("ROADCOST")),
+               Move_Cost_Config =>
+                 Tropos.Reader.Read_Config
+                   (Fading_Suns_Data_File ("TERRCOST")));
          end if;
       end;
 
