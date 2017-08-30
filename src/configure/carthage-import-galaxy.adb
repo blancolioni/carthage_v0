@@ -553,8 +553,7 @@ package body Carthage.Import.Galaxy is
 
          Planet : constant Carthage.Planets.Planet_Type :=
                     Carthage.Planets.Configure.Import_Planet
-                      ("planet-"
-                       & Ada.Characters.Handling.To_Lower
+                      (Ada.Characters.Handling.To_Lower
                          (Name (Name_Start .. Name_End)),
                        Natural (X), Natural (Y), Natural (Tile_Set),
                        Create_Tile'Access);
