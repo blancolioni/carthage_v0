@@ -57,8 +57,11 @@ package body Carthage.Stacks is
    procedure Scan_Stacks
      (Process : not null access procedure (Stack : Stack_Type))
    is
+      function Real_Stack (Stack : Stack_Type) return Boolean
+      is (Stack.Count > 0);
+
    begin
-      Db.Scan (Process);
+      Db.Scan (Real_Stack'Access, Process);
    end Scan_Stacks;
 
 end Carthage.Stacks;
