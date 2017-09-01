@@ -1,4 +1,4 @@
-with Carthage.Cities;
+with Carthage.Cities.Updates;
 with Carthage.Houses;
 with Carthage.Managers;
 with Carthage.Planets;
@@ -30,7 +30,8 @@ package body Carthage.Updates is
 
       procedure Reveal_Planet
         (Planet : Carthage.Planets.Planet_Type;
-         House  : Carthage.Houses.House_Type);
+         House    : Carthage.Houses.House_Type;
+         Explored : Boolean);
 
       ---------------------
       -- Add_Planet_Maps --
@@ -51,7 +52,7 @@ package body Carthage.Updates is
                         else raise Constraint_Error with
                           "no such planet: " & Id);
          begin
-            Reveal_Planet (Planet, House);
+            Reveal_Planet (Planet, House, True);
          end Add_Planet;
 
       begin
@@ -100,15 +101,27 @@ package body Carthage.Updates is
 
       procedure Reveal_Planet
         (Planet : Carthage.Planets.Planet_Type;
-         House  : Carthage.Houses.House_Type)
+         House    : Carthage.Houses.House_Type;
+         Explored : Boolean)
       is
          Tiles : Carthage.Planets.Surface_Tiles;
       begin
+         if Explored then
+            House.Log (Planet.Name & ": fully explored");
+         else
+            House.Log (Planet.Name & ": map revealed");
+         end if;
+
          Planet.Get_Tiles (Tiles);
          for I in 1 .. Carthage.Planets.Tile_Count (Tiles) loop
             Carthage.Tiles.Set_Seen_By
               (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
                House => House);
+            if Explored then
+               Carthage.Tiles.Set_Explored_By
+                 (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
+                  House => House);
+            end if;
          end loop;
          Carthage.Planets.Set_Seen_By (Planet, House);
       end Reveal_Planet;
@@ -163,7 +176,7 @@ package body Carthage.Updates is
            and then Stack.Count > 0
              and then not Stack.Planet.Seen_By (Stack.Owner)
          then
-            Reveal_Planet (Stack.Planet, Stack.Owner);
+            Reveal_Planet (Stack.Planet, Stack.Owner, False);
          end if;
       end Stack_Look;
 
@@ -183,8 +196,6 @@ package body Carthage.Updates is
       Carthage.Stacks.Scan_Stacks
         (Stack_Look'Access);
 
-      Carthage.Managers.Before_Start_Of_Turn;
-
    end Before_First_Turn;
 
    ------------
@@ -193,7 +204,9 @@ package body Carthage.Updates is
 
    procedure Update is
    begin
-      null;
+      Carthage.Managers.Before_Start_Of_Turn;
+      Carthage.Managers.Create_Orders;
+      Carthage.Cities.Updates.Execute_Production;
    end Update;
 
 end Carthage.Updates;
