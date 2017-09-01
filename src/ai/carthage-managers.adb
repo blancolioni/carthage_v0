@@ -27,4 +27,15 @@ package body Carthage.Managers is
       Manager.House := House;
    end Create;
 
+   -------------------
+   -- Create_Orders --
+   -------------------
+
+   procedure Create_Orders is
+   begin
+      for Manager of Manager_List loop
+         Manager.Execute;
+      end loop;
+   end Create_Orders;
+
 end Carthage.Managers;

@@ -19,11 +19,14 @@ package Carthage.Managers is
      (Manager : in out Manager_Record)
    is abstract;
 
+   procedure Execute (Manager : in out Manager_Record) is abstract;
+
    subtype Manager_Class is Manager_Record'Class;
 
    type Manager_Type is access all Manager_Class;
 
    procedure Before_Start_Of_Turn;
+   procedure Create_Orders;
 
 private
 

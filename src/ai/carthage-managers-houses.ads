@@ -32,4 +32,7 @@ private
    overriding procedure Load_State
      (Manager : in out House_Manager_Record);
 
+   overriding procedure Execute
+     (Manager : in out House_Manager_Record);
+
 end Carthage.Managers.Houses;

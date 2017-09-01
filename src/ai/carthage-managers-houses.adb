@@ -79,6 +79,7 @@ package body Carthage.Managers.Houses is
 
       Manager_List.Append (Manager);
 
+      Manager.House.Log ("created manager");
       return Manager;
    end Create_House_Manager;
 
@@ -102,7 +103,9 @@ package body Carthage.Managers.Houses is
       is
          use type Carthage.Houses.House_Type;
       begin
-         if Planet.Owner = Manager.House then
+         if Planet.Has_Owner
+           and then Planet.Owner = Manager.House
+         then
             declare
                Planet_Manager : constant Manager_Type :=
                                   Planets.Create_Planet_Manager
@@ -120,6 +123,15 @@ package body Carthage.Managers.Houses is
    begin
       Carthage.Planets.Scan (Create_Planet_State'Access);
    end Create_Initial_State;
+
+   overriding procedure Execute
+     (Manager : in out House_Manager_Record)
+   is
+   begin
+      for Planet of Manager.Owned_Planets loop
+         Planet.Manager.Execute;
+      end loop;
+   end Execute;
 
    ----------------
    -- Load_State --
