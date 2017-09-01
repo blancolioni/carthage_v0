@@ -25,7 +25,8 @@ private
    type Root_Carthage_Model is
      abstract new Lui.Models.Root_Object_Model with
       record
-         House : Carthage.Houses.House_Type;
+         House  : Carthage.Houses.House_Type;
+         Wizard : Boolean := False;
       end record;
 
    function To_Lui_Colour

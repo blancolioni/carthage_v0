@@ -395,7 +395,10 @@ package body Carthage.UI.Maps is
 
    begin
 
-      if not Tile.Seen_By (House) then
+      if not Wizard_Mode and then not Tile.Seen_By (House) then
+         Layers.List.Append
+           (Make_Background_Resource
+              ("unknown-hex-tile", (0.0, 0.0, 0.0, 1.0)));
          return;
       end if;
 
@@ -428,8 +431,10 @@ package body Carthage.UI.Maps is
 
       end if;
 
-      if Tile.Has_City then
-
+      if Tile.Has_City
+        and then (Tile.Explored_By (House)
+                  or else Tile.City.Structure.Is_Bonus)
+      then
          Layers.List.Append
            (Make_Hex_Tile_Resource
               (Planet.Tile_Set
@@ -440,7 +445,7 @@ package body Carthage.UI.Maps is
 
       end if;
 
-      if Tile.Currently_Visible_To (House) then
+      if Wizard_Mode or else Tile.Currently_Visible_To (House) then
          if Tile.Has_Stack then
             declare
                Background : Carthage.Colours.Colour_Type :=
@@ -454,6 +459,10 @@ package body Carthage.UI.Maps is
                      Background));
             end;
          end if;
+      elsif Tile.Explored_By (House) then
+         Layers.List.Append
+           (Make_Background_Resource
+              ("explored-shadow-hex-tile", (0.0, 0.0, 0.0, 0.2)));
       else
          Layers.List.Append
            (Make_Background_Resource

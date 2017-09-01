@@ -13,4 +13,15 @@ package Carthage.UI is
      (Background_Color : Carthage.Colours.Colour_Type)
       return WL.Images.Image_Type'Class;
 
+   procedure Set_Wizard_Mode
+     (Enabled : Boolean);
+
+   function Wizard_Mode return Boolean;
+
+private
+
+   Local_Wizard_Mode : Boolean := False;
+
+   function Wizard_Mode return Boolean is (Local_Wizard_Mode);
+
 end Carthage.UI;

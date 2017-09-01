@@ -226,4 +226,15 @@ package body Carthage.UI is
 
    end Load_Resources;
 
+   ---------------------
+   -- Set_Wizard_Mode --
+   ---------------------
+
+   procedure Set_Wizard_Mode
+     (Enabled : Boolean)
+   is
+   begin
+      Local_Wizard_Mode := Enabled;
+   end Set_Wizard_Mode;
+
 end Carthage.UI;
