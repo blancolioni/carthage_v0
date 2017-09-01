@@ -11,6 +11,7 @@ package body Carthage.Planets is
       for Tile of Planet.Tiles loop
          Carthage.Tiles.Clear_Visibility (Tile);
       end loop;
+      Carthage.Houses.Clear (Planet.Seen);
    end Clear_Visibility;
 
    ---------------
