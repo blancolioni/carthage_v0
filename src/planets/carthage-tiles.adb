@@ -86,12 +86,37 @@ package body Carthage.Tiles is
       procedure Update (Rec : in out Tile_Class) is
       begin
          Carthage.Houses.Insert (Rec.Visible, House);
+         Carthage.Houses.Insert (Rec.Explored, House);
          Carthage.Houses.Insert (Rec.Seen, House);
       end Update;
 
    begin
       Db.Update (Tile.Reference, Update'Access);
    end Set_Currently_Visible_To;
+
+   ---------------------
+   -- Set_Explored_By --
+   ---------------------
+
+   procedure Set_Explored_By
+     (Tile  : Tile_Type;
+      House : Carthage.Houses.House_Type)
+   is
+      procedure Update (Rec : in out Tile_Class);
+
+      ------------
+      -- Update --
+      ------------
+
+      procedure Update (Rec : in out Tile_Class) is
+      begin
+         Carthage.Houses.Insert (Rec.Explored, House);
+         Carthage.Houses.Insert (Rec.Seen, House);
+      end Update;
+
+   begin
+      Db.Update (Tile.Reference, Update'Access);
+   end Set_Explored_By;
 
    --------------
    -- Set_Road --
