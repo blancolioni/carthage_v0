@@ -39,8 +39,6 @@ package body Carthage.Planets.Configure is
          Planet.Create_With_Identity
            (Config.Config_Name);
 
-         Planet.Log ("creating");
-
          Planet.Index := Current_Planet_Count;
          Planet.Category :=
            Carthage.Worlds.Get
@@ -264,8 +262,6 @@ package body Carthage.Planets.Configure is
          Current_Planet_Count := Current_Planet_Count + 1;
 
          Planet.Create_With_Identity (Id);
-
-         Planet.Log ("creating");
 
          Planet.Index := Current_Planet_Count;
 
