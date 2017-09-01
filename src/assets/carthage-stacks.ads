@@ -100,6 +100,11 @@ private
      (Item : Stack_Record)
       return Memor.Memor_Database;
 
+   overriding function Identifier
+     (Item : Stack_Record)
+      return String
+   is ("stack size" & Asset_Count'Image (Item.Count));
+
    package Db is
      new Memor.Database
        (Class_Name        => "stack",
