@@ -184,8 +184,11 @@ package body Carthage.Houses.Configure is
                               exit;
                            end if;
 
-                           This_Score := This_Score
-                             + Structure.Harvest_Production (Local_Tile);
+                           for Item of
+                             Structure.Harvest_Production (Local_Tile)
+                           loop
+                              This_Score := This_Score + Item.Quantity;
+                           end loop;
 
                            if Local_Tile.Has_City
                              and then Local_Tile.City.Structure.Is_Bonus

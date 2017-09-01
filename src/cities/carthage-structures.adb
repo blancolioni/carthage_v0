@@ -45,27 +45,36 @@ package body Carthage.Structures is
    function Harvest_Production
      (Structure : Structure_Record;
       Tile      : Carthage.Tiles.Tile_Type)
-      return Natural
+      return Production_Array
    is
       use Carthage.Terrain;
       Count : Natural := 0;
-      Found : Boolean := False;
+      Result : Production_Array (1 .. 10);
    begin
-      if Tile.Has_City then
-         return 0;
-      end if;
-
       for Item of Structure.Production loop
          if Tile.Has_Terrain (Item.Terrain) then
-            if not Found then
-               Count := Item.Output;
-               Found := True;
-            else
-               Count := Natural'Min (Count, Item.Output);
-            end if;
+            declare
+               use type Carthage.Resources.Resource_Type;
+               Index : Natural := 0;
+            begin
+               for I in 1 .. Count loop
+                  if Result (I).Resource = Item.Resource then
+                     Index := I;
+                     exit;
+                  end if;
+               end loop;
+               if Index = 0 then
+                  Count := Count + 1;
+                  Index := Count;
+                  Result (Index) := (Item.Resource, 0);
+               end if;
+
+               Result (Index).Quantity :=
+                 Result (Index).Quantity + Item.Output;
+            end;
          end if;
       end loop;
-      return Count;
+      return Result (1 .. Count);
    end Harvest_Production;
 
 end Carthage.Structures;

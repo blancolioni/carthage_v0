@@ -44,10 +44,19 @@ package Carthage.Structures is
      (Structure : Structure_Record)
       return Boolean;
 
+   type Resouce_Quantity_Record is
+      record
+         Resource : Carthage.Resources.Resource_Type;
+         Quantity : Natural;
+      end record;
+
+   type Production_Array is
+     array (Positive range <>) of Resouce_Quantity_Record;
+
    function Harvest_Production
      (Structure : Structure_Record;
       Tile      : Carthage.Tiles.Tile_Type)
-      return Natural
+      return Production_Array
      with Pre => Structure.Is_Harvester;
 
    subtype Structure_Class is Structure_Record'Class;
