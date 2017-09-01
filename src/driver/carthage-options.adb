@@ -22,4 +22,10 @@ package body Carthage.Options is
                ("trace-unit-import", ' ');
    end Trace_Unit_Import;
 
+   function Wizard_Mode return Boolean is
+   begin
+      return WL.Command_Line.Find_Option
+               ("wizard-mode", ' ');
+   end Wizard_Mode;
+
 end Carthage.Options;

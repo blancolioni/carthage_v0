@@ -9,6 +9,8 @@ with Carthage.UI.Gtk_UI;
 
 with Carthage.Managers.Houses;
 
+with Carthage.Options;
+
 procedure Carthage.Driver is
    Fading_Suns_Scenario : constant Boolean := True;
 begin
@@ -43,9 +45,15 @@ begin
    end;
    Ada.Text_IO.Put_Line ("done");
 
+   if Carthage.Options.Wizard_Mode then
+      Carthage.UI.Set_Wizard_Mode (True);
+   end if;
+
    if True then
       Carthage.UI.Gtk_UI.Start
-        (Carthage.Houses.Get ("li-halan"));
+        (Carthage.Houses.Get ("hazat"));
+   else
+      Carthage.Updates.Update;
    end if;
 
    Carthage.Logging.Stop_Logging;

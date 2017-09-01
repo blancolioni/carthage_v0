@@ -3,5 +3,6 @@ package Carthage.Options is
    Clear_Import_Cache  : Boolean;
    Trace_Planet_Import : Boolean;
    Trace_Unit_Import   : Boolean;
+   Wizard_Mode         : Boolean;
    
 end Carthage.Options;
