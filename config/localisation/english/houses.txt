@@ -1,13 +1,17 @@
 al-malik,Al-Malik
 al-malik-full,House Al-Malik
 church,The Church
+decados,Decados
 decados-full,House Decados
+hawkwood,Hawkwood
 hawkwood-full,House Hawkwood
-hazat-full,House Hazat
+hazat,Hazat
+hazat-full,The Hazat
 imperial,Imperial
 league,The League
 league-adjective,League
-li-halan-full,House Li-Halan
+li-halan,Li Halan
+li-halan-full,House Li Halan
 rebels,Rebels
 symbiots,Symbiots
 vau,The Vau
