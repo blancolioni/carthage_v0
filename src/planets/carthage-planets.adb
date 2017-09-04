@@ -125,7 +125,7 @@ package body Carthage.Planets is
                P : constant Tile_Position := T.Position;
                Current_D : constant Integer := Distance (P.X, P.Y);
             begin
-               if Current_D in Min_Distance .. Max_Distance + 1 then
+               if Current_D in Min_Distance .. Max_Distance then
                   Tiles.Tiles.Append (Planet.Tile (P));
                end if;
 
