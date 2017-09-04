@@ -15,7 +15,6 @@ li-halan-full,House Li Halan
 rebels,Rebels
 symbiots,Symbiots
 vau,The Vau
-imperial,Imperial
 spy,The Eye
 spy-full,The Imperial Eye
 spy-adjective,Imperial Eye

@@ -10,6 +10,18 @@ package body Carthage.Options is
                ("clear-import-cache", ' ');
    end Clear_Import_Cache;
 
+   function Gtk_UI return Boolean is
+   begin
+      return WL.Command_Line.Find_Option
+               ("gtk-ui", ' ');
+   end Gtk_UI;
+
+   function House return String is
+   begin
+      return WL.Command_Line.Find_Option
+               ("house", ' ');
+   end House;
+
    function Trace_Planet_Import return Boolean is
    begin
       return WL.Command_Line.Find_Option
@@ -21,6 +33,18 @@ package body Carthage.Options is
       return WL.Command_Line.Find_Option
                ("trace-unit-import", ' ');
    end Trace_Unit_Import;
+
+   function Update return Boolean is
+   begin
+      return WL.Command_Line.Find_Option
+               ("update", ' ');
+   end Update;
+
+   function Update_Count return Natural is
+   begin
+      return WL.Command_Line.Find_Option
+               ("update-count", ' ', 1);
+   end Update_Count;
 
    function Wizard_Mode return Boolean is
    begin
