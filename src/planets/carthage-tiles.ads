@@ -85,6 +85,11 @@ package Carthage.Tiles is
      (Tile  : Tile_Type;
       Stack : not null access constant Carthage.Stacks.Stack_Record'Class);
 
+   procedure Clear_Stack
+     (Tile  : Tile_Type)
+     with Pre => Tile.Has_Stack,
+     Post => not Tile.Has_Stack;
+
    procedure Set_Road
      (Tile : Tile_Type;
       Road : Boolean);

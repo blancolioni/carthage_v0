@@ -2,7 +2,7 @@ with Carthage.Cities.Updates;
 with Carthage.Houses;
 with Carthage.Managers;
 with Carthage.Planets;
-with Carthage.Stacks;
+with Carthage.Stacks.Updates;
 with Carthage.Structures;
 with Carthage.Tiles;
 
@@ -207,6 +207,7 @@ package body Carthage.Updates is
       Carthage.Managers.Before_Start_Of_Turn;
       Carthage.Managers.Create_Orders;
       Carthage.Cities.Updates.Execute_Production;
+      Carthage.Stacks.Updates.Execute_Orders;
    end Update;
 
 end Carthage.Updates;

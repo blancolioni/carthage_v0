@@ -11,6 +11,28 @@ package body Carthage.Tiles is
        & Ada.Strings.Fixed.Trim (Tile_Y'Image (Position.Y), Ada.Strings.Left)
        & ")");
 
+   -----------------
+   -- Clear_Stack --
+   -----------------
+
+   procedure Clear_Stack
+     (Tile  : Tile_Type)
+   is
+      procedure Update (Rec : in out Tile_Class);
+
+      ------------
+      -- Update --
+      ------------
+
+      procedure Update (Rec : in out Tile_Class) is
+      begin
+         Rec.Stack := null;
+      end Update;
+
+   begin
+      Db.Update (Tile.Reference, Update'Access);
+   end Clear_Stack;
+
    ----------------------
    -- Clear_Visibility --
    ----------------------
