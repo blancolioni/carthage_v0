@@ -3,6 +3,7 @@ private with Memor.Database;
 with Carthage.Structures;
 with Carthage.Houses;
 with Carthage.Planets;
+with Carthage.Resources;
 with Carthage.Tiles;
 
 with Carthage.Objects;
@@ -10,7 +11,21 @@ with Carthage.Objects;
 package Carthage.Cities is
 
    type City_Record is
-     new Carthage.Objects.Root_Named_Object with private;
+     new Carthage.Objects.Root_Named_Object
+     and Carthage.Resources.Stock_Interface
+   with private;
+
+   overriding function Quantity
+     (City     : City_Record;
+      Resource : not null access constant
+        Carthage.Resources.Resource_Class)
+      return Natural;
+
+   overriding procedure Set_Quantity
+     (City         : in out City_Record;
+      Resource     : not null access constant
+        Carthage.Resources.Resource_Class;
+      New_Quantity : Natural);
 
    function Planet
      (City : City_Record)
@@ -42,6 +57,11 @@ package Carthage.Cities is
       Process : not null access
         procedure (City : City_Type));
 
+   procedure Update_City
+     (City : City_Type;
+      Update : not null access
+        procedure (City : in out City_Class));
+
    procedure Set_Seen_By
      (City  : City_Type;
       House : Carthage.Houses.House_Type);
@@ -64,13 +84,15 @@ package Carthage.Cities is
 private
 
    type City_Record is
-     new Carthage.Objects.Root_Named_Object with
+     new Carthage.Objects.Root_Named_Object
+     and Carthage.Resources.Stock_Interface with
       record
          Owner     : Carthage.Houses.House_Type;
          Planet    : Carthage.Planets.Planet_Type;
          Tile      : Carthage.Tiles.Tile_Type;
          Structure : Carthage.Structures.Structure_Type;
          Seen      : Carthage.Houses.House_Set;
+         Stock     : Carthage.Resources.Stock_Record;
       end record;
 
    overriding function Object_Database
@@ -87,6 +109,13 @@ private
      (Item : City_Record)
       return Memor.Memor_Database
    is (Db.Get_Database);
+
+   overriding function Quantity
+     (City     : City_Record;
+      Resource : not null access constant
+        Carthage.Resources.Resource_Class)
+      return Natural
+   is (City.Stock.Quantity (Resource));
 
    function Planet
      (City : City_Record)

@@ -1,4 +1,5 @@
 private with Memor.Database;
+private with Memor.Element_Vectors;
 
 with Carthage.Objects.Localised;
 
@@ -15,6 +16,45 @@ package Carthage.Resources is
 
    function Get (Id : String) return Resource_Type
    with Pre => Exists (Id);
+
+   procedure Scan
+     (Process : not null access procedure (Resource : Resource_Type));
+
+   type Stock_Interface is limited interface;
+
+   function Quantity (Stock    : Stock_Interface;
+                      Resource : not null access constant Resource_Class)
+                      return Natural
+                      is abstract;
+
+   procedure Set_Quantity
+     (Stock        : in out Stock_Interface;
+      Resource     : not null access constant Resource_Class;
+      New_Quantity : Natural)
+   is abstract;
+
+   procedure Add
+     (Stock          : in out Stock_Interface'Class;
+      Resource       : not null access constant Resource_Class;
+      Added_Quantity : Natural);
+
+   procedure Remove
+     (Stock            : in out Stock_Interface'Class;
+      Resource         : not null access constant Resource_Class;
+      Removed_Quantity : Natural)
+     with Pre => Removed_Quantity <= Stock.Quantity (Resource);
+
+   type Stock_Record is new Stock_Interface with private;
+
+   overriding function Quantity
+     (Stock    : Stock_Record;
+      Resource : not null access constant Resource_Class)
+      return Natural;
+
+   overriding procedure Set_Quantity
+     (Stock        : in out Stock_Record;
+      Resource     : not null access constant Resource_Class;
+      New_Quantity : Natural);
 
 private
 
@@ -44,5 +84,19 @@ private
 
    function Get (Id : String) return Resource_Type
    is (Db.Get (Id));
+
+   package Stock_Vectors is
+     new Memor.Element_Vectors (Resource_Record, Natural, 0);
+
+   type Stock_Record is new Stock_Interface with
+      record
+         Vector : Stock_Vectors.Vector;
+      end record;
+
+   overriding function Quantity
+     (Stock    : Stock_Record;
+      Resource : not null access constant Resource_Class)
+      return Natural
+   is (Stock.Vector.Element (Resource));
 
 end Carthage.Resources;

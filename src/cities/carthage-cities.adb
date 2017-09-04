@@ -75,6 +75,20 @@ package body Carthage.Cities is
       Db.Scan (Same_Planet'Access, Process);
    end Scan_Planet_Cities;
 
+   ------------------
+   -- Set_Quantity --
+   ------------------
+
+   overriding procedure Set_Quantity
+     (City         : in out City_Record;
+      Resource     : not null access constant
+        Carthage.Resources.Resource_Class;
+      New_Quantity : Natural)
+   is
+   begin
+      City.Stock.Set_Quantity (Resource, New_Quantity);
+   end Set_Quantity;
+
    -----------------
    -- Set_Seen_By --
    -----------------
@@ -97,5 +111,18 @@ package body Carthage.Cities is
    begin
       Db.Update (City.Reference, Update'Access);
    end Set_Seen_By;
+
+   -----------------
+   -- Update_City --
+   -----------------
+
+   procedure Update_City
+     (City   : City_Type;
+      Update : not null access
+        procedure (City : in out City_Class))
+   is
+   begin
+      Db.Update (City.Reference, Update);
+   end Update_City;
 
 end Carthage.Cities;
