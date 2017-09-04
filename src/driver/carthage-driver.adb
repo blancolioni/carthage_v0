@@ -49,7 +49,7 @@ begin
       Carthage.UI.Set_Wizard_Mode (True);
    end if;
 
-   if True then
+   if False then
       Carthage.UI.Gtk_UI.Start
         (Carthage.Houses.Get ("hazat"));
    else

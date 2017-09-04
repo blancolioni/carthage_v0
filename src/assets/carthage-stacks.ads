@@ -48,6 +48,10 @@ package Carthage.Stacks is
                    return Carthage.Assets.Asset_Type
      with Pre => Index <= Stack.Count;
 
+   procedure Move_To_Tile
+     (Stack : in out Stack_Record;
+      Tile  : Carthage.Tiles.Tile_Type);
+
    subtype Stack_Class is Stack_Record'Class;
 
    type Stack_Type is access constant Stack_Record'Class;
@@ -60,6 +64,11 @@ package Carthage.Stacks is
 
    procedure Scan_Stacks
      (Process : not null access procedure (Stack : Stack_Type));
+
+   procedure Update
+     (Stack : Stack_Type;
+      Update : not null access
+        procedure (Rec : in out Stack_Class));
 
 private
 
@@ -103,7 +112,11 @@ private
    overriding function Identifier
      (Item : Stack_Record)
       return String
-   is ("stack size" & Asset_Count'Image (Item.Count));
+   is (Item.Owner.Name & " stack size" & Asset_Count'Image (Item.Count)
+       & (if Item.In_Space
+          then " orbiting " & Item.Planet.Name
+          else " at " & Carthage.Tiles.Position_Image (Item.Tile.Position)
+          & " on " & Item.Planet.Name));
 
    package Db is
      new Memor.Database

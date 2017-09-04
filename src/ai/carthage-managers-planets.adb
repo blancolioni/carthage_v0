@@ -1,4 +1,8 @@
+with WL.Random;
+
 with Carthage.Tiles;
+
+with Carthage.Managers.Assets;
 
 package body Carthage.Managers.Planets is
 
@@ -23,13 +27,14 @@ package body Carthage.Managers.Planets is
    type Planet_Manager_Record is
      new Manager_Record with
       record
-         Planet             : Carthage.Planets.Planet_Type;
-         Controlled_Tiles   : List_Of_Tiles.List;
-         Explored_Tiles     : List_Of_Tiles.List;
-         Seen_Tiles         : List_Of_Tiles.List;
-         Unseen_Tiles       : List_Of_Tiles.List;
-         Target_Tiles       : List_Of_Tiles.List;
-         Tile_Info          : Tile_Info_Array;
+         Planet               : Carthage.Planets.Planet_Type;
+         Ground_Asset_Manager : Carthage.Managers.Manager_Type;
+         Controlled_Tiles     : List_Of_Tiles.List;
+         Explored_Tiles       : List_Of_Tiles.List;
+         Seen_Tiles           : List_Of_Tiles.List;
+         Unseen_Tiles         : List_Of_Tiles.List;
+         Target_Tiles         : List_Of_Tiles.List;
+         Tile_Info            : Tile_Info_Array;
       end record;
 
    overriding procedure Create_Initial_State
@@ -49,7 +54,7 @@ package body Carthage.Managers.Planets is
      (Manager : in out Planet_Manager_Record)
    is
    begin
-      null;
+      Manager.Ground_Asset_Manager.Create_Initial_State;
    end Create_Initial_State;
 
    ---------------------------
@@ -65,6 +70,9 @@ package body Carthage.Managers.Planets is
    begin
       Manager.Create (House);
       Manager.Planet := Planet;
+      Manager.Ground_Asset_Manager :=
+        Carthage.Managers.Assets.Ground_Asset_Manager
+          (House, Planet);
       return new Planet_Manager_Record'(Manager);
    end Create_Planet_Manager;
 
@@ -76,7 +84,16 @@ package body Carthage.Managers.Planets is
      (Manager : in out Planet_Manager_Record)
    is
    begin
-      null;
+      for I in 1 .. 4 loop
+         if not Manager.Target_Tiles.Is_Empty then
+            Manager.Ground_Asset_Manager.Add_Request
+              (Tile_Recon_Request
+                 (Manager.Planet,
+                  Manager.Target_Tiles.First_Element));
+            Manager.Target_Tiles.Delete_First;
+         end if;
+      end loop;
+      Manager.Ground_Asset_Manager.Execute;
    end Execute;
 
    ----------------
@@ -181,6 +198,37 @@ package body Carthage.Managers.Planets is
             end;
          end loop;
       end if;
+
+      declare
+         Arr : array (1 .. Natural (Manager.Target_Tiles.Length))
+           of Carthage.Tiles.Tile_Type;
+         Position : List_Of_Tiles.Cursor := Manager.Target_Tiles.First;
+      begin
+         for T of Arr loop
+            T := List_Of_Tiles.Element (Position);
+            List_Of_Tiles.Next (Position);
+         end loop;
+
+         for I in Arr'Range loop
+            declare
+               J : constant Positive :=
+                     WL.Random.Random_Number (1, Arr'Length);
+               T : constant Carthage.Tiles.Tile_Type :=
+                     Arr (J);
+            begin
+               Arr (J) := Arr (I);
+               Arr (I) := T;
+            end;
+         end loop;
+
+         Manager.Target_Tiles.Clear;
+         for T of Arr loop
+            Manager.Target_Tiles.Append (T);
+         end loop;
+      end;
+
+      Manager.Ground_Asset_Manager.Load_State;
+
    end Load_State;
 
 end Carthage.Managers.Planets;

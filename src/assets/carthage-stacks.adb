@@ -24,6 +24,22 @@ package body Carthage.Stacks is
       Db.Update (To.Reference, Update'Access);
    end Add_Asset;
 
+   ------------------
+   -- Move_To_Tile --
+   ------------------
+
+   procedure Move_To_Tile
+     (Stack : in out Stack_Record;
+      Tile  : Carthage.Tiles.Tile_Type)
+   is
+   begin
+      Stack.Log ("moving to " & Tile.Description);
+      Stack.Orders.Append
+        (Stack_Order_Record'
+           (Order_Type    => Move_To_Tile,
+            Destination   => Tile.Position));
+   end Move_To_Tile;
+
    --------------
    -- Movement --
    --------------
@@ -63,5 +79,18 @@ package body Carthage.Stacks is
    begin
       Db.Scan (Real_Stack'Access, Process);
    end Scan_Stacks;
+
+   ------------
+   -- Update --
+   ------------
+
+   procedure Update
+     (Stack  : Stack_Type;
+      Update : not null access
+        procedure (Rec : in out Stack_Class))
+   is
+   begin
+      Db.Update (Stack.Reference, Update);
+   end Update;
 
 end Carthage.Stacks;

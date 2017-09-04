@@ -12,6 +12,8 @@ package Carthage.Tiles is
 
    type Terrain_Layer is range 1 .. 3;
 
+   function Position_Image (Position : Tile_Position) return String;
+
    type Tile_Record is
      new Carthage.Objects.Root_Carthage_Object with private;
 

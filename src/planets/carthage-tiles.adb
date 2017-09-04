@@ -1,6 +1,15 @@
+with Ada.Strings.Fixed;
+
 with Carthage.Cities;
 
 package body Carthage.Tiles is
+
+   function Position_Image (Position : Tile_Position) return String
+   is ("("
+       & Ada.Strings.Fixed.Trim (Tile_X'Image (Position.X), Ada.Strings.Left)
+       & ","
+       & Ada.Strings.Fixed.Trim (Tile_Y'Image (Position.Y), Ada.Strings.Left)
+       & ")");
 
    ----------------------
    -- Clear_Visibility --
@@ -43,7 +52,9 @@ package body Carthage.Tiles is
                (if Tile.Has_City
                 then Tile.City.Structure.Identifier else "");
    begin
-      return City & " " & Terrain;
+      return Position_Image (Tile.Position)
+        & " "
+        & (if City = "" then "" else City & " ") & Terrain;
    end Description;
 
    --------------

@@ -42,6 +42,18 @@ package body Carthage.Managers.Houses is
          null;
       end record;
 
+   overriding procedure Create_Initial_State
+     (Manager : in out Neutral_House_Manager_Record)
+   is null;
+
+   overriding procedure Execute
+     (Manager : in out Neutral_House_Manager_Record)
+   is null;
+
+   overriding procedure Load_State
+     (Manager : in out Neutral_House_Manager_Record)
+   is null;
+
    --------------------------
    -- Create_House_Manager --
    --------------------------
@@ -123,6 +135,10 @@ package body Carthage.Managers.Houses is
    begin
       Carthage.Planets.Scan (Create_Planet_State'Access);
    end Create_Initial_State;
+
+   -------------
+   -- Execute --
+   -------------
 
    overriding procedure Execute
      (Manager : in out House_Manager_Record)

@@ -1,5 +1,17 @@
 package body Carthage.Managers is
 
+   -----------------
+   -- Add_Request --
+   -----------------
+
+   procedure Add_Request
+     (Manager : in out Manager_Record;
+      Request : Manager_Request)
+   is
+   begin
+      Manager.Requests.Append (Request);
+   end Add_Request;
+
    --------------------------
    -- Before_Start_Of_Turn --
    --------------------------
