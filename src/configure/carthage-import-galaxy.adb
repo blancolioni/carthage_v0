@@ -4,6 +4,8 @@ with Ada.Text_IO;
 
 with WL.Binary_IO;                     use WL.Binary_IO;
 
+with Tropos.Reader;
+
 with Carthage.Assets.Create;
 with Carthage.Cities.Create;
 
@@ -13,6 +15,7 @@ with Carthage.Structures;
 with Carthage.Terrain;
 with Carthage.Tiles.Configure;
 with Carthage.Planets.Configure;
+with Carthage.Resources;
 with Carthage.Stacks.Create;
 with Carthage.Units;
 
@@ -21,6 +24,9 @@ with Carthage.Options;
 with Carthage.Paths;
 
 package body Carthage.Import.Galaxy is
+
+   Initial_State_Config : Tropos.Configuration;
+   Initial_Stock_Config : Tropos.Configuration;
 
    type File_Unit is
       record
@@ -166,6 +172,13 @@ package body Carthage.Import.Galaxy is
       House_Map (13) := Carthage.Houses.Get ("neutral");
       House_Map (14) := Carthage.Houses.Get ("rebels");
 
+      Initial_State_Config :=
+        Tropos.Reader.Read_Config
+          (Carthage.Paths.Config_File ("initial-state.txt"));
+
+      Initial_Stock_Config :=
+        Initial_State_Config.Child ("stock");
+
       Ada.Text_IO.Put_Line
         ("importing galaxy from: " & Path);
 
@@ -266,12 +279,39 @@ package body Carthage.Import.Galaxy is
          Structure : constant Carthage.Structures.Structure_Type :=
                        Carthage.Structures.Get
                          (Natural (City.C_Type) + 1);
+
+         New_City : constant Carthage.Cities.City_Type :=
+                       Carthage.Cities.Create.New_City
+                         (Planet    => Planet,
+                          Tile      => Tile,
+                          Structure => Structure,
+                          Owner     => House_Map (Word_8 (City.Owner)));
       begin
-         Carthage.Cities.Create.New_City
-           (Planet    => Planet,
-            Tile      => Tile,
-            Structure => Structure,
-            Owner     => House_Map (Word_8 (City.Owner)));
+
+         if Initial_Stock_Config.Contains (Structure.Identifier) then
+            declare
+               procedure Update (Rec : in out Carthage.Cities.City_Class);
+
+               ------------
+               -- Update --
+               ------------
+
+               procedure Update (Rec : in out Carthage.Cities.City_Class) is
+               begin
+                  for Item of
+                    Initial_Stock_Config.Child
+                      (Structure.Identifier)
+                  loop
+                     Rec.Add
+                       (Carthage.Resources.Get (Item.Config_Name),
+                        Item.Value);
+                  end loop;
+               end Update;
+
+            begin
+               Carthage.Cities.Update_City (New_City, Update'Access);
+            end;
+         end if;
       end;
 
       return True;

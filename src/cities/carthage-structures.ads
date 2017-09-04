@@ -59,6 +59,10 @@ package Carthage.Structures is
       return Production_Array
      with Pre => Structure.Is_Harvester;
 
+   procedure Execute_Production
+     (Structure : Structure_Record;
+      Stock     : in out Carthage.Resources.Stock_Interface'Class);
+
    subtype Structure_Class is Structure_Record'Class;
 
    type Structure_Type is access constant Structure_Record'Class;
@@ -84,7 +88,7 @@ private
          City     : Boolean;
          Terrain  : Carthage.Terrain.Terrain_Type;
          Resource : Carthage.Resources.Resource_Type;
-         Output   : Natural;
+         Quantity : Natural;
       end record;
 
    package Production_Lists is

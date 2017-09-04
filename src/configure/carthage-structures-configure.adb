@@ -1,5 +1,3 @@
-with Ada.Text_IO;
-
 with WL.Random;
 
 with Tropos.Reader;
@@ -143,7 +141,7 @@ package body Carthage.Structures.Configure is
                               City     => City,
                               Terrain  => Terrain,
                               Resource => Resource,
-                              Output   => Count));
+                              Quantity => Count));
                         City := False;
                         World := null;
                   end case;
@@ -166,86 +164,20 @@ package body Carthage.Structures.Configure is
    begin
       Inputs.Clear;
       Outputs.Clear;
-      for Item_Config of Config loop
-         if Item_Config.Get (2) = Structure_Name then
-            declare
-               type State_Type is
-                 (City_Key_State, Fac_Name_State, Need_State,
-                  Resource_State, Quantity_State);
-               State    : State_Type := City_Key_State;
-               Making   : Boolean := False;
-               Resource : Carthage.Resources.Resource_Type;
-               Quantity : Natural;
-            begin
-               for Field_Config of Item_Config loop
-                  declare
-                     Field : constant String := Field_Config.Config_Name;
-                  begin
-                     case State is
-                        when City_Key_State =>
-                           if Field /= "city" then
-                              raise Constraint_Error with
-                                "while configuring production for "
-                                & Structure_Name & ": expected 'city'"
-                                & " but found '" & Field & "'";
-                           end if;
-                           State := Fac_Name_State;
-
-                        when Fac_Name_State =>
-                           if Field /= Structure_Name then
-                              raise Constraint_Error with
-                                "while configuring production for "
-                                & Structure_Name & ": expected Structure name"
-                                & " but found '" & Field & "'";
-                           end if;
-                           State := Need_State;
-
-                        when Need_State =>
-                           if Field /= "need" and then Field /= "make" then
-                              raise Constraint_Error with
-                                "while configuring production for "
-                                & Structure_Name & ": expected make or need"
-                                & " but found '" & Field & "'";
-                           end if;
-
-                           Making := Field = "make";
-                           State := Resource_State;
-
-                        when Resource_State =>
-                           if not Carthage.Resources.Exists (Field) then
-                              raise Constraint_Error with
-                                "while configuring production for "
-                                & Structure_Name & ": expected a resource"
-                                & " but found '" & Field & "'";
-                           end if;
-
-                           Resource := Carthage.Resources.Get (Field);
-                           State := Quantity_State;
-
-                        when Quantity_State =>
-                           Quantity := Integer'Value (Field);
-
-                           if Making then
-                              Outputs.Append (Production_Record'
-                                                (Resource => Resource,
-                                                 Output   => Quantity,
-                                                 others   => <>));
-                           else
-                              Inputs.Append (Production_Record'
-                                               (Resource => Resource,
-                                                Output   => Quantity,
-                                                others   => <>));
-                           end if;
-
-                           State := Need_State;
-                     end case;
-                  end;
-               end loop;
-               exit;
-            end;
-         end if;
+      for Item of Config.Child ("input") loop
+         Inputs.Append
+           (Production_Record'
+              (Resource => Carthage.Resources.Get (Item.Config_Name),
+               Quantity => Item.Value,
+               others   => <>));
       end loop;
-
+      for Item of Config.Child ("output") loop
+         Outputs.Append
+           (Production_Record'
+              (Resource => Carthage.Resources.Get (Item.Config_Name),
+               Quantity => Item.Value,
+               others   => <>));
+      end loop;
       if Inputs.Is_Empty and then Outputs.Is_Empty then
          raise Constraint_Error with
            "while configuring production for "
@@ -291,27 +223,23 @@ package body Carthage.Structures.Configure is
          Structure.Is_Harvester := Config.Get ("harvester");
 
          if Config.Contains ("production") then
-            declare
-               Production_Name : constant String :=
+            if Structure.Is_Harvester then
+               declare
+                  Harvest_Name : constant String :=
                                    Config.Get ("production");
-            begin
-               if Production_Name = "prod" then
-                  Configure_Production
-                    (Config.Config_Name,
-                     Structure.Inputs, Structure.Production,
-                     Tropos.Reader.Read_Config
-                       (Carthage.Configure.Fading_Suns_Data_File
-                            (Production_Name)));
-               else
+               begin
                   Configure_Production
                     (Structure.Production,
                      Tropos.Reader.Read_Config
                        (Carthage.Configure.Fading_Suns_Data_File
-                            (Production_Name)));
-                  Ada.Text_IO.Put_Line
-                    ("new harvester: " & Config.Config_Name);
-               end if;
-            end;
+                            (Harvest_Name)));
+               end;
+            else
+               Configure_Production
+                 (Structure.Identifier,
+                  Structure.Inputs, Structure.Production,
+                  Config.Child ("production"));
+            end if;
          end if;
 
          if Config.Contains ("bonus") then

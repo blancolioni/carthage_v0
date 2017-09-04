@@ -137,6 +137,9 @@ package body Carthage.Configure is
       procedure Load_Bonus_Table
         (Structure_Config : in out Tropos.Configuration);
 
+      procedure Load_Production_Table
+        (Production_Config : in out Tropos.Configuration);
+
       -------------------------
       -- Create_Bonus_Config --
       -------------------------
@@ -254,7 +257,110 @@ package body Carthage.Configure is
          end if;
       end Load_Bonus_Table;
 
+      ---------------------------
+      -- Load_Production_Table --
+      ---------------------------
+
+      procedure Load_Production_Table
+        (Production_Config : in out Tropos.Configuration)
+      is
+         Config : constant Tropos.Configuration :=
+                    Tropos.Reader.Read_Config
+                      (Fading_Suns_Data_File ("PROD"));
+      begin
+         for Item_Config of Config loop
+            declare
+               type State_Type is
+                 (City_Key_State, Fac_Name_State, Need_State,
+                  Resource_State, Quantity_State);
+               Structure_Name : constant String := Item_Config.Get (2);
+               State    : State_Type := City_Key_State;
+               Making   : Boolean := False;
+               Resource : Carthage.Resources.Resource_Type;
+               Quantity : Natural;
+               Inputs   : Tropos.Configuration :=
+                            Tropos.New_Config ("input");
+               Outputs  : Tropos.Configuration :=
+                            Tropos.New_Config ("output");
+            begin
+               for Field_Config of Item_Config loop
+                  declare
+                     Field : constant String := Field_Config.Config_Name;
+                  begin
+                     case State is
+                        when City_Key_State =>
+                           if Field /= "city" then
+                              raise Constraint_Error with
+                                "while configuring production for "
+                                & Structure_Name & ": expected 'city'"
+                                & " but found '" & Field & "'";
+                           end if;
+                           State := Fac_Name_State;
+
+                        when Fac_Name_State =>
+                           if Field /= Structure_Name then
+                              raise Constraint_Error with
+                                "while configuring production for "
+                                & Structure_Name & ": expected Structure name"
+                                & " but found '" & Field & "'";
+                           end if;
+                           State := Need_State;
+
+                        when Need_State =>
+                           if Field /= "need" and then Field /= "make" then
+                              raise Constraint_Error with
+                                "while configuring production for "
+                                & Structure_Name & ": expected make or need"
+                                & " but found '" & Field & "'";
+                           end if;
+
+                           Making := Field = "make";
+                           State := Resource_State;
+
+                        when Resource_State =>
+                           if not Carthage.Resources.Exists (Field) then
+                              raise Constraint_Error with
+                                "while configuring production for "
+                                & Structure_Name & ": expected a resource"
+                                & " but found '" & Field & "'";
+                           end if;
+
+                           Resource := Carthage.Resources.Get (Field);
+                           State := Quantity_State;
+
+                        when Quantity_State =>
+                           Quantity := Integer'Value (Field);
+
+                           if Making then
+                              Outputs.Add (Resource.Identifier, Quantity);
+                           else
+                              Inputs.Add (Resource.Identifier, Quantity);
+                           end if;
+
+                           State := Need_State;
+                     end case;
+                  end;
+               end loop;
+
+               declare
+                  Prod : Tropos.Configuration :=
+                           Tropos.New_Config (Structure_Name);
+               begin
+                  Prod.Add (Inputs);
+                  Prod.Add (Outputs);
+                  Production_Config.Add (Prod);
+               end;
+            end;
+         end loop;
+
+      end Load_Production_Table;
+
+      Production_Config : Tropos.Configuration;
+
    begin
+
+      Load_Production_Table (Production_Config);
+
       for Field_Config of Config.Child (1) loop
          declare
             Field : constant String := Field_Config.Config_Name;
@@ -365,6 +471,16 @@ package body Carthage.Configure is
                   then
                      Output.Add ("harvester", "yes");
                      Output.Add ("production", Id);
+                  elsif Production_Config.Contains (Id) then
+                     declare
+                        Production : Tropos.Configuration :=
+                                       Tropos.New_Config ("production");
+                     begin
+                        for Item of Production_Config.Child (Id) loop
+                           Production.Add (Item);
+                        end loop;
+                        Output.Add (Production);
+                     end;
                   end if;
 
                   Flag ("water", Water);

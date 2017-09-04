@@ -17,10 +17,31 @@ package body Carthage.Cities.Updates is
    procedure Execute_City_Production
      (City : in out City_Class)
    is
+      procedure Report_Stock
+        (Resource : Carthage.Resources.Resource_Type);
+
+      ------------------
+      -- Report_Stock --
+      ------------------
+
+      procedure Report_Stock
+        (Resource : Carthage.Resources.Resource_Type)
+      is
+         Quantity : constant Natural := City.Quantity (Resource);
+      begin
+         if Quantity > 0 then
+            City.Planet.Log
+              (City.Identifier & ": " & Resource.Name & ":" & Quantity'Img);
+         end if;
+      end Report_Stock;
+
    begin
       if City.Structure.Is_Harvester then
          Execute_Harvester_Production (City);
+      else
+         City.Structure.Execute_Production (City);
       end if;
+      Carthage.Resources.Scan (Report_Stock'Access);
    end Execute_City_Production;
 
    ----------------------------------
@@ -56,31 +77,26 @@ package body Carthage.Cities.Updates is
       end loop;
 
       declare
-         procedure Report
-           (Resource : Carthage.Resources.Resource_Class;
+         procedure Add_Harvested_Resources
+           (Resource : not null access constant
+              Carthage.Resources.Resource_Class;
             Quantity : Natural);
 
-         ------------
-         -- Report --
-         ------------
+         -----------------------------
+         -- Add_Harvested_Resources --
+         -----------------------------
 
-         procedure Report
-           (Resource : Carthage.Resources.Resource_Class;
+         procedure Add_Harvested_Resources
+           (Resource : not null access constant
+              Carthage.Resources.Resource_Class;
             Quantity : Natural)
          is
          begin
-            if Quantity > 0 then
-               City.Log
-                 ("on " & City.Planet.Name & " at"
-                  & City.Tile.Position.X'Img & City.Tile.Position.Y'Img
-                  & ":" & Natural'Image (Tile_Count (Tiles))
-                  & " produce" & Quantity'Img & " "
-                  & Resource.Name);
-            end if;
-         end Report;
+            City.Add (Resource, Quantity);
+         end Add_Harvested_Resources;
 
       begin
-         Output.Scan (Report'Access);
+         Output.Scan (Add_Harvested_Resources'Access);
       end;
    end Execute_Harvester_Production;
 
