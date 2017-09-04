@@ -80,6 +80,32 @@ package body Carthage.Stacks is
       Db.Scan (Real_Stack'Access, Process);
    end Scan_Stacks;
 
+   ----------
+   -- Spot --
+   ----------
+
+   function Spot
+     (Stack : Stack_Record)
+      return Natural
+   is
+   begin
+      if Stack.Count = 0 then
+         return 0;
+      else
+         return Result : Natural := Stack.Asset (1).Unit.Spot do
+            for Index in 2 .. Stack.Count loop
+               declare
+                  D : constant Natural := Stack.Asset (Index).Unit.Spot;
+               begin
+                  if D > Result then
+                     Result := D;
+                  end if;
+               end;
+            end loop;
+         end return;
+      end if;
+   end Spot;
+
    ------------
    -- Update --
    ------------

@@ -33,6 +33,10 @@ package Carthage.Units is
      (Unit : Unit_Record)
       return Natural;
 
+   function Spot
+     (Unit : Unit_Record)
+      return Natural;
+
    function Image_Resource
      (Unit : Unit_Record)
       return String;
@@ -108,6 +112,11 @@ private
      (Unit : Unit_Record)
       return Natural
    is (Unit.Move);
+
+   function Spot
+     (Unit : Unit_Record)
+      return Natural
+   is (Unit.Spot);
 
    function Image_Resource
      (Unit : Unit_Record)

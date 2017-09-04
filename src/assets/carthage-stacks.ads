@@ -42,6 +42,10 @@ package Carthage.Stacks is
      (Stack : Stack_Record)
       return Natural;
 
+   function Spot
+     (Stack : Stack_Record)
+      return Natural;
+
    function Count (Stack : Stack_Record) return Asset_Count;
    function Asset (Stack : Stack_Record;
                    Index : Asset_Index)
