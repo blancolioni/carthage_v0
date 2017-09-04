@@ -34,6 +34,25 @@ package body Carthage.Cities.Create is
 
       Carthage.Tiles.Set_City (City.Tile, City);
 
+      if not Planet.Has_Agora and then City.Is_Agora then
+         declare
+            procedure Set (P : in out Carthage.Planets.Planet_Class);
+
+            ---------
+            -- Set --
+            ---------
+
+            procedure Set (P : in out Carthage.Planets.Planet_Class) is
+            begin
+               P.Set_Agora (City);
+            end Set;
+
+         begin
+            Carthage.Planets.Update
+              (Planet, Set'Access);
+         end;
+      end if;
+
       return City;
 
    end New_City;

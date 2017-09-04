@@ -11,6 +11,7 @@ with Carthage.Houses;
 with Carthage.Worlds;
 with Carthage.Tiles;
 
+limited with Carthage.Cities;
 limited with Carthage.Stacks;
 
 package Carthage.Planets is
@@ -167,6 +168,26 @@ package Carthage.Planets is
       House  : Carthage.Houses.House_Type)
       return access constant Carthage.Stacks.Stack_Record'Class;
 
+   function Has_Agora
+     (Planet : Planet_Record)
+      return Boolean;
+
+   function Agora
+     (Planet : Planet_Record)
+      return access constant Carthage.Cities.City_Record'Class
+     with Pre => Planet.Has_Agora;
+
+   procedure Set_Agora
+     (Planet : in out Planet_Record;
+      Agora  : not null access constant Carthage.Cities.City_Record'Class)
+     with Pre => not Planet.Has_Agora,
+     Post => Planet.Has_Agora;
+
+   procedure Remove_Agora
+     (Planet : in out Planet_Record)
+     with Pre => Planet.Has_Agora,
+     Post => not Planet.Has_Agora;
+
    subtype Planet_Class is Planet_Record'Class;
 
    type Planet_Type is access constant Planet_Record'Class;
@@ -232,6 +253,7 @@ private
          Megacity : Boolean;
          Owner    : Carthage.Houses.House_Type;
          Stacks   : Orbital_Stack_Vectors.Vector;
+         Agora    : access constant Carthage.Cities.City_Record'Class;
       end record;
 
    overriding function Object_Database
@@ -324,5 +346,15 @@ private
       House  : Carthage.Houses.House_Type)
       return Boolean
    is (Carthage.Houses.Element (Planet.Seen, House));
+
+   function Has_Agora
+     (Planet : Planet_Record)
+      return Boolean
+   is (Planet.Agora /= null);
+
+   function Agora
+     (Planet : Planet_Record)
+      return access constant Carthage.Cities.City_Record'Class
+   is (Planet.Agora);
 
 end Carthage.Planets;

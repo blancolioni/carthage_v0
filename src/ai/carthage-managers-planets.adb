@@ -3,6 +3,7 @@ with WL.Random;
 with Carthage.Tiles;
 
 with Carthage.Managers.Assets;
+with Carthage.Managers.Cities;
 
 package body Carthage.Managers.Planets is
 
@@ -28,7 +29,8 @@ package body Carthage.Managers.Planets is
      new Manager_Record with
       record
          Planet               : Carthage.Planets.Planet_Type;
-         Ground_Asset_Manager : Carthage.Managers.Manager_Type;
+         Ground_Asset_Manager : Manager_Type;
+         City_Manager         : Manager_Type;
          Controlled_Tiles     : List_Of_Tiles.List;
          Explored_Tiles       : List_Of_Tiles.List;
          Seen_Tiles           : List_Of_Tiles.List;
@@ -55,6 +57,7 @@ package body Carthage.Managers.Planets is
    is
    begin
       Manager.Ground_Asset_Manager.Create_Initial_State;
+      Manager.City_Manager.Create_Initial_State;
    end Create_Initial_State;
 
    ---------------------------
@@ -72,6 +75,9 @@ package body Carthage.Managers.Planets is
       Manager.Planet := Planet;
       Manager.Ground_Asset_Manager :=
         Carthage.Managers.Assets.Ground_Asset_Manager
+          (House, Planet);
+      Manager.City_Manager :=
+        Carthage.Managers.Cities.City_Manager
           (House, Planet);
       return new Planet_Manager_Record'(Manager);
    end Create_Planet_Manager;
@@ -94,6 +100,7 @@ package body Carthage.Managers.Planets is
          end if;
       end loop;
       Manager.Ground_Asset_Manager.Execute;
+      Manager.City_Manager.Execute;
    end Execute;
 
    ----------------
@@ -228,7 +235,7 @@ package body Carthage.Managers.Planets is
       end;
 
       Manager.Ground_Asset_Manager.Load_State;
-
+      Manager.City_Manager.Load_State;
    end Load_State;
 
 end Carthage.Managers.Planets;

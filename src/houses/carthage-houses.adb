@@ -9,6 +9,18 @@ package body Carthage.Houses is
       Set := 0;
    end Clear;
 
+   ----------
+   -- Earn --
+   ----------
+
+   procedure Earn
+     (House  : in out House_Record;
+      Amount : Positive)
+   is
+   begin
+      House.Cash := House.Cash + Amount;
+   end Earn;
+
    ------------
    -- Insert --
    ------------
@@ -80,5 +92,35 @@ package body Carthage.Houses is
    begin
       Db.Update (House.Reference, Update'Access);
    end Set_House_Manager;
+
+   -----------
+   -- Spend --
+   -----------
+
+   procedure Spend
+     (House  : in out House_Record;
+      Amount : Positive)
+   is
+   begin
+      if Amount <= House.Cash then
+         House.Cash := House.Cash - Amount;
+      else
+         House.Debt := House.Debt + Amount - House.Cash;
+         House.Cash := 0;
+      end if;
+   end Spend;
+
+   ------------
+   -- Update --
+   ------------
+
+   procedure Update
+     (House  : House_Type;
+      Update : not null access
+        procedure (Rec : in out House_Class))
+   is
+   begin
+      Db.Update (House.Reference, Update);
+   end Update;
 
 end Carthage.Houses;

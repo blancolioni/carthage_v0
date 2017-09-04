@@ -1,5 +1,18 @@
 package body Carthage.Cities is
 
+   ------------------
+   -- Buy_Resource --
+   ------------------
+
+   procedure Buy_Resource
+     (City     : in out City_Record;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Positive)
+   is
+   begin
+      City.Orders.Append (City_Order_Record'(Buy, Resource, Quantity));
+   end Buy_Resource;
+
    -----------------
    -- Scan_Cities --
    -----------------
@@ -74,6 +87,19 @@ package body Carthage.Cities is
    begin
       Db.Scan (Same_Planet'Access, Process);
    end Scan_Planet_Cities;
+
+   -------------------
+   -- Sell_Resource --
+   -------------------
+
+   procedure Sell_Resource
+     (City     : in out City_Record;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Positive)
+   is
+   begin
+      City.Orders.Append (City_Order_Record'(Sell, Resource, Quantity));
+   end Sell_Resource;
 
    ------------------
    -- Set_Quantity --

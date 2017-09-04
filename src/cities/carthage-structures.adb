@@ -111,4 +111,40 @@ package body Carthage.Structures is
       return Result (1 .. Count);
    end Harvest_Production;
 
+   -----------------------
+   -- Production_Inputs --
+   -----------------------
+
+   function Production_Inputs
+     (Structure : Structure_Record)
+      return Production_Array
+   is
+      Count  : Natural := 0;
+      Result : Production_Array (1 .. 10);
+   begin
+      for Input of Structure.Inputs loop
+         Count := Count + 1;
+         Result (Count) := (Input.Resource, Input.Quantity);
+      end loop;
+      return Result (1 .. Count);
+   end Production_Inputs;
+
+   ------------------------
+   -- Production_Outputs --
+   ------------------------
+
+   function Production_Outputs
+     (Structure : Structure_Record)
+      return Production_Array
+   is
+      Count  : Natural := 0;
+      Result : Production_Array (1 .. 10);
+   begin
+      for Output of Structure.Production loop
+         Count := Count + 1;
+         Result (Count) := (Output.Resource, Output.Quantity);
+      end loop;
+      return Result (1 .. Count);
+   end Production_Outputs;
+
 end Carthage.Structures;

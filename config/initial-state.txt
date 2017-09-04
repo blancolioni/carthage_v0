@@ -1,0 +1,27 @@
+stock = {
+   agora = {
+      food = 200
+      energy = 200
+      metal = 200
+      trace = 50
+      exotica = 50
+      chemicals = 50
+      biochems = 50
+      electronics = 50
+      ceramsteel = 50
+      gems = 50
+   }
+   chemicals = {
+      energy = 20
+      trace = 10
+   }
+   electronics = {
+      energy = 20
+      trace = 10
+   }
+   bioplant = {
+      exotica = 20
+      chemicals = 20
+      energy = 20
+   }
+}

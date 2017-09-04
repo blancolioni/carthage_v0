@@ -1,3 +1,4 @@
+private with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 private with Memor.Database;
 
 with Carthage.Structures;
@@ -43,10 +44,24 @@ package Carthage.Cities is
      (City : City_Record)
       return Carthage.Houses.House_Type;
 
+   function Is_Agora
+     (City : City_Record)
+      return Boolean;
+
    function Seen_By
      (City  : City_Record;
       House : Carthage.Houses.House_Type)
       return Boolean;
+
+   procedure Buy_Resource
+     (City     : in out City_Record;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Positive);
+
+   procedure Sell_Resource
+     (City     : in out City_Record;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Positive);
 
    subtype City_Class is City_Record'Class;
 
@@ -83,6 +98,20 @@ package Carthage.Cities is
 
 private
 
+   type City_Order_Class is (Buy, Sell);
+
+   type City_Order_Record (Class : City_Order_Class) is
+      record
+         case Class is
+            when Buy | Sell =>
+               Resource : Carthage.Resources.Resource_Type;
+               Quantity : Positive;
+         end case;
+      end record;
+
+   package City_Order_Lists is
+     new Ada.Containers.Indefinite_Doubly_Linked_Lists (City_Order_Record);
+
    type City_Record is
      new Carthage.Objects.Root_Named_Object
      and Carthage.Resources.Stock_Interface with
@@ -93,6 +122,7 @@ private
          Structure : Carthage.Structures.Structure_Type;
          Seen      : Carthage.Houses.House_Set;
          Stock     : Carthage.Resources.Stock_Record;
+         Orders    : City_Order_Lists.List;
       end record;
 
    overriding function Object_Database
@@ -142,5 +172,10 @@ private
       House : Carthage.Houses.House_Type)
       return Boolean
    is (Carthage.Houses.Element (City.Seen, House));
+
+   function Is_Agora
+     (City : City_Record)
+      return Boolean
+   is (City.Identifier = "agora");
 
 end Carthage.Cities;

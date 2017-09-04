@@ -53,6 +53,14 @@ package Carthage.Structures is
    type Production_Array is
      array (Positive range <>) of Resouce_Quantity_Record;
 
+   function Production_Inputs
+     (Structure : Structure_Record)
+      return Production_Array;
+
+   function Production_Outputs
+     (Structure : Structure_Record)
+      return Production_Array;
+
    function Harvest_Production
      (Structure : Structure_Record;
       Tile      : Carthage.Tiles.Tile_Type)

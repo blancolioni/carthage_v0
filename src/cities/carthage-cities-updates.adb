@@ -4,11 +4,94 @@ with Carthage.Resources;
 
 package body Carthage.Cities.Updates is
 
+   procedure Execute_City_Orders
+     (City : in out City_Class);
+
    procedure Execute_City_Production
      (City : in out City_Class);
 
    procedure Execute_Harvester_Production
      (City : in out City_Class);
+
+   -------------------------
+   -- Execute_City_Orders --
+   -------------------------
+
+   procedure Execute_City_Orders
+     (City : in out City_Class)
+   is
+   begin
+      for Order of City.Orders loop
+         case Order.Class is
+            when Buy =>
+               declare
+                  Agora : constant City_Type :=
+                            City_Type (City.Planet.Agora);
+                  Quantity : constant Natural :=
+                               Natural'Min
+                                 (Order.Quantity,
+                                  Agora.Quantity (Order.Resource));
+                  Cost     : constant Natural :=
+                               Quantity * Order.Resource.Base_Price
+                                 * 11 / 10;
+
+                  procedure Earn
+                    (H : in out Carthage.Houses.House_Class);
+
+                  procedure Spend
+                    (H : in out Carthage.Houses.House_Class);
+
+                  procedure Remove
+                    (A : in out Carthage.Cities.City_Class);
+
+                  ----------
+                  -- Earn --
+                  ----------
+
+                  procedure Earn
+                    (H : in out Carthage.Houses.House_Class)
+                  is
+                  begin
+                     H.Earn (Cost);
+                  end Earn;
+
+                  ------------
+                  -- Remove --
+                  ------------
+
+                  procedure Remove
+                    (A : in out Carthage.Cities.City_Class)
+                  is
+                  begin
+                     A.Remove (Order.Resource, Quantity);
+                  end Remove;
+
+                  -----------
+                  -- Spend --
+                  -----------
+
+                  procedure Spend
+                    (H : in out Carthage.Houses.House_Class)
+                  is
+                  begin
+                     H.Spend (Cost);
+                  end Spend;
+
+               begin
+                  if Quantity > 0 then
+                     Carthage.Houses.Update (City.Owner, Spend'Access);
+                     Carthage.Houses.Update (Agora.Owner, Earn'Access);
+                     Db.Update (Agora.Reference, Remove'Access);
+                     City.Add (Order.Resource, Quantity);
+                  end if;
+               end;
+            when Sell =>
+               null;
+         end case;
+      end loop;
+
+      City.Orders.Clear;
+   end Execute_City_Orders;
 
    -----------------------------
    -- Execute_City_Production --
@@ -99,6 +182,15 @@ package body Carthage.Cities.Updates is
          Output.Scan (Add_Harvested_Resources'Access);
       end;
    end Execute_Harvester_Production;
+
+   --------------------
+   -- Execute_Orders --
+   --------------------
+
+   procedure Execute_Orders is
+   begin
+      Db.Iterate (Execute_City_Orders'Access);
+   end Execute_Orders;
 
    ------------------------
    -- Execute_Production --

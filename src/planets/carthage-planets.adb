@@ -245,6 +245,17 @@ package body Carthage.Planets is
       return Result (1 .. Count);
    end Neighbours;
 
+   ------------------
+   -- Remove_Agora --
+   ------------------
+
+   procedure Remove_Agora
+     (Planet : in out Planet_Record)
+   is
+   begin
+      Planet.Agora := null;
+   end Remove_Agora;
+
    -----------------
    -- Remove_Tile --
    -----------------
@@ -405,6 +416,18 @@ package body Carthage.Planets is
         (Start, Local_Test'Access, Sub);
       Tile_Graphs.Iterate (Sub, Local_Process'Access);
    end Scan_Connected_Tiles;
+
+   ---------------
+   -- Set_Agora --
+   ---------------
+
+   procedure Set_Agora
+     (Planet : in out Planet_Record;
+      Agora  : not null access constant Carthage.Cities.City_Record'Class)
+   is
+   begin
+      Planet.Agora := Agora;
+   end Set_Agora;
 
    ---------------
    -- Set_Owner --

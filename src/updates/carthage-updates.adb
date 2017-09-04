@@ -1,3 +1,5 @@
+with Ada.Text_IO;
+
 with Carthage.Cities.Updates;
 with Carthage.Houses;
 with Carthage.Managers;
@@ -204,10 +206,13 @@ package body Carthage.Updates is
 
    procedure Update is
    begin
+      Ada.Text_IO.Put_Line ("Executing update");
       Carthage.Managers.Before_Start_Of_Turn;
       Carthage.Managers.Create_Orders;
+      Carthage.Cities.Updates.Execute_Orders;
       Carthage.Cities.Updates.Execute_Production;
       Carthage.Stacks.Updates.Execute_Orders;
+      Ada.Text_IO.Put_Line ("done");
    end Update;
 
 end Carthage.Updates;

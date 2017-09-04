@@ -8,6 +8,8 @@ package Carthage.Resources is
    type Resource_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with private;
 
+   function Base_Price (Resource : Resource_Record) return Positive;
+
    subtype Resource_Class is Resource_Record'Class;
 
    type Resource_Type is access constant Resource_Record'Class;
@@ -32,6 +34,12 @@ package Carthage.Resources is
       Resource     : not null access constant Resource_Class;
       New_Quantity : Natural)
    is abstract;
+
+   procedure Scan_Stock
+     (Stock : Stock_Interface'Class;
+      Process : not null access
+        procedure (Resource : Resource_Type;
+                   Quantity : Natural));
 
    procedure Add
      (Stock          : in out Stock_Interface'Class;
@@ -78,6 +86,9 @@ private
      (Item : Resource_Record)
       return Memor.Memor_Database
    is (Db.Get_Database);
+
+   function Base_Price (Resource : Resource_Record) return Positive
+   is (Resource.Price);
 
    function Exists (Id : String) return Boolean
    is (Db.Exists (Id));

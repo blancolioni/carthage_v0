@@ -32,9 +32,22 @@ package Carthage.Houses is
       Process : not null access
         procedure (Planet_Id : String));
 
+   procedure Spend
+     (House  : in out House_Record;
+      Amount : Positive);
+
+   procedure Earn
+     (House  : in out House_Record;
+      Amount : Positive);
+
    subtype House_Class is House_Record'Class;
 
    type House_Type is access constant House_Record'Class;
+
+   procedure Update
+     (House : House_Type;
+      Update : not null access
+        procedure (Rec : in out House_Class));
 
    function Number_Of_Houses
      return Natural;
@@ -81,6 +94,11 @@ private
          Set_Flag      : House_Set;
          Known_Planets : Planet_Id_Lists.List;
          Manager       : access Carthage.Managers.Manager_Record'Class;
+         Cash          : Natural := 5_000;
+         Debt          : Natural := 0;
+         Tax_Rate      : Float   := 0.1;
+         Tithe_Skim    : Float   := 0.1;
+         Unit_Pay      : Float   := 0.75;
       end record;
 
    overriding function Object_Database
