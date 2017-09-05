@@ -163,14 +163,13 @@ package body Carthage.Import.Galaxy is
       House_Map (4) := Carthage.Houses.Get ("al-malik");
       House_Map (5) := Carthage.Houses.Get ("league");
       House_Map (6) := Carthage.Houses.Get ("church");
-      House_Map (7) := Carthage.Houses.Get ("symbiots");
+      House_Map (7) := Carthage.Houses.Get ("symbiot");
       House_Map (8) := Carthage.Houses.Get ("vau");
       House_Map (9) := Carthage.Houses.Get ("imperial");
       House_Map (10) := Carthage.Houses.Get ("fleet");
       House_Map (11) := Carthage.Houses.Get ("stigmata");
       House_Map (12) := Carthage.Houses.Get ("spy");
-      House_Map (13) := Carthage.Houses.Get ("neutral");
-      House_Map (14) := Carthage.Houses.Get ("rebels");
+      House_Map (13) := Carthage.Houses.Get ("rebel");
 
       Initial_State_Config :=
         Tropos.Reader.Read_Config
