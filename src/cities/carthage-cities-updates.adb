@@ -49,7 +49,27 @@ package body Carthage.Cities.Updates is
                   end if;
                end;
             when Sell =>
-               null;
+               declare
+                  Agora    : constant City_Type :=
+                               City_Type (City.Planet.Agora);
+                  Quantity : constant Natural := Order.Quantity;
+                  Resource : constant Carthage.Resources.Resource_Type :=
+                               Order.Resource;
+                  Cost     : constant Natural :=
+                               Quantity * Order.Resource.Base_Price
+                                 * 9 / 10;
+
+               begin
+                  City.Planet.Log
+                    (City.Identifier
+                     & ": sell" & Quantity'Img & " "
+                     & Resource.Name
+                     & " for" & Cost'Img);
+                  City.Owner.Update.Earn (Cost);
+                  Agora.Owner.Update.Spend (Cost);
+                  Agora.Update.Add (Resource, Quantity);
+                  City.Remove (Resource, Quantity);
+               end;
          end case;
       end loop;
 
