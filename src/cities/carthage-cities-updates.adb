@@ -25,8 +25,7 @@ package body Carthage.Cities.Updates is
          case Order.Class is
             when Buy =>
                declare
-                  Agora : constant City_Type :=
-                            City_Type (City.Planet.Agora);
+                  Agora : constant City_Type := Order.Agora;
                   Quantity : constant Natural :=
                                Natural'Min
                                  (Order.Quantity,
@@ -49,8 +48,7 @@ package body Carthage.Cities.Updates is
                end;
             when Sell =>
                declare
-                  Agora    : constant City_Type :=
-                               City_Type (City.Planet.Agora);
+                  Agora    : constant City_Type := Order.Agora;
                   Quantity : constant Natural := Order.Quantity;
                   Resource : constant Carthage.Resources.Resource_Type :=
                                Order.Resource;

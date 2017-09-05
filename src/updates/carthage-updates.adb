@@ -24,6 +24,9 @@ package body Carthage.Updates is
       procedure City_Look
         (City : Carthage.Cities.City_Type);
 
+      procedure Find_Agora
+        (City : Carthage.Cities.City_Type);
+
       procedure Stack_Look
         (Stack : Carthage.Stacks.Stack_Type);
 
@@ -87,6 +90,49 @@ package body Carthage.Updates is
          end loop;
 
       end City_Look;
+
+      procedure Find_Agora
+        (City : Carthage.Cities.City_Type)
+      is
+         use Carthage.Cities;
+         use type Carthage.Houses.Treaty_Status;
+
+         Minimum_Distance : Natural := Natural'Last;
+         Closest_Agora    : City_Type := null;
+
+         procedure Check (Check_City : not null access constant City_Class);
+
+         -----------
+         -- Check --
+         -----------
+
+         procedure Check (Check_City : not null access constant City_Class) is
+            D : constant Natural :=
+                  Carthage.Planets.Hex_Distance
+                    (Check_City.Tile.Position, City.Tile.Position);
+         begin
+            if Check_City.Is_Agora
+              and then City.Owner.Treaty_Status_With (Check_City.Owner)
+              /= Carthage.Houses.War
+              and then D < Minimum_Distance
+            then
+               Closest_Agora := City_Type (Check_City);
+               Minimum_Distance := D;
+            end if;
+         end Check;
+
+      begin
+
+         if not City.Is_Agora then
+
+            City.Planet.Scan_Cities (Check'Access);
+
+            if Closest_Agora /= null then
+               City.Update.Set_Agora (Closest_Agora);
+            end if;
+         end if;
+
+      end Find_Agora;
 
       ------------------------
       -- Reset_Planet_State --
@@ -202,6 +248,9 @@ package body Carthage.Updates is
 
       Carthage.Cities.Scan_Cities
         (City_Look'Access);
+
+      Carthage.Cities.Scan_Cities
+        (Find_Agora'Access);
 
       Carthage.Stacks.Scan_Stacks
         (Stack_Look'Access);

@@ -287,6 +287,8 @@ package body Carthage.Import.Galaxy is
                           Owner     => House_Map (Word_8 (City.Owner)));
       begin
 
+         Planet.Update.Add_City (New_City);
+
          if Initial_Stock_Config.Contains (Structure.Identifier) then
             declare
                procedure Update (Rec : in out Carthage.Cities.City_Class);

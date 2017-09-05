@@ -67,6 +67,10 @@ package Carthage.Cities is
       Resource : Carthage.Resources.Resource_Type;
       Quantity : Positive);
 
+   procedure Set_Agora
+     (City  : in out City_Record;
+      Agora : not null access constant City_Record'Class);
+
    subtype City_Class is City_Record'Class;
 
    type City_Type is access constant City_Record'Class;
@@ -115,6 +119,7 @@ private
       record
          case Class is
             when Buy | Sell =>
+               Agora    : City_Type;
                Resource : Carthage.Resources.Resource_Type;
                Quantity : Positive;
          end case;
@@ -134,6 +139,7 @@ private
          Seen      : Carthage.Houses.House_Set;
          Stock     : Carthage.Resources.Stock_Record;
          Orders    : City_Order_Lists.List;
+         Agora     : City_Type;
       end record;
 
    overriding function Object_Database

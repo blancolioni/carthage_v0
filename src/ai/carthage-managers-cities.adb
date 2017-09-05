@@ -56,27 +56,27 @@ package body Carthage.Managers.Cities is
    is
 
       procedure Add_City_Info
-        (City : Carthage.Cities.City_Type);
+        (City : not null access constant Carthage.Cities.City_Class);
 
       -------------------
       -- Add_City_Info --
       -------------------
 
       procedure Add_City_Info
-        (City : Carthage.Cities.City_Type)
+        (City : not null access constant Carthage.Cities.City_Class)
       is
          use type Carthage.Houses.House_Type;
       begin
          if City.Owner = Manager.House then
-            Manager.Cities.Append (City_Info_Record'(City => City));
+            Manager.Cities.Append
+              (City_Info_Record'
+                 (City =>
+                      Carthage.Cities.City_Type (City)));
          end if;
       end Add_City_Info;
 
    begin
-      if Manager.Planet.Has_Agora then
-         Carthage.Cities.Scan_Planet_Cities
-           (Manager.Planet, Add_City_Info'Access);
-      end if;
+      Manager.Planet.Scan_Cities (Add_City_Info'Access);
    end Create_Initial_State;
 
    -------------

@@ -10,7 +10,11 @@ package body Carthage.Cities is
       Quantity : Positive)
    is
    begin
-      City.Orders.Append (City_Order_Record'(Buy, Resource, Quantity));
+      if City.Agora /= null then
+         City.Orders.Append
+           (City_Order_Record'
+              (Buy, City.Agora, Resource, Quantity));
+      end if;
    end Buy_Resource;
 
    --------------------
@@ -111,8 +115,23 @@ package body Carthage.Cities is
       Quantity : Positive)
    is
    begin
-      City.Orders.Append (City_Order_Record'(Sell, Resource, Quantity));
+      if City.Agora /= null then
+         City.Orders.Append
+           (City_Order_Record'(Sell, City.Agora, Resource, Quantity));
+      end if;
    end Sell_Resource;
+
+   ---------------
+   -- Set_Agora --
+   ---------------
+
+   procedure Set_Agora
+     (City  : in out City_Record;
+      Agora : not null access constant City_Record'Class)
+   is
+   begin
+      City.Agora := City_Type (Agora);
+   end Set_Agora;
 
    ------------------
    -- Set_Quantity --

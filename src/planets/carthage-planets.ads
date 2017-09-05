@@ -1,3 +1,4 @@
+private with Ada.Containers.Doubly_Linked_Lists;
 private with Ada.Containers.Vectors;
 private with WL.Graphs;
 private with Memor.Database;
@@ -168,25 +169,19 @@ package Carthage.Planets is
       House  : Carthage.Houses.House_Type)
       return access constant Carthage.Stacks.Stack_Record'Class;
 
-   function Has_Agora
-     (Planet : Planet_Record)
-      return Boolean;
-
-   function Agora
-     (Planet : Planet_Record)
-      return access constant Carthage.Cities.City_Record'Class
-     with Pre => Planet.Has_Agora;
-
-   procedure Set_Agora
+   procedure Add_City
      (Planet : in out Planet_Record;
-      Agora  : not null access constant Carthage.Cities.City_Record'Class)
-     with Pre => not Planet.Has_Agora,
-     Post => Planet.Has_Agora;
+      City   : not null access constant Carthage.Cities.City_Record'Class);
 
-   procedure Remove_Agora
-     (Planet : in out Planet_Record)
-     with Pre => Planet.Has_Agora,
-     Post => not Planet.Has_Agora;
+   procedure Remove_City
+     (Planet : in out Planet_Record;
+      City   : not null access constant Carthage.Cities.City_Record'Class);
+
+   procedure Scan_Cities
+     (Planet : Planet_Record;
+      Process : not null access
+        procedure (City : not null access constant
+                     Carthage.Cities.City_Record'Class));
 
    subtype Planet_Class is Planet_Record'Class;
 
@@ -211,6 +206,13 @@ package Carthage.Planets is
       House  : Carthage.Houses.House_Type);
 
    function Number_Of_Planets return Natural;
+
+   type Updateable_Reference (Item : not null access Planet_Record'Class)
+   is private with Implicit_Dereference => Item;
+
+   function Update
+     (Item : not null access constant Planet_Record'Class)
+      return Updateable_Reference;
 
 private
 
@@ -242,6 +244,12 @@ private
      new Memor.Element_Vectors
        (Carthage.Houses.House_Record, Orbital_Stack_Type, null);
 
+   type Planet_City_Access is
+     access constant Carthage.Cities.City_Record'Class;
+
+   package Planet_City_Lists is
+     new Ada.Containers.Doubly_Linked_Lists (Planet_City_Access);
+
    type Planet_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with
       record
@@ -253,7 +261,7 @@ private
          Megacity : Boolean;
          Owner    : Carthage.Houses.House_Type;
          Stacks   : Orbital_Stack_Vectors.Vector;
-         Agora    : access constant Carthage.Cities.City_Record'Class;
+         Cities   : Planet_City_Lists.List;
       end record;
 
    overriding function Object_Database
@@ -347,14 +355,9 @@ private
       return Boolean
    is (Carthage.Houses.Element (Planet.Seen, House));
 
-   function Has_Agora
-     (Planet : Planet_Record)
-      return Boolean
-   is (Planet.Agora /= null);
-
-   function Agora
-     (Planet : Planet_Record)
-      return access constant Carthage.Cities.City_Record'Class
-   is (Planet.Agora);
+   type Updateable_Reference (Item : not null access Planet_Record'Class) is
+      record
+         Update : Db.Updateable_Reference (Item);
+      end record;
 
 end Carthage.Planets;

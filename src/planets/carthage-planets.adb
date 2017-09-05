@@ -2,6 +2,18 @@ with Carthage.Terrain;
 
 package body Carthage.Planets is
 
+   --------------
+   -- Add_City --
+   --------------
+
+   procedure Add_City
+     (Planet : in out Planet_Record;
+      City   : not null access constant Carthage.Cities.City_Record'Class)
+   is
+   begin
+      Planet.Cities.Append (Planet_City_Access (City));
+   end Add_City;
+
    ----------------------
    -- Clear_Visibility --
    ----------------------
@@ -245,16 +257,19 @@ package body Carthage.Planets is
       return Result (1 .. Count);
    end Neighbours;
 
-   ------------------
-   -- Remove_Agora --
-   ------------------
+   -----------------
+   -- Remove_City --
+   -----------------
 
-   procedure Remove_Agora
-     (Planet : in out Planet_Record)
+   procedure Remove_City
+     (Planet : in out Planet_Record;
+      City   : not null access constant Carthage.Cities.City_Record'Class)
    is
+      Position : Planet_City_Lists.Cursor :=
+                   Planet.Cities.Find (Planet_City_Access (City));
    begin
-      Planet.Agora := null;
-   end Remove_Agora;
+      Planet.Cities.Delete (Position);
+   end Remove_City;
 
    -----------------
    -- Remove_Tile --
@@ -382,6 +397,22 @@ package body Carthage.Planets is
       Db.Scan (Process);
    end Scan;
 
+   -----------------
+   -- Scan_Cities --
+   -----------------
+
+   procedure Scan_Cities
+     (Planet  : Planet_Record;
+      Process : not null access
+        procedure (City : not null access constant
+                     Carthage.Cities.City_Record'Class))
+   is
+   begin
+      for City of Planet.Cities loop
+         Process (City);
+      end loop;
+   end Scan_Cities;
+
    --------------------------
    -- Scan_Connected_Tiles --
    --------------------------
@@ -416,18 +447,6 @@ package body Carthage.Planets is
         (Start, Local_Test'Access, Sub);
       Tile_Graphs.Iterate (Sub, Local_Process'Access);
    end Scan_Connected_Tiles;
-
-   ---------------
-   -- Set_Agora --
-   ---------------
-
-   procedure Set_Agora
-     (Planet : in out Planet_Record;
-      Agora  : not null access constant Carthage.Cities.City_Record'Class)
-   is
-   begin
-      Planet.Agora := Agora;
-   end Set_Agora;
 
    ---------------
    -- Set_Owner --
@@ -501,6 +520,19 @@ package body Carthage.Planets is
    is
    begin
       Db.Update (Planet.Reference, Update);
+   end Update;
+
+   ------------
+   -- Update --
+   ------------
+
+   function Update
+     (Item : not null access constant Planet_Record'Class)
+      return Updateable_Reference
+   is
+      Base_Update : constant Db.Updateable_Reference := Db.Update (Item);
+   begin
+      return Updateable_Reference'(Base_Update.Element, Base_Update);
    end Update;
 
 end Carthage.Planets;

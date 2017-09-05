@@ -12,12 +12,19 @@ package Carthage.Houses is
    type House_Category is (Noble, Church, League, Imperial,
                            Vau, Symbiot, Rebels);
 
+   type Treaty_Status is (Allied, Neutral, Hostile, War);
+
    type House_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with private;
 
    function Category
      (House : House_Record)
       return House_Category;
+
+   function Treaty_Status_With
+     (House : House_Record;
+      Other : not null access constant House_Record'Class)
+      return Treaty_Status;
 
    function Capital
      (House : House_Record)
@@ -144,6 +151,14 @@ private
      (House : House_Record)
       return access constant Carthage.Planets.Planet_Record'Class
    is (House.Capital);
+
+   function Treaty_Status_With
+     (House : House_Record;
+      Other : not null access constant House_Record'Class)
+      return Treaty_Status
+   is (if House.Category = Rebels or else Other.Category = Rebels
+       then War
+       else Neutral);
 
    function Exists (Id : String) return Boolean
    is (Db.Exists (Id));
