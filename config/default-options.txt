@@ -1,2 +1,5 @@
-gtk-ui = true
-house = al-malik
+gtk-ui = yes
+house = hazat
+update = no
+update-count = 1
+clear-import-cache = no
