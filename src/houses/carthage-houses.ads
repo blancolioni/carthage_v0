@@ -40,6 +40,9 @@ package Carthage.Houses is
      (House  : in out House_Record;
       Amount : Positive);
 
+   procedure Log_Status
+     (House : House_Record'Class);
+
    subtype House_Class is House_Record'Class;
 
    type House_Type is access constant House_Record'Class;
@@ -53,7 +56,12 @@ package Carthage.Houses is
         Carthage.Managers.Manager_Record'Class);
 
    procedure Scan
-     (Process : not null access procedure (House : House_Type));
+     (Process : not null access procedure
+        (House : House_Record'Class));
+
+   procedure Scan
+     (Process : not null access procedure
+        (House : House_Type));
 
    function Exists (Id : String) return Boolean;
 

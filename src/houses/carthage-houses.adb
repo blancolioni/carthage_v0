@@ -32,6 +32,17 @@ package body Carthage.Houses is
       Set := Set or House.Set_Flag;
    end Insert;
 
+   ----------------
+   -- Log_Status --
+   ----------------
+
+   procedure Log_Status
+     (House : House_Record'Class)
+   is
+   begin
+      House.Log ("cash:" & House.Cash'Img & "; debt:" & House.Debt'Img);
+   end Log_Status;
+
    ------------
    -- Remove --
    ------------
@@ -49,6 +60,18 @@ package body Carthage.Houses is
 
    procedure Scan
      (Process : not null access procedure (House : House_Type))
+   is
+   begin
+      Db.Scan (Process);
+   end Scan;
+
+   ----------
+   -- Scan --
+   ----------
+
+   procedure Scan
+     (Process : not null access procedure
+        (House : House_Record'Class))
    is
    begin
       Db.Scan (Process);

@@ -226,6 +226,7 @@ package body Carthage.Updates is
       Ada.Text_IO.Put_Line ("  stacks: execute orders");
       Carthage.Stacks.Updates.Execute_Orders;
       Ada.Text_IO.Put_Line ("done");
+      Carthage.Houses.Scan (Carthage.Houses.Log_Status'Access);
    end Update;
 
 end Carthage.Updates;
