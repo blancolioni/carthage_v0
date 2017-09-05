@@ -12,8 +12,10 @@ league,The League
 league-adjective,League
 li-halan,Li Halan
 li-halan-full,House Li Halan
-rebels,Rebels
-symbiots,Symbiots
+rebel,Rebels
+rebel-full,The Rebels
+rebel-adjective,Rebel
+symbiot,Symbiots
 vau,The Vau
 spy,The Eye
 spy-full,The Imperial Eye

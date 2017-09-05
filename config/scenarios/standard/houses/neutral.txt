@@ -1,3 +1,0 @@
-colour = 25
-category = neutral
-reveal = { byzantium-ii holy-terra leagueheim }

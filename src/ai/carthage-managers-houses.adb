@@ -37,21 +37,16 @@ package body Carthage.Managers.Houses is
          null;
       end record;
 
-   type Neutral_House_Manager_Record is new House_Manager_Record with
-      record
-         null;
-      end record;
-
    overriding procedure Create_Initial_State
-     (Manager : in out Neutral_House_Manager_Record)
+     (Manager : in out Rebel_House_Manager_Record)
    is null;
 
    overriding procedure Execute
-     (Manager : in out Neutral_House_Manager_Record)
+     (Manager : in out Rebel_House_Manager_Record)
    is null;
 
    overriding procedure Load_State
-     (Manager : in out Neutral_House_Manager_Record)
+     (Manager : in out Rebel_House_Manager_Record)
    is null;
 
    --------------------------
@@ -64,9 +59,6 @@ package body Carthage.Managers.Houses is
    is
       use all type Carthage.Houses.House_Category;
       Manager : Manager_Type;
-
---        Noble, Church, League, Imperial,
---        Vau, Symbiot, Rebels, Neutral
    begin
       case House.Category is
          when Noble =>
@@ -83,8 +75,6 @@ package body Carthage.Managers.Houses is
             Manager := new Symbiot_House_Manager_Record;
          when Rebels =>
             Manager := new Rebel_House_Manager_Record;
-         when Neutral =>
-            Manager := new Neutral_House_Manager_Record;
       end case;
 
       Manager.Create (House);
@@ -133,6 +123,7 @@ package body Carthage.Managers.Houses is
       end Create_Planet_State;
 
    begin
+      Manager.House.Log ("creating initial state");
       Carthage.Planets.Scan (Create_Planet_State'Access);
    end Create_Initial_State;
 
