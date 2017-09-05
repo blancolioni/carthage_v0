@@ -37,9 +37,8 @@ package body Carthage.Cities.Updates is
 
                begin
                   if Quantity > 0 then
-                     City.Planet.Log
-                       (City.Identifier
-                        & ": buy" & Quantity'Img & " "
+                     City.Log
+                       ("buy" & Quantity'Img & " "
                         & Order.Resource.Name
                         & " for" & Cost'Img);
                      City.Owner.Update.Spend (Cost);
@@ -60,9 +59,8 @@ package body Carthage.Cities.Updates is
                                  * 9 / 10;
 
                begin
-                  City.Planet.Log
-                    (City.Identifier
-                     & ": sell" & Quantity'Img & " "
+                  City.Log
+                    ("sell" & Quantity'Img & " "
                      & Resource.Name
                      & " for" & Cost'Img);
                   City.Owner.Update.Earn (Cost);
@@ -96,8 +94,8 @@ package body Carthage.Cities.Updates is
          Quantity : constant Natural := City.Quantity (Resource);
       begin
          if Quantity > 0 then
-            City.Planet.Log
-              (City.Identifier & ": " & Resource.Name & ":" & Quantity'Img);
+            City.Log
+              (Resource.Name & ":" & Quantity'Img);
          end if;
       end Report_Stock;
 
