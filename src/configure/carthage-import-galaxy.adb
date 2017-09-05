@@ -715,7 +715,7 @@ package body Carthage.Import.Galaxy is
             end;
             Carthage.Stacks.Add_Asset (Stack, Asset);
             if not Tile.Has_Stack then
-               Carthage.Tiles.Set_Stack (Tile, Stack);
+               Tile.Update.Set_Stack (Stack);
             end if;
          end if;
       end;

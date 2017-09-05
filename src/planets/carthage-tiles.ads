@@ -73,46 +73,48 @@ package Carthage.Tiles is
      (Tile : Tile_Record)
       return String;
 
-   subtype Tile_Class is Tile_Record'Class;
-
-   type Tile_Type is access constant Tile_Record'Class;
-
    procedure Set_City
-     (Tile : Tile_Type;
+     (Tile : in out Tile_Record;
       City : not null access constant Carthage.Cities.City_Record'Class);
 
    procedure Set_Stack
-     (Tile  : Tile_Type;
+     (Tile  : in out Tile_Record;
       Stack : not null access constant Carthage.Stacks.Stack_Record'Class);
 
    procedure Clear_Stack
-     (Tile  : Tile_Type)
+     (Tile : in out Tile_Record)
      with Pre => Tile.Has_Stack,
      Post => not Tile.Has_Stack;
 
    procedure Set_Road
-     (Tile : Tile_Type;
+     (Tile : in out Tile_Record;
       Road : Boolean);
 
    procedure Set_Seen_By
-     (Tile  : Tile_Type;
+     (Tile  : in out Tile_Record;
       House : Carthage.Houses.House_Type);
 
    procedure Set_Explored_By
-     (Tile  : Tile_Type;
+     (Tile  : in out Tile_Record;
       House : Carthage.Houses.House_Type);
 
    procedure Set_Currently_Visible_To
-     (Tile  : Tile_Type;
+     (Tile  : in out Tile_Record;
       House : Carthage.Houses.House_Type);
 
    procedure Clear_Visibility
-     (Tile  : Tile_Type);
+     (Tile : in out Tile_Record);
 
-   --     procedure Update
---       (Tile : Tile_Type;
---        Update : not null access
---          procedure (Tile : in out Tile_Class));
+   subtype Tile_Class is Tile_Record'Class;
+
+   type Tile_Type is access constant Tile_Record'Class;
+
+   type Updateable_Reference (Item : not null access Tile_Record'Class)
+   is private with Implicit_Dereference => Item;
+
+   function Update
+     (Item : not null access constant Tile_Record'Class)
+      return Updateable_Reference;
 
 private
 
@@ -213,5 +215,10 @@ private
       House : Carthage.Houses.House_Type)
       return Boolean
    is (Carthage.Houses.Element (Tile.Visible, House));
+
+   type Updateable_Reference (Item : not null access Tile_Record'Class) is
+      record
+         Update : Db.Updateable_Reference (Item);
+      end record;
 
 end Carthage.Tiles;

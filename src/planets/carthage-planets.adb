@@ -9,7 +9,7 @@ package body Carthage.Planets is
    procedure Clear_Visibility (Planet : in out Planet_Class) is
    begin
       for Tile of Planet.Tiles loop
-         Carthage.Tiles.Clear_Visibility (Tile);
+         Tile.Update.Clear_Visibility;
       end loop;
       Carthage.Houses.Clear (Planet.Seen);
    end Clear_Visibility;

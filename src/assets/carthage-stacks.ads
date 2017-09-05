@@ -69,11 +69,6 @@ package Carthage.Stacks is
    procedure Scan_Stacks
      (Process : not null access procedure (Stack : Stack_Type));
 
-   procedure Update
-     (Stack : Stack_Type;
-      Update : not null access
-        procedure (Rec : in out Stack_Class));
-
    type Updateable_Reference (Item : not null access Stack_Record'Class)
    is private with Implicit_Dereference => Item;
 

@@ -139,21 +139,9 @@ package body Carthage.Managers.Assets is
          return False;
       else
          declare
-            procedure Update (Stack : in out Carthage.Stacks.Stack_Class);
-
-            ------------
-            -- Update --
-            ------------
-
-            procedure Update (Stack : in out Carthage.Stacks.Stack_Class) is
-            begin
-               Stack.Move_To_Tile (Tile);
-            end Update;
-
             Info : Stack_Info_Record := Element (Closest);
          begin
-            Carthage.Stacks.Update
-              (Info.Stack, Update'Access);
+            Info.Stack.Update.Move_To_Tile (Tile);
             Info.Has_Orders := True;
             Manager.Stacks.Replace_Element (Closest, Info);
          end;

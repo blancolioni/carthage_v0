@@ -124,9 +124,8 @@ package body Carthage.Planets.Configure is
                                       Tile.Base_Terrain.Identifier);
                   begin
                      if Structure /= null then
-                        Carthage.Tiles.Set_City
-                          (Tile,
-                           Carthage.Cities.Create.New_City
+                        Tile.Update.Set_City
+                          (Carthage.Cities.Create.New_City
                              (Planet    => Db.Reference (Planet.Reference),
                               Tile      => Tile,
                               Structure => Structure,

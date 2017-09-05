@@ -32,7 +32,7 @@ package body Carthage.Cities.Create is
                Db.Create (Create'Access);
    begin
 
-      Carthage.Tiles.Set_City (City.Tile, City);
+      City.Tile.Update.Set_City (City);
 
       if not Planet.Has_Agora and then City.Is_Agora then
          declare

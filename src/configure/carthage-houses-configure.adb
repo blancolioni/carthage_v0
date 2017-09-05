@@ -344,8 +344,7 @@ package body Carthage.Houses.Configure is
                Structure => Middle,
                Owner     => House);
 
-            Carthage.Tiles.Set_Road
-              (Planet.Tile (Middle_Position), True);
+            Planet.Tile (Middle_Position).Update.Set_Road (True);
 
             declare
                Ns   : constant Array_Of_Tiles :=
@@ -362,9 +361,8 @@ package body Carthage.Houses.Configure is
                           (Planet   => Planet,
                            Tile     => Ns (Tile_Index),
                            Structure => Fac,
-                           Owner    => House);
-                        Carthage.Tiles.Set_Road
-                          (Ns (Tile_Index), True);
+                           Owner     => House);
+                        Ns (Tile_Index).Update.Set_Road (True);
                         Used (Tile_Index) := True;
                         exit;
                      end if;
@@ -407,8 +405,7 @@ package body Carthage.Houses.Configure is
             Owner     => House);
 
          for Position of Road loop
-            Carthage.Tiles.Set_Road
-              (Planet.Tile (Position), True);
+            Planet.Tile (Position).Update.Set_Road (True);
          end loop;
 
          Remove_Tiles (Available, Tile.Position, 5);

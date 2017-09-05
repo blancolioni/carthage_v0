@@ -39,11 +39,11 @@ package body Carthage.Stacks.Updates is
                            Ref  : constant Stack_Type :=
                                     Stack.Tile.Stack;
                         begin
-                           Carthage.Tiles.Clear_Stack (Stack.Tile);
+                           Stack.Tile.Update.Clear_Stack;
                            Stack.Tile :=
                              Stack.Planet.Tile (Path (I));
-                           Carthage.Tiles.Set_Stack
-                             (Stack.Tile, Ref);
+                           Stack.Tile.Update.Set_Stack (Ref);
+
                            declare
                               Spotted : Surface_Tiles;
                            begin
@@ -51,8 +51,13 @@ package body Carthage.Stacks.Updates is
                                 (Stack.Tile, 0, Stack.Spot + 1,
                                  null, Spotted);
                               for I in 1 .. Tile_Count (Spotted) loop
-                                 Carthage.Tiles.Set_Currently_Visible_To
-                                   (Get_Tile (Spotted, I), Stack.Owner);
+                                 declare
+                                    Tile : constant Carthage.Tiles.Tile_Type :=
+                                             Get_Tile (Spotted, I);
+                                 begin
+                                    Tile.Update.Set_Currently_Visible_To
+                                      (Stack.Owner);
+                                 end;
                               end loop;
                            end;
 

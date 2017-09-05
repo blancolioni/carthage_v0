@@ -16,21 +16,10 @@ package body Carthage.Tiles is
    -----------------
 
    procedure Clear_Stack
-     (Tile  : Tile_Type)
+     (Tile : in out Tile_Record)
    is
-      procedure Update (Rec : in out Tile_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Rec : in out Tile_Class) is
-      begin
-         Rec.Stack := null;
-      end Update;
-
    begin
-      Db.Update (Tile.Reference, Update'Access);
+      Tile.Stack := null;
    end Clear_Stack;
 
    ----------------------
@@ -38,21 +27,10 @@ package body Carthage.Tiles is
    ----------------------
 
    procedure Clear_Visibility
-     (Tile  : Tile_Type)
+     (Tile : in out Tile_Record)
    is
-      procedure Update (Rec : in out Tile_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Rec : in out Tile_Class) is
-      begin
-         Carthage.Houses.Clear (Rec.Visible);
-      end Update;
-
    begin
-      Db.Update (Tile.Reference, Update'Access);
+      Carthage.Houses.Clear (Tile.Visible);
    end Clear_Visibility;
 
    -----------------
@@ -84,22 +62,11 @@ package body Carthage.Tiles is
    --------------
 
    procedure Set_City
-     (Tile : Tile_Type;
+     (Tile : in out Tile_Record;
       City : not null access constant Carthage.Cities.City_Record'Class)
    is
-      procedure Update (Rec : in out Tile_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Rec : in out Tile_Class) is
-      begin
-         Rec.City := City;
-      end Update;
-
    begin
-      Db.Update (Tile.Reference, Update'Access);
+      Tile.City := City;
    end Set_City;
 
    ------------------------------
@@ -107,24 +74,13 @@ package body Carthage.Tiles is
    ------------------------------
 
    procedure Set_Currently_Visible_To
-     (Tile  : Tile_Type;
+     (Tile  : in out Tile_Record;
       House : Carthage.Houses.House_Type)
    is
-      procedure Update (Rec : in out Tile_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Rec : in out Tile_Class) is
-      begin
-         Carthage.Houses.Insert (Rec.Visible, House);
-         Carthage.Houses.Insert (Rec.Explored, House);
-         Carthage.Houses.Insert (Rec.Seen, House);
-      end Update;
-
    begin
-      Db.Update (Tile.Reference, Update'Access);
+      Carthage.Houses.Insert (Tile.Visible, House);
+      Carthage.Houses.Insert (Tile.Explored, House);
+      Carthage.Houses.Insert (Tile.Seen, House);
    end Set_Currently_Visible_To;
 
    ---------------------
@@ -132,23 +88,12 @@ package body Carthage.Tiles is
    ---------------------
 
    procedure Set_Explored_By
-     (Tile  : Tile_Type;
+     (Tile  : in out Tile_Record;
       House : Carthage.Houses.House_Type)
    is
-      procedure Update (Rec : in out Tile_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Rec : in out Tile_Class) is
-      begin
-         Carthage.Houses.Insert (Rec.Explored, House);
-         Carthage.Houses.Insert (Rec.Seen, House);
-      end Update;
-
    begin
-      Db.Update (Tile.Reference, Update'Access);
+      Carthage.Houses.Insert (Tile.Explored, House);
+      Carthage.Houses.Insert (Tile.Seen, House);
    end Set_Explored_By;
 
    --------------
@@ -156,22 +101,11 @@ package body Carthage.Tiles is
    --------------
 
    procedure Set_Road
-     (Tile : Tile_Type;
+     (Tile : in out Tile_Record;
       Road : Boolean)
    is
-      procedure Update (Rec : in out Tile_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Rec : in out Tile_Class) is
-      begin
-         Rec.Road := Road;
-      end Update;
-
    begin
-      Db.Update (Tile.Reference, Update'Access);
+      Tile.Road := Road;
    end Set_Road;
 
    -----------------
@@ -179,22 +113,11 @@ package body Carthage.Tiles is
    -----------------
 
    procedure Set_Seen_By
-     (Tile  : Tile_Type;
+     (Tile  : in out Tile_Record;
       House : Carthage.Houses.House_Type)
    is
-      procedure Update (Rec : in out Tile_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Rec : in out Tile_Class) is
-      begin
-         Carthage.Houses.Insert (Rec.Seen, House);
-      end Update;
-
    begin
-      Db.Update (Tile.Reference, Update'Access);
+      Carthage.Houses.Insert (Tile.Seen, House);
    end Set_Seen_By;
 
    ---------------
@@ -202,22 +125,24 @@ package body Carthage.Tiles is
    ---------------
 
    procedure Set_Stack
-     (Tile  : Tile_Type;
+     (Tile  : in out Tile_Record;
       Stack : not null access constant Carthage.Stacks.Stack_Record'Class)
    is
-      procedure Update (Rec : in out Tile_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Rec : in out Tile_Class) is
-      begin
-         Rec.Stack := Stack;
-      end Update;
-
    begin
-      Db.Update (Tile.Reference, Update'Access);
+      Tile.Stack := Stack;
    end Set_Stack;
+
+   ------------
+   -- Update --
+   ------------
+
+   function Update
+     (Item : not null access constant Tile_Record'Class)
+      return Updateable_Reference
+   is
+      Base_Update : constant Db.Updateable_Reference := Db.Update (Item);
+   begin
+      return Updateable_Reference'(Base_Update.Element, Base_Update);
+   end Update;
 
 end Carthage.Tiles;

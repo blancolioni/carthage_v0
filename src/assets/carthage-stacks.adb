@@ -110,19 +110,6 @@ package body Carthage.Stacks is
    -- Update --
    ------------
 
-   procedure Update
-     (Stack  : Stack_Type;
-      Update : not null access
-        procedure (Rec : in out Stack_Class))
-   is
-   begin
-      Db.Update (Stack.Reference, Update);
-   end Update;
-
-   ------------
-   -- Update --
-   ------------
-
    function Update
      (Item : not null access constant Stack_Record'Class)
       return Updateable_Reference

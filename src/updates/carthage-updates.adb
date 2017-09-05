@@ -78,9 +78,12 @@ package body Carthage.Updates is
             Tiles        => Tiles);
 
          for I in 1 .. Carthage.Planets.Tile_Count (Tiles) loop
-            Carthage.Tiles.Set_Currently_Visible_To
-              (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
-               House => City.Owner);
+            declare
+               Tile : constant Carthage.Tiles.Tile_Type :=
+                        Carthage.Planets.Get_Tile (Tiles, I);
+            begin
+               Tile.Update.Set_Currently_Visible_To (City.Owner);
+            end;
          end loop;
 
       end City_Look;
@@ -116,14 +119,16 @@ package body Carthage.Updates is
 
          Planet.Get_Tiles (Tiles);
          for I in 1 .. Carthage.Planets.Tile_Count (Tiles) loop
-            Carthage.Tiles.Set_Seen_By
-              (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
-               House => House);
-            if Explored then
-               Carthage.Tiles.Set_Explored_By
-                 (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
-                  House => House);
-            end if;
+            declare
+               Tile : constant Carthage.Tiles.Tile_Type :=
+                        Carthage.Planets.Get_Tile (Tiles, I);
+            begin
+               if Explored then
+                  Tile.Update.Set_Explored_By (House);
+               else
+                  Tile.Update.Set_Seen_By (House);
+               end if;
+            end;
          end loop;
          Carthage.Planets.Set_Seen_By (Planet, House);
       end Reveal_Planet;
@@ -170,9 +175,12 @@ package body Carthage.Updates is
                Tiles        => Tiles);
 
             for I in 1 .. Carthage.Planets.Tile_Count (Tiles) loop
-               Carthage.Tiles.Set_Currently_Visible_To
-                 (Tile  => Carthage.Planets.Get_Tile (Tiles, I),
-                  House => Stack.Owner);
+               declare
+                  Tile : constant Carthage.Tiles.Tile_Type :=
+                           Carthage.Planets.Get_Tile (Tiles, I);
+               begin
+                  Tile.Update.Set_Currently_Visible_To (Stack.Owner);
+               end;
             end loop;
          elsif Stack.In_Space
            and then Stack.Count > 0
@@ -207,10 +215,15 @@ package body Carthage.Updates is
    procedure Update is
    begin
       Ada.Text_IO.Put_Line ("Executing update");
+      Ada.Text_IO.Put_Line ("  managers: start of turn");
       Carthage.Managers.Before_Start_Of_Turn;
+      Ada.Text_IO.Put_Line ("  managers: create orders");
       Carthage.Managers.Create_Orders;
+      Ada.Text_IO.Put_Line ("  cities: execute orders");
       Carthage.Cities.Updates.Execute_Orders;
+      Ada.Text_IO.Put_Line ("  cities: execute production");
       Carthage.Cities.Updates.Execute_Production;
+      Ada.Text_IO.Put_Line ("  stacks: execute orders");
       Carthage.Stacks.Updates.Execute_Orders;
       Ada.Text_IO.Put_Line ("done");
    end Update;
