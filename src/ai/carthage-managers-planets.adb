@@ -1,5 +1,6 @@
 with WL.Random;
 
+with Carthage.Stacks;
 with Carthage.Tiles;
 
 with Carthage.Managers.Assets;
@@ -36,6 +37,8 @@ package body Carthage.Managers.Planets is
          Seen_Tiles           : List_Of_Tiles.List;
          Unseen_Tiles         : List_Of_Tiles.List;
          Target_Tiles         : List_Of_Tiles.List;
+         Hostile_Tiles        : List_Of_Tiles.List;
+         Active_Targets       : List_Of_Tiles.List;
          Tile_Info            : Tile_Info_Array;
       end record;
 
@@ -90,15 +93,20 @@ package body Carthage.Managers.Planets is
      (Manager : in out Planet_Manager_Record)
    is
    begin
-      for I in 1 .. 4 loop
-         if not Manager.Target_Tiles.Is_Empty then
+      for Tile of Manager.Active_Targets loop
+         if Tile.Has_Stack
+           and then Manager.House.At_War_With (Tile.Stack.Owner)
+         then
+            Manager.Ground_Asset_Manager.Add_Request
+              (Tile_Attack_Request
+                 (Manager.Planet, Tile));
+         else
             Manager.Ground_Asset_Manager.Add_Request
               (Tile_Recon_Request
-                 (Manager.Planet,
-                  Manager.Target_Tiles.First_Element));
-            Manager.Target_Tiles.Delete_First;
+                 (Manager.Planet, Tile));
          end if;
       end loop;
+
       Manager.Ground_Asset_Manager.Execute;
       Manager.City_Manager.Execute;
    end Execute;
@@ -115,6 +123,7 @@ package body Carthage.Managers.Planets is
       Manager.Explored_Tiles.Clear;
       Manager.Seen_Tiles.Clear;
       Manager.Unseen_Tiles.Clear;
+      Manager.Hostile_Tiles.Clear;
 
       for Y in Tile_Y loop
          for X in Tile_X loop
@@ -133,6 +142,16 @@ package body Carthage.Managers.Planets is
                            Targeted           => False);
             begin
                if Tile.Currently_Visible_To (Manager.House) then
+                  if Tile.Has_Stack
+                    and then Manager.House.At_War_With (Tile.Stack.Owner)
+                  then
+                     Manager.Planet.Log
+                       ("hostile at "
+                        & Carthage.Tiles.Position_Image (Tile.Position));
+
+                     Manager.Hostile_Tiles.Append (Tile);
+                  end if;
+
                   Manager.Controlled_Tiles.Append (Tile);
                   Info.Nearest_Seen := Tile;
                   Info.Nearest_Explored := Tile;
@@ -151,6 +170,24 @@ package body Carthage.Managers.Planets is
             end;
          end loop;
       end loop;
+
+      declare
+         Old_Targets : constant List_Of_Tiles.List := Manager.Active_Targets;
+      begin
+         Manager.Active_Targets := Manager.Hostile_Tiles;
+
+         for Tile of Old_Targets loop
+            if (not Tile.Currently_Visible_To (Manager.House)
+                or else (Tile.Has_Stack
+                         and then  Manager.House.At_War_With
+                           (Tile.Stack.Owner)))
+              and then not Manager.Active_Targets.Contains (Tile)
+            then
+               Manager.Active_Targets.Insert
+                 (Manager.Active_Targets.First, Tile);
+            end if;
+         end loop;
+      end;
 
       Manager.Target_Tiles := Manager.Unseen_Tiles;
 
@@ -231,6 +268,19 @@ package body Carthage.Managers.Planets is
          Manager.Target_Tiles.Clear;
          for T of Arr loop
             Manager.Target_Tiles.Append (T);
+         end loop;
+      end;
+
+      declare
+         use type Ada.Containers.Count_Type;
+         use List_Of_Tiles;
+         Next_Target : Cursor := Manager.Target_Tiles.First;
+      begin
+         while Manager.Active_Targets.Length < 4
+           and then Has_Element (Next_Target)
+         loop
+            Manager.Active_Targets.Append (Element (Next_Target));
+            Next (Next_Target);
          end loop;
       end;
 

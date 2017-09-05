@@ -268,17 +268,11 @@ package body Carthage.Updates is
       Ada.Text_IO.Put_Line
         ("Update: "
          & Carthage.Calendar.Day_Identifier (Carthage.Calendar.Today));
-      Ada.Text_IO.Put_Line ("  managers: start of turn");
       Carthage.Managers.Before_Start_Of_Turn;
-      Ada.Text_IO.Put_Line ("  managers: create orders");
       Carthage.Managers.Create_Orders;
-      Ada.Text_IO.Put_Line ("  cities: execute orders");
       Carthage.Cities.Updates.Execute_Orders;
-      Ada.Text_IO.Put_Line ("  cities: execute production");
       Carthage.Cities.Updates.Execute_Production;
-      Ada.Text_IO.Put_Line ("  stacks: execute orders");
       Carthage.Stacks.Updates.Execute_Orders;
-      Ada.Text_IO.Put_Line ("done");
       Carthage.Houses.Scan (Carthage.Houses.Log_Status'Access);
       Carthage.Calendar.Next_Day;
    end Update;

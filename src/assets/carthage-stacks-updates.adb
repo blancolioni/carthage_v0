@@ -44,6 +44,10 @@ package body Carthage.Stacks.Updates is
                              Stack.Planet.Tile (Path (I));
                            Stack.Tile.Update.Set_Stack (Ref);
 
+                           Stack.Log ("destination: "
+                                      & Carthage.Tiles.Position_Image
+                                        (Order.Destination));
+
                            declare
                               Spotted : Surface_Tiles;
                            begin

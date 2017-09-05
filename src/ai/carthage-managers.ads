@@ -14,6 +14,11 @@ package Carthage.Managers is
       Tile   : Carthage.Tiles.Tile_Type)
       return Manager_Request;
 
+   function Tile_Attack_Request
+     (Planet : Carthage.Planets.Planet_Type;
+      Tile   : Carthage.Tiles.Tile_Type)
+      return Manager_Request;
+
    type Manager_Record is abstract tagged private;
 
    procedure Create
@@ -43,7 +48,7 @@ package Carthage.Managers is
 
 private
 
-   type Request_Class is (Tile_Recon);
+   type Request_Class is (Tile_Attack, Tile_Recon);
 
    type Manager_Request (Class : Request_Class) is
       record
@@ -56,6 +61,12 @@ private
       Tile   : Carthage.Tiles.Tile_Type)
       return Manager_Request
    is (Tile_Recon, Planet, Tile);
+
+   function Tile_Attack_Request
+     (Planet : Carthage.Planets.Planet_Type;
+      Tile   : Carthage.Tiles.Tile_Type)
+      return Manager_Request
+   is (Tile_Attack, Planet, Tile);
 
    package Request_Lists is
      new Ada.Containers.Indefinite_Doubly_Linked_Lists (Manager_Request);

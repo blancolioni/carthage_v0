@@ -45,6 +45,12 @@ package body Carthage.Managers.Assets is
       Tile    : Carthage.Tiles.Tile_Type)
       return Boolean;
 
+   function Execute_Tile_Attack_Request
+     (Manager : in out Ground_Asset_Manager_Record'Class;
+      Tile    : Carthage.Tiles.Tile_Type)
+      return Boolean
+   is (Execute_Tile_Recon_Request (Manager, Tile));
+
    --------------------------
    -- Create_Initial_State --
    --------------------------
@@ -96,9 +102,11 @@ package body Carthage.Managers.Assets is
             case Request.Class is
                when Tile_Recon =>
                   Done := Execute_Tile_Recon_Request (Manager, Request.Tile);
+               when Tile_Attack =>
+                  Done := Execute_Tile_Attack_Request (Manager, Request.Tile);
             end case;
 
-            if not Done then
+            if False and then not Done then
                New_Requests.Append (Request);
             end if;
          end;

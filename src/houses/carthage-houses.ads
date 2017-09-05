@@ -26,6 +26,11 @@ package Carthage.Houses is
       Other : not null access constant House_Record'Class)
       return Treaty_Status;
 
+   function At_War_With
+     (House : House_Record;
+      Other : not null access constant House_Record'Class)
+      return Boolean;
+
    function Capital
      (House : House_Record)
       return access constant Carthage.Planets.Planet_Record'Class;
@@ -159,6 +164,12 @@ private
    is (if House.Category = Rebels or else Other.Category = Rebels
        then War
        else Neutral);
+
+   function At_War_With
+     (House : House_Record;
+      Other : not null access constant House_Record'Class)
+      return Boolean
+   is (House.Treaty_Status_With (Other) = War);
 
    function Exists (Id : String) return Boolean
    is (Db.Exists (Id));
