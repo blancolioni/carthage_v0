@@ -65,8 +65,11 @@ package body Carthage.Managers.Cities is
       procedure Add_City_Info
         (City : Carthage.Cities.City_Type)
       is
+         use type Carthage.Houses.House_Type;
       begin
-         Manager.Cities.Append (City_Info_Record'(City => City));
+         if City.Owner = Manager.House then
+            Manager.Cities.Append (City_Info_Record'(City => City));
+         end if;
       end Add_City_Info;
 
    begin
@@ -103,9 +106,8 @@ package body Carthage.Managers.Cities is
                Quantity : Natural)
             is
             begin
-               Manager.Planet.Log
-                 (Info.City.Identifier
-                  & ": order" & Quantity'Img & " " & Resource.Identifier);
+               Info.City.Log
+                 ("order" & Quantity'Img & " " & Resource.Identifier);
                Info.City.Update.Buy_Resource (Resource, Quantity);
             end Buy;
 
@@ -118,9 +120,8 @@ package body Carthage.Managers.Cities is
                Quantity : Natural)
             is
             begin
-               Manager.Planet.Log
-                 (Info.City.Identifier
-                  & ": sell" & Quantity'Img & " " & Resource.Identifier);
+               Info.City.Log
+                 ("sell" & Quantity'Img & " " & Resource.Identifier);
                Info.City.Update.Sell_Resource (Resource, Quantity);
             end Sell;
 
@@ -143,8 +144,12 @@ package body Carthage.Managers.Cities is
                              - Info.City.Quantity (Item.Resource));
                      end if;
                   end loop;
+
                   for Item of Outputs loop
-                     Sell (Item.Resource, Item.Quantity);
+                     if Info.City.Quantity (Item.Resource) > 0 then
+                        Sell
+                          (Item.Resource, Info.City.Quantity (Item.Resource));
+                     end if;
                   end loop;
                end;
             end if;
