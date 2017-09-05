@@ -833,6 +833,12 @@ package body Carthage.Configure is
                      Tech_2                : constant Natural := Next_Number;
                      Tech_3                : constant Natural := Next_Number;
                      Tech_4                : constant Natural := Next_Number;
+                     Tax                   : constant Natural := Next_Number;
+                     Flock                 : constant Natural := Next_Number;
+                     Rng                   : constant Natural := Next_Number;
+                     Eat                   : constant Natural := Next_Number;
+                     Rank                  : constant Natural := Next_Number;
+                     RoP                   : constant Natural := Next_Number;
                   begin
                      Output := Tropos.New_Config (Id);
                      Output.Add ("index", Index);
@@ -916,6 +922,12 @@ package body Carthage.Configure is
 
                      Output.Add ("maintenance", Maintenance);
                      Output.Add ("credit-cost", Credit_Cost);
+                     Output.Add ("tax", Tax);
+                     Output.Add ("flock", Flock);
+                     Output.Add ("range", Rng);
+                     Output.Add ("eat", Eat);
+                     Output.Add ("rank", Rank);
+                     Output.Add ("rop", RoP);
 
                      declare
                         Resources : Tropos.Configuration :=
@@ -996,10 +1008,6 @@ package body Carthage.Configure is
 
    procedure Load_Configuration is
    begin
-      if Carthage.Options.Clear_Import_Cache then
-         Ada.Text_IO.Put_Line ("option: clear import cache = yes");
-      end if;
-
       Ada.Text_IO.Put_Line ("loading configuration ...");
       Init_Config :=
         Tropos.Reader.Read_Config

@@ -37,6 +37,10 @@ package Carthage.Units is
      (Unit : Unit_Record)
       return Natural;
 
+   function Eat
+     (Unit : Unit_Record)
+      return Natural;
+
    function Image_Resource
      (Unit : Unit_Record)
       return String;
@@ -87,6 +91,7 @@ private
          Combat         : Boolean;
          Maintenance    : Natural;
          Credit_Cost    : Natural;
+         Eat            : Natural;
          Resource_Cost  : Resource_Cost_Vectors.Vector;
          Build_Unit     : Unit_Type;
          Enabled_By     : Enabling_Tech;
@@ -117,6 +122,11 @@ private
      (Unit : Unit_Record)
       return Natural
    is (Unit.Spot);
+
+   function Eat
+     (Unit : Unit_Record)
+      return Natural
+   is (Unit.Eat);
 
    function Image_Resource
      (Unit : Unit_Record)

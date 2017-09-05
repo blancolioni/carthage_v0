@@ -36,6 +36,7 @@ package body Carthage.Units.Configure is
          Unit.Turns_To_Build := Config.Get ("turns-to-build", 0);
          Unit.Can_Be_Cargo := Config.Get ("can-be-cargo", False);
          Unit.Combat := not Config.Get ("non-combat", False);
+         Unit.Eat := Config.Get ("eat");
 
          Unit.Weapons := (others => (0, 0));
 
