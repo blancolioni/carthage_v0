@@ -13,6 +13,19 @@ package body Carthage.Cities is
       City.Orders.Append (City_Order_Record'(Buy, Resource, Quantity));
    end Buy_Resource;
 
+   --------------------
+   -- Log_Identifier --
+   --------------------
+
+   overriding function Log_Identifier
+     (City : City_Record)
+      return String
+   is
+   begin
+      return City.Owner.Identifier & " " & City_Class (City).Identifier
+        & " on " & City.Planet.Identifier;
+   end Log_Identifier;
+
    -----------------
    -- Scan_Cities --
    -----------------
@@ -112,6 +125,10 @@ package body Carthage.Cities is
       New_Quantity : Natural)
    is
    begin
+--        City.Log ("changing " & Resource.Identifier
+--                  & " quantity from"
+--                  & Natural'Image (City.Quantity (Resource))
+--                  & " to" & New_Quantity'Img);
       City.Stock.Set_Quantity (Resource, New_Quantity);
    end Set_Quantity;
 

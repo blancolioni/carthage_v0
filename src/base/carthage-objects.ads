@@ -22,6 +22,11 @@ package Carthage.Objects is
      (Item : Root_Identifier_Object)
       return String;
 
+   function Log_Identifier
+     (Item : Root_Identifier_Object)
+      return String
+   is (Root_Identifier_Object'Class (Item).Identifier);
+
    procedure Log
      (Object  : Root_Identifier_Object'Class;
       Message : String);

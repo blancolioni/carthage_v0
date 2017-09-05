@@ -28,6 +28,10 @@ package Carthage.Cities is
         Carthage.Resources.Resource_Class;
       New_Quantity : Natural);
 
+   overriding function Log_Identifier
+     (City : City_Record)
+      return String;
+
    function Planet
      (City : City_Record)
       return Carthage.Planets.Planet_Type;

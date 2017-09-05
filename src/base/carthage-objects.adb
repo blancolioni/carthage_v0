@@ -37,7 +37,7 @@ package body Carthage.Objects is
    is
    begin
       Carthage.Logging.Log
-        ("[" & Object.Identifier & "]: " & Message);
+        ("[" & Object.Log_Identifier & "]: " & Message);
    end Log;
 
    ----------
