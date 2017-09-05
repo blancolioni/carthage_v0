@@ -7,6 +7,7 @@ source_dir = src/cities
 source_dir = src/configure
 source_dir = src/driver
 source_dir = src/galaxy
+source_dir = src/game
 source_dir = src/houses
 source_dir = src/logging
 source_dir = src/planets

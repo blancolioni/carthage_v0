@@ -1,5 +1,7 @@
 with Ada.Text_IO;
 
+with Carthage.Calendar;
+
 with Carthage.Cities.Updates;
 with Carthage.Houses;
 with Carthage.Managers;
@@ -263,7 +265,9 @@ package body Carthage.Updates is
 
    procedure Update is
    begin
-      Ada.Text_IO.Put_Line ("Executing update");
+      Ada.Text_IO.Put_Line
+        ("Update: "
+         & Carthage.Calendar.Day_Identifier (Carthage.Calendar.Today));
       Ada.Text_IO.Put_Line ("  managers: start of turn");
       Carthage.Managers.Before_Start_Of_Turn;
       Ada.Text_IO.Put_Line ("  managers: create orders");
@@ -276,6 +280,7 @@ package body Carthage.Updates is
       Carthage.Stacks.Updates.Execute_Orders;
       Ada.Text_IO.Put_Line ("done");
       Carthage.Houses.Scan (Carthage.Houses.Log_Status'Access);
+      Carthage.Calendar.Next_Day;
    end Update;
 
 end Carthage.Updates;

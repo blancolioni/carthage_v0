@@ -11,6 +11,8 @@ with Carthage.UI.Gtk_UI;
 
 with Carthage.Managers.Houses;
 
+with Carthage.Game;
+
 with Carthage.Options;
 with Carthage.Paths;
 
@@ -27,6 +29,8 @@ begin
    else
       Carthage.Configure.Load_Scenario ("standard");
    end if;
+
+   Carthage.Game.New_Game;
 
    Ada.Text_IO.Put_Line ("setting up first turn");
    Carthage.Updates.Before_First_Turn;
