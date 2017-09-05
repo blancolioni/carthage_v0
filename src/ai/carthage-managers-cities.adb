@@ -102,25 +102,11 @@ package body Carthage.Managers.Cities is
               (Resource : Carthage.Resources.Resource_Type;
                Quantity : Natural)
             is
-               procedure Add_Order (Rec : in out Carthage.Cities.City_Class);
-
-               ---------------
-               -- Add_Order --
-               ---------------
-
-               procedure Add_Order
-                 (Rec : in out Carthage.Cities.City_Class)
-               is
-               begin
-                  Rec.Buy_Resource (Resource, Quantity);
-               end Add_Order;
-
             begin
                Manager.Planet.Log
                  (Info.City.Identifier
                   & ": order" & Quantity'Img & " " & Resource.Identifier);
-               Carthage.Cities.Update_City
-                 (Info.City, Add_Order'Access);
+               Info.City.Update.Buy_Resource (Resource, Quantity);
             end Buy;
 
             ----------
@@ -131,25 +117,11 @@ package body Carthage.Managers.Cities is
               (Resource : Carthage.Resources.Resource_Type;
                Quantity : Natural)
             is
-               procedure Add_Order (Rec : in out Carthage.Cities.City_Class);
-
-               ---------------
-               -- Add_Order --
-               ---------------
-
-               procedure Add_Order
-                 (Rec : in out Carthage.Cities.City_Class)
-               is
-               begin
-                  Rec.Sell_Resource (Resource, Quantity);
-               end Add_Order;
-
             begin
                Manager.Planet.Log
                  (Info.City.Identifier
                   & ": sell" & Quantity'Img & " " & Resource.Identifier);
-               Carthage.Cities.Update_City
-                 (Info.City, Add_Order'Access);
+               Info.City.Update.Sell_Resource (Resource, Quantity);
             end Sell;
 
          begin

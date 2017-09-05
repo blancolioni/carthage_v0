@@ -35,53 +35,16 @@ package body Carthage.Cities.Updates is
                                Quantity * Order.Resource.Base_Price
                                  * 11 / 10;
 
-                  procedure Earn
-                    (H : in out Carthage.Houses.House_Class);
-
-                  procedure Spend
-                    (H : in out Carthage.Houses.House_Class);
-
-                  procedure Remove
-                    (A : in out Carthage.Cities.City_Class);
-
-                  ----------
-                  -- Earn --
-                  ----------
-
-                  procedure Earn
-                    (H : in out Carthage.Houses.House_Class)
-                  is
-                  begin
-                     H.Earn (Cost);
-                  end Earn;
-
-                  ------------
-                  -- Remove --
-                  ------------
-
-                  procedure Remove
-                    (A : in out Carthage.Cities.City_Class)
-                  is
-                  begin
-                     A.Remove (Order.Resource, Quantity);
-                  end Remove;
-
-                  -----------
-                  -- Spend --
-                  -----------
-
-                  procedure Spend
-                    (H : in out Carthage.Houses.House_Class)
-                  is
-                  begin
-                     H.Spend (Cost);
-                  end Spend;
-
                begin
                   if Quantity > 0 then
-                     Carthage.Houses.Update (City.Owner, Spend'Access);
-                     Carthage.Houses.Update (Agora.Owner, Earn'Access);
-                     Db.Update (Agora.Reference, Remove'Access);
+                     City.Planet.Log
+                       (City.Identifier
+                        & ": buy" & Quantity'Img & " "
+                        & Order.Resource.Name
+                        & " for" & Cost'Img);
+                     City.Owner.Update.Spend (Cost);
+                     Agora.Owner.Update.Earn (Cost);
+                     Agora.Update.Remove (Order.Resource, Quantity);
                      City.Add (Order.Resource, Quantity);
                   end if;
                end;

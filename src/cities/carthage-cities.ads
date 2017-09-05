@@ -96,6 +96,13 @@ package Carthage.Cities is
      (Test    : not null access function (City : City_Type) return Boolean;
       Process : not null access procedure (City : City_Type));
 
+   type Updateable_Reference (City : not null access City_Record'Class)
+   is private with Implicit_Dereference => City;
+
+   function Update
+     (Item : not null access constant City_Record'Class)
+      return Updateable_Reference;
+
 private
 
    type City_Order_Class is (Buy, Sell);
@@ -177,5 +184,10 @@ private
      (City : City_Record)
       return Boolean
    is (City.Identifier = "agora");
+
+   type Updateable_Reference (City : not null access City_Record'Class) is
+      record
+         Update : Db.Updateable_Reference (City);
+      end record;
 
 end Carthage.Cities;

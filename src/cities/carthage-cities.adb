@@ -138,6 +138,19 @@ package body Carthage.Cities is
       Db.Update (City.Reference, Update'Access);
    end Set_Seen_By;
 
+   ------------
+   -- Update --
+   ------------
+
+   function Update
+     (Item : not null access constant City_Record'Class)
+      return Updateable_Reference
+   is
+      Base_Update : constant Db.Updateable_Reference := Db.Update (Item);
+   begin
+      return Updateable_Reference'(Base_Update.Element, Base_Update);
+   end Update;
+
    -----------------
    -- Update_City --
    -----------------

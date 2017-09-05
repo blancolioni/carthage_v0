@@ -119,4 +119,17 @@ package body Carthage.Stacks is
       Db.Update (Stack.Reference, Update);
    end Update;
 
+   ------------
+   -- Update --
+   ------------
+
+   function Update
+     (Item : not null access constant Stack_Record'Class)
+      return Updateable_Reference
+   is
+      Base_Update : constant Db.Updateable_Reference := Db.Update (Item);
+   begin
+      return Updateable_Reference'(Base_Update.Element, Base_Update);
+   end Update;
+
 end Carthage.Stacks;

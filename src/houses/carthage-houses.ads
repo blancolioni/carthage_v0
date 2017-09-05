@@ -44,11 +44,6 @@ package Carthage.Houses is
 
    type House_Type is access constant House_Record'Class;
 
-   procedure Update
-     (House : House_Type;
-      Update : not null access
-        procedure (Rec : in out House_Class));
-
    function Number_Of_Houses
      return Natural;
 
@@ -75,6 +70,13 @@ package Carthage.Houses is
    function Element (Set   : House_Set;
                      House : House_Type)
                      return Boolean;
+
+   type Updateable_Reference (Item : not null access House_Record'Class)
+   is private with Implicit_Dereference => Item;
+
+   function Update
+     (Item : not null access constant House_Record'Class)
+      return Updateable_Reference;
 
 private
 
@@ -145,5 +147,10 @@ private
                      House : House_Type)
                      return Boolean
    is ((Set and House.Set_Flag) /= 0);
+
+   type Updateable_Reference (Item : not null access House_Record'Class) is
+      record
+         Update : Db.Updateable_Reference (Item);
+      end record;
 
 end Carthage.Houses;

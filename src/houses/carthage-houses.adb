@@ -114,13 +114,13 @@ package body Carthage.Houses is
    -- Update --
    ------------
 
-   procedure Update
-     (House  : House_Type;
-      Update : not null access
-        procedure (Rec : in out House_Class))
+   function Update
+     (Item : not null access constant House_Record'Class)
+      return Updateable_Reference
    is
+      Base_Update : constant Db.Updateable_Reference := Db.Update (Item);
    begin
-      Db.Update (House.Reference, Update);
+      return Updateable_Reference'(Base_Update.Element, Base_Update);
    end Update;
 
 end Carthage.Houses;

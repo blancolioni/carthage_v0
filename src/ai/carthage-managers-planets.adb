@@ -184,11 +184,11 @@ package body Carthage.Managers.Planets is
                      end loop;
 
                      if Good then
-                        Manager.House.Log
-                          ("adding target: "
-                           & Manager.Planet.Name
-                           & Position.X'Img & Position.Y'Img
-                           & " " & Target.Description);
+--                          Manager.House.Log
+--                            ("adding target: "
+--                             & Manager.Planet.Name
+--                             & Position.X'Img & Position.Y'Img
+--                             & " " & Target.Description);
                         for N of Ns loop
                            declare
                               N_Info : Tile_Info_Record renames

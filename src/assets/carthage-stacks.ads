@@ -74,6 +74,13 @@ package Carthage.Stacks is
       Update : not null access
         procedure (Rec : in out Stack_Class));
 
+   type Updateable_Reference (Item : not null access Stack_Record'Class)
+   is private with Implicit_Dereference => Item;
+
+   function Update
+     (Item : not null access constant Stack_Record'Class)
+      return Updateable_Reference;
+
 private
 
    type Asset_Array is array (Asset_Index) of Carthage.Assets.Asset_Type;
@@ -165,5 +172,10 @@ private
                    Index : Asset_Index)
                    return Carthage.Assets.Asset_Type
    is (Stack.Assets (Index));
+
+   type Updateable_Reference (Item : not null access Stack_Record'Class) is
+      record
+         Update : Db.Updateable_Reference (Item);
+      end record;
 
 end Carthage.Stacks;
