@@ -8,5 +8,6 @@ package Carthage.Options is
    function Update return Boolean;
    function Update_Count return Natural;
    function Wizard_Mode return Boolean;
+   function Combat_Test return Boolean;
 
 end Carthage.Options;

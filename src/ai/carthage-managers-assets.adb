@@ -1,6 +1,10 @@
 with Ada.Containers.Indefinite_Holders;
 
+with Carthage.Combat;
 with Carthage.Stacks;
+with Carthage.Units;
+
+with Carthage.Options;
 
 package body Carthage.Managers.Assets is
 
@@ -152,6 +156,45 @@ package body Carthage.Managers.Assets is
             Info.Stack.Update.Move_To_Tile (Tile);
             Info.Has_Orders := True;
             Manager.Stacks.Replace_Element (Closest, Info);
+
+            if Carthage.Options.Combat_Test
+              and then Tile.Has_Stack
+              and then Info.Stack.Owner.At_War_With
+                (Tile.Stack.Owner)
+            then
+               Manager.House.Log ("test combat: Battle of "
+                                  & Manager.Planet.Name);
+               Manager.House.Log
+                 (Info.Stack.Identifier
+                  & " attacks " & Tile.Stack.Identifier);
+
+               declare
+                  use Carthage.Combat;
+                  Battle : Battle_Record;
+               begin
+
+                  Create (Battle, Manager.House, Tile.Stack.Owner);
+
+                  Add_Stack (Battle, Info.Stack);
+                  Add_Stack (Battle, Tile.Stack);
+
+                  for Weapon in Carthage.Units.Weapon_Category loop
+                     declare
+                        Results : constant Attack_Record_Array :=
+                                    Attack_Round (Battle, Weapon);
+                     begin
+                        for Attack of Results loop
+                           Manager.House.Log
+                             (Weapon'Img & ": " & Image (Attack));
+                        end loop;
+                     end;
+                  end loop;
+
+                  Info.Stack.Update.Remove_Dead_Assets;
+                  Tile.Stack.Update.Remove_Dead_Assets;
+
+               end;
+            end if;
          end;
          return True;
       end if;

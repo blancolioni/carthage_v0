@@ -52,4 +52,10 @@ package body Carthage.Options is
                ("wizard-mode", ' ');
    end Wizard_Mode;
 
+   function Combat_Test return Boolean is
+   begin
+      return WL.Command_Line.Find_Option
+               ("combat-test", ' ');
+   end Combat_Test;
+
 end Carthage.Options;

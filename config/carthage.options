@@ -9,4 +9,6 @@ package Carthage.Options is
    Update_Count        : Natural := 1;
    Wizard_Mode         : Boolean;
    
+   Combat_Test         : Boolean;
+   
 end Carthage.Options;
