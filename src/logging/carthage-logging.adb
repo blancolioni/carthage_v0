@@ -1,5 +1,7 @@
 with Ada.Text_IO;
 
+with Carthage.Calendar;
+
 package body Carthage.Logging is
 
    Logging_Enabled         : Boolean := False;
@@ -24,16 +26,20 @@ package body Carthage.Logging is
      (Level   : Log_Level;
       Message : String)
    is
+      Log_Message : constant String :=
+                      Carthage.Calendar.Day_Identifier
+                        (Carthage.Calendar.Today)
+                      & ": " & Message;
    begin
       if Logging_Enabled and then Level <= Logging_Level then
          if Standard_Output_Logging then
-            Ada.Text_IO.Put_Line (Message);
+            Ada.Text_IO.Put_Line (Log_Message);
          else
-            Ada.Text_IO.Put_Line (Log_File, Message);
+            Ada.Text_IO.Put_Line (Log_File, Log_Message);
          end if;
          if Level = 1 then
             Ada.Text_IO.Put_Line
-              (Ada.Text_IO.Standard_Error, Message);
+              (Ada.Text_IO.Standard_Error, Log_Message);
          end if;
       end if;
    end Log;
