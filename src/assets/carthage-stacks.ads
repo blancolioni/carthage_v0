@@ -56,6 +56,9 @@ package Carthage.Stacks is
      (Stack : in out Stack_Record;
       Tile  : Carthage.Tiles.Tile_Type);
 
+   procedure Remove_Dead_Assets
+     (Stack : in out Stack_Record);
+
    subtype Stack_Class is Stack_Record'Class;
 
    type Stack_Type is access constant Stack_Record'Class;
@@ -68,6 +71,8 @@ package Carthage.Stacks is
 
    procedure Scan_Stacks
      (Process : not null access procedure (Stack : Stack_Type));
+
+   procedure Remove_Empty_Ground_Stacks;
 
    type Updateable_Reference (Item : not null access Stack_Record'Class)
    is private with Implicit_Dereference => Item;

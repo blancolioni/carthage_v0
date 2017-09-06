@@ -28,9 +28,28 @@ package Carthage.Assets is
      (Asset : Asset_Record)
       return Natural;
 
+   function Health
+     (Asset : Asset_Record)
+      return Asset_Health;
+
+   function Alive
+     (Asset : Asset_Record)
+      return Boolean;
+
+   procedure Damage
+     (Asset  : in out Asset_Record;
+      Points : Positive);
+
    subtype Asset_Class is Asset_Record'Class;
 
    type Asset_Type is access constant Asset_Record'Class;
+
+   type Updateable_Reference (Item : not null access Asset_Record'Class)
+   is private with Implicit_Dereference => Item;
+
+   function Update
+     (Item : not null access constant Asset_Record'Class)
+      return Updateable_Reference;
 
 private
 
@@ -74,5 +93,20 @@ private
      (Asset : Asset_Record)
       return Natural
    is (Asset.Unit.Movement);
+
+   function Health
+     (Asset : Asset_Record)
+      return Asset_Health
+   is (Asset.Health);
+
+   function Alive
+     (Asset : Asset_Record)
+      return Boolean
+   is (Asset.Health > 0);
+
+   type Updateable_Reference (Item : not null access Asset_Record'Class) is
+      record
+         Update : Db.Updateable_Reference (Item);
+      end record;
 
 end Carthage.Assets;

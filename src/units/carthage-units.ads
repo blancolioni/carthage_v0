@@ -37,6 +37,18 @@ package Carthage.Units is
      (Unit : Unit_Record)
       return Natural;
 
+   function Agility
+     (Unit : Unit_Record)
+      return Natural;
+
+   function Armour
+     (Unit : Unit_Record)
+      return Natural;
+
+   function Psychic_Defense
+     (Unit : Unit_Record)
+      return Natural;
+
    function Eat
      (Unit : Unit_Record)
       return Natural;
@@ -44,6 +56,27 @@ package Carthage.Units is
    function Image_Resource
      (Unit : Unit_Record)
       return String;
+
+   function Has_Attack
+     (Unit   : Unit_Record;
+      Weapon : Weapon_Category)
+      return Boolean;
+
+   function Accuracy
+     (Unit   : Unit_Record;
+      Weapon : Weapon_Category)
+      return Positive
+     with Pre => Unit.Has_Attack (Weapon);
+
+   function Strength
+     (Unit   : Unit_Record;
+      Weapon : Weapon_Category)
+      return Positive
+     with Pre => Unit.Has_Attack (Weapon);
+
+   function Rank
+     (Unit : Unit_Record)
+      return Natural;
 
    subtype Unit_Class is Unit_Record'Class;
 
@@ -92,6 +125,7 @@ private
          Maintenance    : Natural;
          Credit_Cost    : Natural;
          Eat            : Natural;
+         Rank           : Natural;
          Resource_Cost  : Resource_Cost_Vectors.Vector;
          Build_Unit     : Unit_Type;
          Enabled_By     : Enabling_Tech;
@@ -123,10 +157,48 @@ private
       return Natural
    is (Unit.Spot);
 
+   function Agility
+     (Unit : Unit_Record)
+      return Natural
+   is (Unit.Agility);
+
+   function Armour
+     (Unit : Unit_Record)
+      return Natural
+   is (Unit.Armour);
+
+   function Psychic_Defense
+     (Unit : Unit_Record)
+      return Natural
+   is (Unit.Psy_Defence);
+
    function Eat
      (Unit : Unit_Record)
       return Natural
    is (Unit.Eat);
+
+   function Rank
+     (Unit : Unit_Record)
+      return Natural
+   is (Unit.Rank);
+
+   function Has_Attack
+     (Unit   : Unit_Record;
+      Weapon : Weapon_Category)
+      return Boolean
+   is (Unit.Weapons (Weapon).Accuracy > 0);
+
+   function Accuracy
+     (Unit   : Unit_Record;
+      Weapon : Weapon_Category)
+      return Positive
+   is (Unit.Weapons (Weapon).Accuracy);
+
+   function Strength
+     (Unit   : Unit_Record;
+      Weapon : Weapon_Category)
+      return Positive
+   is (Unit.Weapons (Weapon).Strength);
 
    function Image_Resource
      (Unit : Unit_Record)

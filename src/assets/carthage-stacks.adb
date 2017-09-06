@@ -66,6 +66,38 @@ package body Carthage.Stacks is
       end if;
    end Movement;
 
+   ------------------------
+   -- Remove_Dead_Assets --
+   ------------------------
+
+   procedure Remove_Dead_Assets
+     (Stack : in out Stack_Record)
+   is
+      Target : Asset_Index := 1;
+   begin
+      for I in 1 .. Stack.Count loop
+         if Stack.Assets (I).Alive then
+            if Target < I then
+               Stack.Assets (Target) := Stack.Assets (I);
+            end if;
+            Target := Target + 1;
+         else
+            null;
+         end if;
+      end loop;
+      Stack.Assets (Target .. Stack.Assets'Last) := (others => null);
+      Stack.Count := Target - 1;
+   end Remove_Dead_Assets;
+
+   --------------------------------
+   -- Remove_Empty_Ground_Stacks --
+   --------------------------------
+
+   procedure Remove_Empty_Ground_Stacks is
+   begin
+      null;
+   end Remove_Empty_Ground_Stacks;
+
    -----------------
    -- Scan_Stacks --
    -----------------

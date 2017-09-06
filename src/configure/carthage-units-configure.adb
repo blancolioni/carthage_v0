@@ -37,6 +37,7 @@ package body Carthage.Units.Configure is
          Unit.Can_Be_Cargo := Config.Get ("can-be-cargo", False);
          Unit.Combat := not Config.Get ("non-combat", False);
          Unit.Eat := Config.Get ("eat");
+         Unit.Rank := Config.Get ("rank");
 
          Unit.Weapons := (others => (0, 0));
 

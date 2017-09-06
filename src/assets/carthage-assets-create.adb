@@ -16,6 +16,8 @@ package body Carthage.Assets.Create is
 
       procedure Create (Asset : in out Asset_Class) is
       begin
+         Asset.Create_With_Identity
+           (Owner.Identifier & "-" & Unit.Identifier);
          Asset.Set_Name (Unit.Identifier);
          Asset.Owner := Owner;
          Asset.Unit := Unit;
