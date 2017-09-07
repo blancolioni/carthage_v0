@@ -97,23 +97,11 @@ package body Carthage.Houses is
    -----------------------
 
    procedure Set_House_Manager
-     (House   : House_Type;
-      Manager : not null access
-        Carthage.Managers.Manager_Record'Class)
+     (House   : in out House_Record;
+      Manager : not null access House_Manager_Interface'Class)
    is
-      procedure Update (Rec : in out House_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Rec : in out House_Class) is
-      begin
-         Rec.Manager := Manager;
-      end Update;
-
    begin
-      Db.Update (House.Reference, Update'Access);
+      House.Manager := Manager;
    end Set_House_Manager;
 
    -----------

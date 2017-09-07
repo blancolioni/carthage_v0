@@ -103,6 +103,13 @@ package Carthage.Planets is
       Process : not null access
         procedure (Tile : Carthage.Tiles.Tile_Type));
 
+   procedure Scan_Neighbours_Within
+     (Planet   : Planet_Record;
+      Start    : Tile_Position;
+      Distance : Natural;
+      Process  : not null access
+        procedure (Tile : Carthage.Tiles.Tile_Type));
+
    function Find_Tile
      (Planet : Planet_Record;
       Start  : Tile_Position;
@@ -123,6 +130,19 @@ package Carthage.Planets is
      (Planet : Planet_Record;
       House  : Carthage.Houses.House_Type)
       return Boolean;
+
+   procedure Set_Seen_By
+     (Planet : in out Planet_Record;
+      House  : Carthage.Houses.House_Type);
+
+   function Explored_By
+     (Planet : Planet_Record;
+      House  : Carthage.Houses.House_Type)
+      return Boolean;
+
+   procedure Set_Explored_By
+     (Planet : in out Planet_Record;
+      House  : Carthage.Houses.House_Type);
 
    type Surface_Tiles is private;
 
@@ -183,6 +203,21 @@ package Carthage.Planets is
         procedure (City : not null access constant
                      Carthage.Cities.City_Record'Class));
 
+   procedure Scan_Stacks
+     (Planet  : Planet_Record;
+      Process : not null access
+        procedure (Stack : not null access constant
+                     Carthage.Stacks.Stack_Record'Class));
+
+   procedure Scan_Stacks
+     (Planet  : Planet_Record;
+      Owner   : Carthage.Houses.House_Type;
+      Process : not null access
+        procedure (Stack : not null access constant
+                     Carthage.Stacks.Stack_Record'Class));
+
+   type Planet_Manager_Interface is interface;
+
    subtype Planet_Class is Planet_Record'Class;
 
    type Planet_Type is access constant Planet_Record'Class;
@@ -200,10 +235,6 @@ package Carthage.Planets is
      (Planet : Planet_Type;
       Update : not null access
         procedure (Planet : in out Planet_Class));
-
-   procedure Set_Seen_By
-     (Planet : Planet_Type;
-      House  : Carthage.Houses.House_Type);
 
    function Number_Of_Planets return Natural;
 
@@ -257,6 +288,7 @@ private
          X, Y     : Coordinate;
          Category : Carthage.Worlds.World_Type;
          Seen     : Carthage.Houses.House_Set;
+         Explored : Carthage.Houses.House_Set;
          Tiles    : Tile_Array;
          Megacity : Boolean;
          Owner    : Carthage.Houses.House_Type;
@@ -354,6 +386,12 @@ private
       House  : Carthage.Houses.House_Type)
       return Boolean
    is (Carthage.Houses.Element (Planet.Seen, House));
+
+   function Explored_By
+     (Planet : Planet_Record;
+      House  : Carthage.Houses.House_Type)
+      return Boolean
+   is (Carthage.Houses.Element (Planet.Explored, House));
 
    type Updateable_Reference (Item : not null access Planet_Record'Class) is
       record

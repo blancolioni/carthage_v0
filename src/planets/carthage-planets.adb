@@ -1,3 +1,4 @@
+with Carthage.Stacks;
 with Carthage.Terrain;
 
 package body Carthage.Planets is
@@ -24,6 +25,7 @@ package body Carthage.Planets is
          Tile.Update.Clear_Visibility;
       end loop;
       Carthage.Houses.Clear (Planet.Seen);
+      Carthage.Houses.Clear (Planet.Explored);
    end Clear_Visibility;
 
    ---------------
@@ -448,6 +450,82 @@ package body Carthage.Planets is
       Tile_Graphs.Iterate (Sub, Local_Process'Access);
    end Scan_Connected_Tiles;
 
+   ----------------------------
+   -- Scan_Neighbours_Within --
+   ----------------------------
+
+   procedure Scan_Neighbours_Within
+     (Planet   : Planet_Record;
+      Start    : Tile_Position;
+      Distance : Natural;
+      Process  : not null access
+        procedure (Tile : Carthage.Tiles.Tile_Type))
+   is
+      Ns : Surface_Tiles;
+   begin
+      Planet.Get_Tiles (Planet.Tile (Start), 1, Distance, null, Ns);
+      for I in 1 .. Tile_Count (Ns) loop
+         Process (Get_Tile (Ns, I));
+      end loop;
+   end Scan_Neighbours_Within;
+
+   -----------------
+   -- Scan_Stacks --
+   -----------------
+
+   procedure Scan_Stacks
+     (Planet  : Planet_Record;
+      Process : not null access
+        procedure (Stack : not null access constant
+                     Carthage.Stacks.Stack_Record'Class))
+   is
+   begin
+      Planet.Scan_Stacks (null, Process);
+   end Scan_Stacks;
+
+   -----------------
+   -- Scan_Stacks --
+   -----------------
+
+   procedure Scan_Stacks
+     (Planet  : Planet_Record;
+      Owner   : Carthage.Houses.House_Type;
+      Process : not null access
+        procedure (Stack : not null access constant
+                     Carthage.Stacks.Stack_Record'Class))
+   is
+      procedure Check (Stack : Carthage.Stacks.Stack_Type);
+
+      -----------
+      -- Check --
+      -----------
+
+      procedure Check (Stack : Carthage.Stacks.Stack_Type) is
+         use type Carthage.Houses.House_Type;
+      begin
+         if Stack.Planet.Identifier = Planet.Identifier
+           and then (Owner = null or else Stack.Owner = Owner)
+         then
+            Process (Stack);
+         end if;
+      end Check;
+
+   begin
+      Carthage.Stacks.Scan_Stacks (Check'Access);
+   end Scan_Stacks;
+
+   ---------------------
+   -- Set_Explored_By --
+   ---------------------
+
+   procedure Set_Explored_By
+     (Planet : in out Planet_Record;
+      House  : Carthage.Houses.House_Type)
+   is
+   begin
+      Carthage.Houses.Insert (Planet.Explored, House);
+   end Set_Explored_By;
+
    ---------------
    -- Set_Owner --
    ---------------
@@ -465,22 +543,11 @@ package body Carthage.Planets is
    -----------------
 
    procedure Set_Seen_By
-     (Planet : Planet_Type;
+     (Planet : in out Planet_Record;
       House  : Carthage.Houses.House_Type)
    is
-      procedure Update (Rec : in out Planet_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Rec : in out Planet_Class) is
-      begin
-         Carthage.Houses.Insert (Rec.Seen, House);
-      end Update;
-
    begin
-      Db.Update (Planet.Reference, Update'Access);
+      Carthage.Houses.Insert (Planet.Seen, House);
    end Set_Seen_By;
 
    -----------

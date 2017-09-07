@@ -112,6 +112,18 @@ package body Carthage.Stacks is
       Db.Scan (Real_Stack'Access, Process);
    end Scan_Stacks;
 
+   -----------------
+   -- Set_Manager --
+   -----------------
+
+   procedure Set_Manager
+     (Stack   : in out Stack_Record;
+      Manager : not null access Stack_Manager_Interface'Class)
+   is
+   begin
+      Stack.Manager := Manager;
+   end Set_Manager;
+
    ----------
    -- Spot --
    ----------

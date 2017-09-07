@@ -1,6 +1,5 @@
 project_name = Carthage
 source_dir = src
-source_dir = src/ai
 source_dir = src/assets
 source_dir = src/base
 source_dir = src/cities
@@ -10,7 +9,9 @@ source_dir = src/galaxy
 source_dir = src/game
 source_dir = src/houses
 source_dir = src/logging
+source_dir = src/managers
 source_dir = src/planets
+source_dir = src/players
 source_dir = src/resources
 source_dir = src/technology
 source_dir = src/ui

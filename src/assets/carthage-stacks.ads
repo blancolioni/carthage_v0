@@ -12,11 +12,41 @@ package Carthage.Stacks is
 
    Maximum_Stack_Size : constant := 20;
 
+   type Stack_Manager_Interface is interface;
+
    type Asset_Count is range 0 .. Maximum_Stack_Size;
    subtype Asset_Index is Asset_Count range 1 .. Asset_Count'Last;
 
    type Stack_Record is
      new Carthage.Objects.Root_Named_Object with private;
+
+   procedure On_Hostile_Spotted
+     (Manager : Stack_Manager_Interface;
+      Stack   : not null access constant Stack_Record'Class;
+      Hostile : not null access constant Stack_Record'Class)
+   is null;
+
+   procedure On_Movement_Ended
+     (Manager : Stack_Manager_Interface;
+      Stack   : not null access constant Stack_Record'Class)
+   is null;
+
+   procedure On_Stack_Removed
+     (Manager : Stack_Manager_Interface;
+      Stack   : not null access constant Stack_Record'Class)
+   is null;
+
+   procedure On_Asset_Added
+     (Manager : Stack_Manager_Interface;
+      Stack   : not null access constant Stack_Record'Class;
+      Asset   : not null access constant Carthage.Assets.Asset_Record'Class)
+   is null;
+
+   procedure On_Asset_Removed
+     (Manager : Stack_Manager_Interface;
+      Stack   : not null access constant Stack_Record'Class;
+      Asset   : not null access constant Carthage.Assets.Asset_Record'Class)
+   is null;
 
    function Planet
      (Stack : Stack_Record)
@@ -58,6 +88,10 @@ package Carthage.Stacks is
 
    procedure Remove_Dead_Assets
      (Stack : in out Stack_Record);
+
+   procedure Set_Manager
+     (Stack : in out Stack_Record;
+      Manager : not null access Stack_Manager_Interface'Class);
 
    subtype Stack_Class is Stack_Record'Class;
 
@@ -114,6 +148,7 @@ private
          Count       : Asset_Count;
          Assets      : Asset_Array;
          Orders      : Stack_Order_Lists.List;
+         Manager     : access Stack_Manager_Interface'Class;
       end record;
 
    overriding function Object_Database

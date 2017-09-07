@@ -39,21 +39,22 @@ begin
    Ada.Text_IO.Put_Line ("setting up house managers");
 
    declare
-      procedure Set_Manager (House : Carthage.Houses.House_Type);
+      procedure Create_Manager (House : Carthage.Houses.House_Type);
 
-      -----------------
-      -- Set_Manager --
-      -----------------
+      --------------------
+      -- Create_Manager --
+      --------------------
 
-      procedure Set_Manager (House : Carthage.Houses.House_Type) is
+      procedure Create_Manager (House : Carthage.Houses.House_Type) is
       begin
-         Carthage.Houses.Set_House_Manager
-           (House, Carthage.Managers.Houses.Create_House_Manager (House));
-      end Set_Manager;
+         Carthage.Managers.Houses.Create_House_Manager (House);
+      end Create_Manager;
 
    begin
-      Carthage.Houses.Scan (Set_Manager'Access);
+      Carthage.Houses.Scan (Create_Manager'Access);
    end;
+
+   Carthage.Managers.Start_Managers;
 
    Ada.Text_IO.Put_Line ("done");
 

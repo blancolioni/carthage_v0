@@ -1,7 +1,6 @@
 private with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 private with Memor.Database;
 
-limited with Carthage.Managers;
 limited with Carthage.Planets;
 
 with Carthage.Colours;
@@ -55,17 +54,18 @@ package Carthage.Houses is
    procedure Log_Status
      (House : House_Record'Class);
 
+   type House_Manager_Interface is interface;
+
+   procedure Set_House_Manager
+     (House   : in out House_Record;
+      Manager : not null access House_Manager_Interface'Class);
+
    subtype House_Class is House_Record'Class;
 
    type House_Type is access constant House_Record'Class;
 
    function Number_Of_Houses
      return Natural;
-
-   procedure Set_House_Manager
-     (House : House_Type;
-      Manager : not null access
-        Carthage.Managers.Manager_Record'Class);
 
    procedure Scan
      (Process : not null access procedure
@@ -115,7 +115,7 @@ private
          Colour        : Carthage.Colours.Colour_Type;
          Set_Flag      : House_Set;
          Known_Planets : Planet_Id_Lists.List;
-         Manager       : access Carthage.Managers.Manager_Record'Class;
+         Manager       : access House_Manager_Interface'Class;
          Cash          : Natural := 5_000;
          Debt          : Natural := 0;
          Tax_Rate      : Float   := 0.1;

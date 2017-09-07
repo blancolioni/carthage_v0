@@ -4,17 +4,18 @@ with Carthage.Calendar;
 
 with Carthage.Cities.Updates;
 with Carthage.Houses;
-with Carthage.Managers;
 with Carthage.Planets;
 with Carthage.Stacks.Updates;
 with Carthage.Structures;
 with Carthage.Tiles;
 
+with Carthage.Managers;
+
 package body Carthage.Updates is
 
-   -----------------
-   -- Before_Turn --
-   -----------------
+   -----------------------
+   -- Before_First_Turn --
+   -----------------------
 
    procedure Before_First_Turn is
 
@@ -144,8 +145,7 @@ package body Carthage.Updates is
         (Planet : Carthage.Planets.Planet_Type)
       is
       begin
-         Carthage.Planets.Update
-           (Planet, Carthage.Planets.Clear_Visibility'Access);
+         Planet.Update.Clear_Visibility;
       end Reset_Planet_State;
 
       -------------------
@@ -153,7 +153,7 @@ package body Carthage.Updates is
       -------------------
 
       procedure Reveal_Planet
-        (Planet : Carthage.Planets.Planet_Type;
+        (Planet   : Carthage.Planets.Planet_Type;
          House    : Carthage.Houses.House_Type;
          Explored : Boolean)
       is
@@ -161,8 +161,10 @@ package body Carthage.Updates is
       begin
          if Explored then
             House.Log (Planet.Name & ": fully explored");
+            Planet.Update.Set_Explored_By (House);
          else
             House.Log (Planet.Name & ": map revealed");
+            Planet.Update.Set_Seen_By (House);
          end if;
 
          Planet.Get_Tiles (Tiles);
@@ -178,7 +180,6 @@ package body Carthage.Updates is
                end if;
             end;
          end loop;
-         Carthage.Planets.Set_Seen_By (Planet, House);
       end Reveal_Planet;
 
       ----------------------
@@ -257,6 +258,8 @@ package body Carthage.Updates is
       Carthage.Stacks.Scan_Stacks
         (Stack_Look'Access);
 
+      Carthage.Managers.Start_Managers;
+
    end Before_First_Turn;
 
    ------------
@@ -268,8 +271,7 @@ package body Carthage.Updates is
       Ada.Text_IO.Put_Line
         ("Update: "
          & Carthage.Calendar.Day_Identifier (Carthage.Calendar.Today));
-      Carthage.Managers.Before_Start_Of_Turn;
-      Carthage.Managers.Create_Orders;
+      Carthage.Managers.Start_Manager_Turns;
       Carthage.Cities.Updates.Execute_Orders;
       Carthage.Cities.Updates.Execute_Production;
       Carthage.Stacks.Updates.Execute_Orders;
