@@ -378,13 +378,13 @@ package body Carthage.Managers.Cities is
             Result.Add (Resource, Final_Quantity);
             Manager.Palace.Update.Remove (Resource, Final_Quantity);
 
---              if Final_Quantity * 2 < Have then
---                 Manager.Palace.Update.Sell_Resource
---                   (Resource, Have - Final_Quantity * 2);
---              elsif Final_Quantity * 2 > Have then
---                 Manager.Palace.Update.Sell_Resource
---                   (Resource, Final_Quantity * 2 - Have);
---              end if;
+            if Desire * 2 < Have then
+               Manager.Palace.Update.Sell_Resource
+                 (Resource, Have - Desire * 2);
+            elsif Quantity * 2 > Have then
+               Manager.Palace.Update.Buy_Resource
+                 (Resource, Quantity * 2);
+            end if;
 
          end if;
 
