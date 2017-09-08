@@ -195,7 +195,7 @@ private
    function Is_Agora
      (City : City_Record)
       return Boolean
-   is (City.Identifier = "agora");
+   is (City.Structure.Identifier = "agora");
 
    type Updateable_Reference (City : not null access City_Record'Class) is
       record
