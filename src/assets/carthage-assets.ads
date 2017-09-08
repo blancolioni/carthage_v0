@@ -1,6 +1,7 @@
 private with Memor.Database;
 
 with Carthage.Houses;
+with Carthage.Resources;
 with Carthage.Units;
 
 with Carthage.Objects;
@@ -14,7 +15,21 @@ package Carthage.Assets is
    type Asset_Loyalty is range 0 .. 100;
 
    type Asset_Record is
-     new Carthage.Objects.Root_Named_Object with private;
+     new Carthage.Objects.Root_Named_Object
+     and Carthage.Resources.Stock_Interface
+   with private;
+
+   overriding function Quantity
+     (Asset    : Asset_Record;
+      Resource : not null access constant
+        Carthage.Resources.Resource_Class)
+      return Natural;
+
+   overriding procedure Set_Quantity
+     (Asset        : in out Asset_Record;
+      Resource     : not null access constant
+        Carthage.Resources.Resource_Class;
+      New_Quantity : Natural);
 
    function Owner
      (Asset : Asset_Record)
@@ -54,7 +69,8 @@ package Carthage.Assets is
 private
 
    type Asset_Record is
-     new Carthage.Objects.Root_Named_Object with
+     new Carthage.Objects.Root_Named_Object
+     and Carthage.Resources.Stock_Interface with
       record
          Owner       : Carthage.Houses.House_Type;
          Unit        : Carthage.Units.Unit_Type;
@@ -62,11 +78,19 @@ private
          Loyalty     : Asset_Loyalty;
          Experience  : Asset_Experience;
          Movement    : Natural;
+         Stock       : Carthage.Resources.Stock_Record;
       end record;
 
    overriding function Object_Database
      (Item : Asset_Record)
       return Memor.Memor_Database;
+
+   overriding function Quantity
+     (Asset    : Asset_Record;
+      Resource : not null access constant
+        Carthage.Resources.Resource_Class)
+      return Natural
+   is (Asset.Stock.Quantity (Resource));
 
    package Db is
      new Memor.Database

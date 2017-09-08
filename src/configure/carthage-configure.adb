@@ -386,6 +386,9 @@ package body Carthage.Configure is
 
                   function Next_Number return Natural;
 
+                  procedure Category
+                    (Name  : String);
+
                   procedure Flag
                     (Name  : String;
                      Value : Natural);
@@ -393,6 +396,19 @@ package body Carthage.Configure is
                   procedure Number
                     (Name  : String;
                      Value : Natural);
+
+                  --------------
+                  -- Category --
+                  --------------
+
+                  procedure Category
+                    (Name  : String)
+                  is
+                  begin
+                     if Id = Name then
+                        Output.Add (Name, "yes");
+                     end if;
+                  end Category;
 
                   ----------
                   -- Flag --
@@ -482,6 +498,10 @@ package body Carthage.Configure is
                         Output.Add (Production);
                      end;
                   end if;
+
+                  Category ("agora");
+                  Category ("palace");
+                  Category ("shield");
 
                   Flag ("water", Water);
                   Flag ("land", Land);

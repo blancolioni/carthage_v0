@@ -173,6 +173,23 @@ package body Carthage.Cities is
       Db.Update (City.Reference, Update'Access);
    end Set_Seen_By;
 
+   -----------------------
+   -- Transfer_Resource --
+   -----------------------
+
+   procedure Transfer_Resource
+     (City     : in out City_Record;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Positive;
+      To_City  : not null access constant City_Record'Class)
+   is
+   begin
+      City.Orders.Append
+        (City_Order_Record'
+           (Transfer, City_Type (To_City),
+            Resource, Quantity));
+   end Transfer_Resource;
+
    ------------
    -- Update --
    ------------

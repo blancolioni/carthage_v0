@@ -16,6 +16,20 @@ package body Carthage.Assets is
       end if;
    end Damage;
 
+   ------------------
+   -- Set_Quantity --
+   ------------------
+
+   overriding procedure Set_Quantity
+     (Asset        : in out Asset_Record;
+      Resource     : not null access constant
+        Carthage.Resources.Resource_Class;
+      New_Quantity : Natural)
+   is
+   begin
+      Asset.Stock.Set_Quantity (Resource, New_Quantity);
+   end Set_Quantity;
+
    ------------
    -- Update --
    ------------

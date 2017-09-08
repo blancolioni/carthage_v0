@@ -25,7 +25,7 @@ package body Carthage.Cities.Updates is
          case Order.Class is
             when Buy =>
                declare
-                  Agora : constant City_Type := Order.Agora;
+                  Agora : constant City_Type := Order.Other_City;
                   Quantity : constant Natural :=
                                Natural'Min
                                  (Order.Quantity,
@@ -48,7 +48,7 @@ package body Carthage.Cities.Updates is
                end;
             when Sell =>
                declare
-                  Agora    : constant City_Type := Order.Agora;
+                  Agora    : constant City_Type := Order.Other_City;
                   Quantity : constant Natural := Order.Quantity;
                   Resource : constant Carthage.Resources.Resource_Type :=
                                Order.Resource;
@@ -66,6 +66,13 @@ package body Carthage.Cities.Updates is
                   Agora.Update.Add (Resource, Quantity);
                   City.Remove (Resource, Quantity);
                end;
+            when Transfer =>
+               City.Log
+                 ("transfer" & Order.Quantity'Img & " "
+                  & Order.Resource.Name
+                  & " to " & Order.Other_City.Identifier);
+               Order.Other_City.Update.Add (Order.Resource, Order.Quantity);
+               City.Remove (Order.Resource, Order.Quantity);
          end case;
       end loop;
 

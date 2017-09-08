@@ -1,4 +1,16 @@
 stock = {
+   palace = {
+      food = 200
+      energy = 200
+      metal = 200
+      trace = 50
+      exotica = 50
+      chemicals = 50
+      biochems = 50
+      electronics = 50
+      ceramsteel = 50
+      gems = 50
+   }      
    agora = {
       food = 200
       energy = 200
@@ -22,6 +34,9 @@ stock = {
    bioplant = {
       exotica = 20
       chemicals = 20
+      energy = 20
+   }
+   well = {
       energy = 20
    }
 }

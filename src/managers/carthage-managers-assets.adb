@@ -61,6 +61,53 @@ package body Carthage.Managers.Assets is
          others => <>);
    end Create_Asset_Manager;
 
+   -------------------------------
+   -- Get_Resource_Requirements --
+   -------------------------------
+
+   procedure Get_Resource_Requirements
+     (Manager : in out Asset_Manager_Record;
+      Minimum : in out Carthage.Resources.Stock_Interface'Class;
+      Desired : in out Carthage.Resources.Stock_Interface'Class)
+   is
+      Food_Resource : constant Carthage.Resources.Resource_Type :=
+                        Carthage.Resources.Food;
+      Min_Food     : Natural := 0;
+      Desired_Food : Natural := 0;
+   begin
+      for Stack of Manager.Stacks loop
+         declare
+            Have_Food : Natural := 0;
+            Eat_Food  : Natural := 0;
+         begin
+            for I in 1 .. Stack.Stack.Count loop
+               declare
+                  Asset : constant Carthage.Assets.Asset_Type :=
+                            Stack.Stack.Asset (I);
+               begin
+                  Have_Food := Have_Food + Asset.Quantity (Food_Resource);
+                  Eat_Food  := Eat_Food + Asset.Unit.Eat;
+               end;
+            end loop;
+
+            Stack.Minimum_Food := 0;
+            if Eat_Food > Have_Food then
+               Stack.Minimum_Food := Eat_Food - Have_Food;
+               Min_Food := Min_Food + Stack.Minimum_Food;
+            end if;
+            Stack.Desired_Food := Eat_Food;
+            Desired_Food := Desired_Food + Eat_Food;
+         end;
+      end loop;
+      Manager.House.Log
+        (Manager.Planet.Identifier & ": minimum food =" & Min_Food'Img
+         & "; desired food =" & Desired_Food'Img);
+      Manager.Minimum_Food := Min_Food;
+      Manager.Desired_Food := Desired_Food;
+      Minimum.Add (Food_Resource, Min_Food);
+      Desired.Add (Food_Resource, Desired_Food);
+   end Get_Resource_Requirements;
+
    ------------------------
    -- Load_Initial_State --
    ------------------------
@@ -84,7 +131,10 @@ package body Carthage.Managers.Assets is
          Manager.Stacks.Append
            (Managed_Stack_Record'
               (Stack => Carthage.Stacks.Stack_Type (Stack),
-               Goal  => <>));
+               Goal  => <>,
+               Minimum_Food => 0,
+               Desired_Food => 0));
+
          for I in 1 .. Stack.Count loop
             Manager.Assets.Append
               (Managed_Asset_Record'
@@ -118,5 +168,10 @@ package body Carthage.Managers.Assets is
            (Speed => High, Spot => High, others => <>);
       end return;
    end Recon_Goal;
+
+   procedure Transfer_Resources
+     (Manager   : in out Asset_Manager_Record;
+      Resources : in out Carthage.Resources.Stock_Interface'Class)
+   is null;
 
 end Carthage.Managers.Assets;

@@ -44,6 +44,18 @@ package Carthage.Structures is
      (Structure : Structure_Record)
       return Boolean;
 
+   function Is_Agora
+     (Structure : Structure_Record)
+      return Boolean;
+
+   function Is_Palace
+     (Structure : Structure_Record)
+      return Boolean;
+
+   function Is_Shield
+     (Structure : Structure_Record)
+      return Boolean;
+
    type Resouce_Quantity_Record is
       record
          Resource : Carthage.Resources.Resource_Type;
@@ -185,6 +197,21 @@ private
      (Structure : Structure_Record)
       return Boolean
    is (Structure.Is_Bonus);
+
+   function Is_Agora
+     (Structure : Structure_Record)
+      return Boolean
+   is (Structure.Agora);
+
+   function Is_Palace
+     (Structure : Structure_Record)
+      return Boolean
+   is (Structure.Palace);
+
+   function Is_Shield
+     (Structure : Structure_Record)
+      return Boolean
+   is (Structure.Shield);
 
    function Radius
      (Structure : Structure_Record)

@@ -2,6 +2,7 @@ private with Ada.Containers.Doubly_Linked_Lists;
 
 with Carthage.Assets;
 with Carthage.Planets;
+with Carthage.Resources;
 with Carthage.Stacks;
 with Carthage.Tiles;
 
@@ -16,6 +17,15 @@ package Carthage.Managers.Assets is
      (Manager : Asset_Manager_Record;
       Tile    : Carthage.Tiles.Tile_Type)
       return Carthage.Goals.Goal_Record'Class;
+
+   procedure Get_Resource_Requirements
+     (Manager : in out Asset_Manager_Record;
+      Minimum : in out Carthage.Resources.Stock_Interface'Class;
+      Desired : in out Carthage.Resources.Stock_Interface'Class);
+
+   procedure Transfer_Resources
+     (Manager   : in out Asset_Manager_Record;
+      Resources : in out Carthage.Resources.Stock_Interface'Class);
 
    subtype Asset_Manager_Class is Asset_Manager_Record'Class;
 
@@ -65,8 +75,10 @@ private
 
    type Managed_Stack_Record is
       record
-         Stack : Carthage.Stacks.Stack_Type;
-         Goal  : Goal_Lists.Cursor;
+         Stack        : Carthage.Stacks.Stack_Type;
+         Goal         : Goal_Lists.Cursor;
+         Minimum_Food : Natural;
+         Desired_Food : Natural;
       end record;
 
    package Managed_Asset_List is
@@ -81,9 +93,11 @@ private
      new Manager_Record
      and Carthage.Stacks.Stack_Manager_Interface with
       record
-         Planet   : Carthage.Planets.Planet_Type;
-         Assets   : Managed_Asset_List.List;
-         Stacks   : Managed_Stack_List.List;
+         Planet       : Carthage.Planets.Planet_Type;
+         Assets       : Managed_Asset_List.List;
+         Stacks       : Managed_Stack_List.List;
+         Minimum_Food : Natural;
+         Desired_Food : Natural;
       end record;
 
    overriding procedure Load_Initial_State

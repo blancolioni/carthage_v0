@@ -14,6 +14,30 @@ package body Carthage.Resources is
         (Resource, Stock.Quantity (Resource) + Added_Quantity);
    end Add;
 
+   -----------------
+   -- Clear_Stock --
+   -----------------
+
+   procedure Clear_Stock
+     (Stock : in out Stock_Interface'Class)
+   is
+      procedure Clear (Resource : Carthage.Resources.Resource_Type);
+
+      -----------
+      -- Clear --
+      -----------
+
+      procedure Clear (Resource : Carthage.Resources.Resource_Type) is
+      begin
+         if Stock.Quantity (Resource) > 0 then
+            Stock.Set_Quantity (Resource, 0);
+         end if;
+      end Clear;
+
+   begin
+      Carthage.Resources.Scan (Clear'Access);
+   end Clear_Stock;
+
    ------------
    -- Remove --
    ------------

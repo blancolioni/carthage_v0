@@ -83,8 +83,20 @@ package body Carthage.Managers.Planets is
    overriding procedure Execute_Turn
      (Manager : in out Planet_Manager_Record)
    is
+      Minimum_Stock   : Carthage.Resources.Stock_Record;
+      Desired_Stock   : Carthage.Resources.Stock_Record;
+      Available_Stock : Carthage.Resources.Stock_Record;
    begin
       Manager_Record (Manager).Execute_Turn;
+      Manager.Ground_Asset_Manager.Get_Resource_Requirements
+        (Minimum_Stock, Desired_Stock);
+      Manager.City_Manager.Set_Resource_Requirements
+        (Minimum => Minimum_Stock,
+         Desired => Desired_Stock,
+         Result  => Available_Stock);
+      Manager.Ground_Asset_Manager.Transfer_Resources
+        (Available_Stock);
+
       Manager.Ground_Asset_Manager.Execute_Turn;
       Manager.City_Manager.Execute_Turn;
    end Execute_Turn;

@@ -14,6 +14,8 @@ package Carthage.Resources is
 
    type Resource_Type is access constant Resource_Record'Class;
 
+   function Food return Resource_Type;
+
    function Exists (Id : String) return Boolean;
 
    function Get (Id : String) return Resource_Type
@@ -34,6 +36,9 @@ package Carthage.Resources is
       Resource     : not null access constant Resource_Class;
       New_Quantity : Natural)
    is abstract;
+
+   procedure Clear_Stock
+     (Stock : in out Stock_Interface'Class);
 
    procedure Scan_Stock
      (Stock : Stock_Interface'Class;
@@ -109,5 +114,8 @@ private
       Resource : not null access constant Resource_Class)
       return Natural
    is (Stock.Vector.Element (Resource));
+
+   function Food return Resource_Type
+   is (Get ("food"));
 
 end Carthage.Resources;

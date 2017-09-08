@@ -67,6 +67,12 @@ package Carthage.Cities is
       Resource : Carthage.Resources.Resource_Type;
       Quantity : Positive);
 
+   procedure Transfer_Resource
+     (City     : in out City_Record;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Positive;
+      To_City  : not null access constant City_Record'Class);
+
    procedure Set_Agora
      (City  : in out City_Record;
       Agora : not null access constant City_Record'Class);
@@ -115,15 +121,15 @@ package Carthage.Cities is
 
 private
 
-   type City_Order_Class is (Buy, Sell);
+   type City_Order_Class is (Buy, Sell, Transfer);
 
    type City_Order_Record (Class : City_Order_Class) is
       record
          case Class is
-            when Buy | Sell =>
-               Agora    : City_Type;
-               Resource : Carthage.Resources.Resource_Type;
-               Quantity : Positive;
+            when Buy | Sell | Transfer =>
+               Other_City : City_Type;
+               Resource   : Carthage.Resources.Resource_Type;
+               Quantity   : Positive;
          end case;
       end record;
 
@@ -195,7 +201,7 @@ private
    function Is_Agora
      (City : City_Record)
       return Boolean
-   is (City.Structure.Identifier = "agora");
+   is (City.Structure.Is_Agora);
 
    type Updateable_Reference (City : not null access City_Record'Class) is
       record

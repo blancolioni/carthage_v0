@@ -9,6 +9,12 @@ package Carthage.Managers.Cities is
      and Carthage.Cities.City_Manager_Interface
    with private;
 
+   procedure Set_Resource_Requirements
+     (Manager : in out City_Manager_Record;
+      Minimum : Carthage.Resources.Stock_Interface'Class;
+      Desired : Carthage.Resources.Stock_Interface'Class;
+      Result  : out Carthage.Resources.Stock_Interface'Class);
+
    subtype City_Manager_Class is City_Manager_Record'Class;
 
    type City_Manager_Type is access all City_Manager_Record'Class;
@@ -41,9 +47,10 @@ private
 
    type City_Info_Record is
       record
-         City     : Carthage.Cities.City_Type;
-         Sources  : City_Resource_Lists.List;
-         Sinks    : City_Resource_Lists.List;
+         City      : Carthage.Cities.City_Type;
+         Available : Carthage.Resources.Stock_Record;
+         Sources   : City_Resource_Lists.List;
+         Sinks     : City_Resource_Lists.List;
       end record;
 
    package City_Info_Lists is
@@ -56,7 +63,6 @@ private
       record
          Planet : Carthage.Planets.Planet_Type;
          Palace : Carthage.Cities.City_Type;
-         Agora  : Carthage.Cities.City_Type;
          Shield : Carthage.Cities.City_Type;
          Cities : City_Info_Lists.List;
       end record;

@@ -2,6 +2,7 @@ limited with Carthage.Managers.Assets;
 limited with Carthage.Managers.Cities;
 
 with Carthage.Planets;
+with Carthage.Resources;
 with Carthage.Tiles;
 
 package Carthage.Managers.Planets is
