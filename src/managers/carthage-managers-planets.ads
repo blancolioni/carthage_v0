@@ -83,6 +83,9 @@ private
    overriding procedure Check_Goals
      (Manager : in out Planet_Manager_Record);
 
+   overriding procedure Execute_Turn
+     (Manager : in out Planet_Manager_Record);
+
    overriding function Check_Goal
      (Manager : Planet_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)

@@ -1,5 +1,6 @@
 with Carthage.Cities;
 with Carthage.Planets;
+with Carthage.Resources;
 
 package Carthage.Managers.Cities is
 
@@ -19,9 +20,30 @@ package Carthage.Managers.Cities is
 
 private
 
+   type City_Resource is
+      record
+         City     : Carthage.Cities.City_Type;
+         Resource : Carthage.Resources.Resource_Type;
+      end record;
+
+   type City_Request is
+      record
+         City     : Carthage.Cities.City_Type;
+         Resource : Carthage.Resources.Resource_Type;
+         Quantity : Natural;
+      end record;
+
+   package City_Resource_Lists is
+     new Ada.Containers.Doubly_Linked_Lists (City_Resource);
+
+   package City_Request_Lists is
+     new Ada.Containers.Doubly_Linked_Lists (City_Request);
+
    type City_Info_Record is
       record
-         City : Carthage.Cities.City_Type;
+         City     : Carthage.Cities.City_Type;
+         Sources  : City_Resource_Lists.List;
+         Sinks    : City_Resource_Lists.List;
       end record;
 
    package City_Info_Lists is
@@ -48,7 +70,10 @@ private
       return Boolean
    is (True);
 
-   procedure Execute
+   procedure Create_Resource_Network
+     (Manager : in out City_Manager_Record'Class);
+
+   overriding procedure Execute_Turn
      (Manager : in out City_Manager_Record);
 
 end Carthage.Managers.Cities;

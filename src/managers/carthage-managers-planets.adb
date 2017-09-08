@@ -76,6 +76,19 @@ package body Carthage.Managers.Planets is
       return Manager;
    end Create_Planet_Manager;
 
+   ------------------
+   -- Execute_Turn --
+   ------------------
+
+   overriding procedure Execute_Turn
+     (Manager : in out Planet_Manager_Record)
+   is
+   begin
+      Manager_Record (Manager).Execute_Turn;
+      Manager.Ground_Asset_Manager.Execute_Turn;
+      Manager.City_Manager.Execute_Turn;
+   end Execute_Turn;
+
    ------------------------
    -- Load_Initial_State --
    ------------------------
@@ -114,7 +127,8 @@ package body Carthage.Managers.Planets is
                     and then Manager.House.At_War_With (Tile.Stack.Owner)
                   then
                      Manager.Planet.Log
-                       ("hostile at "
+                       (Manager.House.Name
+                        & ": hostile at "
                         & Carthage.Tiles.Position_Image (Tile.Position));
                      Info.Interest := 1_000 + Natural (Tile.Stack.Count);
 

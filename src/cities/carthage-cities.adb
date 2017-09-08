@@ -26,8 +26,7 @@ package body Carthage.Cities is
       return String
    is
    begin
-      return City.Owner.Identifier & " " & City_Class (City).Identifier
-        & " on " & City.Planet.Identifier;
+      return City.Owner.Identifier & " " & City_Class (City).Identifier;
    end Log_Identifier;
 
    -----------------

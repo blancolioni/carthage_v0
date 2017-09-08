@@ -19,7 +19,11 @@ package body Carthage.Cities.Create is
 
       procedure Create (City : in out City_Class) is
       begin
-         City.Create_With_Identity (Structure.Identifier);
+         City.Create_With_Identity
+           (Planet.Identifier
+            & "-" & Carthage.Tiles.Position_Image (Tile.Position)
+            & "-"
+            & Structure.Identifier);
          City.Set_Name (Structure.Name);
          City.Owner := Owner;
          City.Planet := Planet;

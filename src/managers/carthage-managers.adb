@@ -38,6 +38,17 @@ package body Carthage.Managers is
       end loop;
    end Check_Goals;
 
+   ---------------------------
+   -- Execute_Manager_Turns --
+   ---------------------------
+
+   procedure Execute_Manager_Turns is
+   begin
+      for Manager of Top_Managers loop
+         Manager.Execute_Turn;
+      end loop;
+   end Execute_Manager_Turns;
+
    -------------------------
    -- Start_Manager_Turns --
    -------------------------

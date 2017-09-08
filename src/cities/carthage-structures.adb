@@ -111,6 +111,17 @@ package body Carthage.Structures is
       return Result (1 .. Count);
    end Harvest_Production;
 
+   --------------
+   -- Produces --
+   --------------
+
+   function Produces
+     (Structure : Structure_Record;
+      Resource  : Carthage.Resources.Resource_Type)
+      return Boolean
+   is (for some Item of Structure.Production =>
+          Carthage.Resources."=" (Item.Resource, Resource));
+
    -----------------------
    -- Production_Inputs --
    -----------------------
@@ -140,10 +151,30 @@ package body Carthage.Structures is
       Count  : Natural := 0;
       Result : Production_Array (1 .. 10);
    begin
-      for Output of Structure.Production loop
-         Count := Count + 1;
-         Result (Count) := (Output.Resource, Output.Quantity);
-      end loop;
+      if Structure.Is_Harvester then
+         for Output of Structure.Production loop
+            declare
+               use type Carthage.Resources.Resource_Type;
+               Found : Boolean := False;
+            begin
+               for I in 1 .. Count loop
+                  if Result (I).Resource = Output.Resource then
+                     Found := True;
+                     exit;
+                  end if;
+               end loop;
+               if not Found then
+                  Count := Count + 1;
+                  Result (Count) := (Output.Resource, 1);
+               end if;
+            end;
+         end loop;
+      else
+         for Output of Structure.Production loop
+            Count := Count + 1;
+            Result (Count) := (Output.Resource, Output.Quantity);
+         end loop;
+      end if;
       return Result (1 .. Count);
    end Production_Outputs;
 

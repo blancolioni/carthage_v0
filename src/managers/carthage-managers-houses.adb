@@ -1,4 +1,3 @@
-with Carthage.Managers.Assets;
 with Carthage.Managers.Planets;
 
 package body Carthage.Managers.Houses is
@@ -116,9 +115,7 @@ package body Carthage.Managers.Houses is
       Manager_Record (Manager).Check_Goals;
 
       for Planet of Manager.Planets loop
-         if Planet.Asset_Manager /= null then
-            Planet.Asset_Manager.Check_Goals;
-         end if;
+         Planet.Planet_Manager.Check_Goals;
       end loop;
    end Check_Goals;
 
@@ -164,6 +161,21 @@ package body Carthage.Managers.Houses is
       Top_Managers.Append (Manager_Type (Manager));
    end Create_House_Manager;
 
+   ------------------
+   -- Execute_Turn --
+   ------------------
+
+   overriding procedure Execute_Turn
+     (Manager : in out House_Manager_Record)
+   is
+   begin
+      Manager_Record (Manager).Execute_Turn;
+
+      for Planet of Manager.Planets loop
+         Planet.Planet_Manager.Execute_Turn;
+      end loop;
+   end Execute_Turn;
+
    ------------------------
    -- Load_Initial_State --
    ------------------------
@@ -189,9 +201,6 @@ package body Carthage.Managers.Houses is
            (Planet.Identifier,
             Managed_Planet_Record'
               (Planet        => Planet,
-               Asset_Manager =>
-                 Carthage.Managers.Assets.Create_Asset_Manager
-                   (Manager.House, Planet),
                Planet_Manager =>
                  Carthage.Managers.Planets.Create_Planet_Manager
                    (Manager.House, Planet)));
@@ -221,7 +230,7 @@ package body Carthage.Managers.Houses is
       Carthage.Stacks.Scan_Stacks (Add_Stack_Info'Access);
 
       for Info of Manager.Planets loop
-         Info.Asset_Manager.Load_Initial_State;
+         Info.Planet_Manager.Load_Initial_State;
       end loop;
 
    end Load_Initial_State;

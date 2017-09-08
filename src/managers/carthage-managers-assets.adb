@@ -28,18 +28,19 @@ package body Carthage.Managers.Assets is
       Goal    : Carthage.Goals.Goal_Record'Class)
       return Boolean
    is
+      pragma Unreferenced (Manager);
       Asset_Goal : Asset_Manager_Goal renames Asset_Manager_Goal (Goal);
    begin
       case Asset_Goal.Class is
          when None =>
             return True;
          when Recon =>
-            Manager.House.Log ("pretending we just checked "
-                               & Asset_Goal.Tile.Description);
+--              Manager.House.Log ("pretending we just checked "
+--                                 & Asset_Goal.Tile.Description);
             return True;
          when Capture =>
-            Manager.House.Log ("pretending we just captured "
-                               & Asset_Goal.Tile.Description);
+--              Manager.House.Log ("pretending we just captured "
+--                                 & Asset_Goal.Tile.Description);
             return True;
       end case;
    end Check_Goal;

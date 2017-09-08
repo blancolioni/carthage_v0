@@ -61,6 +61,11 @@ package Carthage.Structures is
      (Structure : Structure_Record)
       return Production_Array;
 
+   function Produces
+     (Structure : Structure_Record;
+      Resource  : Carthage.Resources.Resource_Type)
+      return Boolean;
+
    function Harvest_Production
      (Structure : Structure_Record;
       Tile      : Carthage.Tiles.Tile_Type)

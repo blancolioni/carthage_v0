@@ -2,7 +2,6 @@ private with Ada.Containers.Indefinite_Hashed_Maps;
 private with Ada.Strings.Fixed.Equal_Case_Insensitive;
 private with Ada.Strings.Fixed.Hash_Case_Insensitive;
 
-limited with Carthage.Managers.Assets;
 limited with Carthage.Managers.Planets;
 
 with Carthage.Houses;
@@ -43,8 +42,6 @@ private
          Planet        : Carthage.Planets.Planet_Type;
          Planet_Manager : access
            Carthage.Managers.Planets.Planet_Manager_Record'Class;
-         Asset_Manager : access
-           Carthage.Managers.Assets.Asset_Manager_Record'Class;
       end record;
 
    package Managed_Planet_Maps is
@@ -83,6 +80,9 @@ private
      (Manager : in out House_Manager_Record);
 
    overriding procedure Check_Goals
+     (Manager : in out House_Manager_Record);
+
+   overriding procedure Execute_Turn
      (Manager : in out House_Manager_Record);
 
    overriding function Check_Goal

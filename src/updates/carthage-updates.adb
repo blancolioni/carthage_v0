@@ -11,6 +11,8 @@ with Carthage.Tiles;
 
 with Carthage.Managers;
 
+with Carthage.Logging;
+
 package body Carthage.Updates is
 
    -----------------------
@@ -271,11 +273,14 @@ package body Carthage.Updates is
       Ada.Text_IO.Put_Line
         ("Update: "
          & Carthage.Calendar.Day_Identifier (Carthage.Calendar.Today));
+      Carthage.Logging.Log ("starting update");
       Carthage.Managers.Start_Manager_Turns;
+      Carthage.Managers.Execute_Manager_Turns;
       Carthage.Cities.Updates.Execute_Orders;
       Carthage.Cities.Updates.Execute_Production;
       Carthage.Stacks.Updates.Execute_Orders;
       Carthage.Houses.Scan (Carthage.Houses.Log_Status'Access);
+      Carthage.Logging.Log ("update complete");
       Carthage.Calendar.Next_Day;
    end Update;
 

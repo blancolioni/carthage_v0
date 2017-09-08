@@ -21,6 +21,8 @@ package Carthage.Managers is
    procedure Check_Goals
      (Manager : in out Manager_Record);
 
+   procedure Execute_Turn (Manager : in out Manager_Record) is null;
+
    procedure Add_Goal
      (Manager : in out Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class);
@@ -38,6 +40,8 @@ package Carthage.Managers is
    procedure Start_Managers;
 
    procedure Start_Manager_Turns;
+
+   procedure Execute_Manager_Turns;
 
 private
 
