@@ -446,16 +446,18 @@ package body Carthage.UI.Maps is
       end if;
 
       if Wizard_Mode or else Tile.Currently_Visible_To (House) then
-         if Tile.Has_Stack then
+         if Tile.Has_Stacks then
             declare
+               Stack : constant Carthage.Stacks.Stack_Type :=
+                         Tile.First_Stack;
                Background : Carthage.Colours.Colour_Type :=
-                              Tile.Stack.Owner.Colour;
+                              Stack.Owner.Colour;
             begin
                Background.Alpha := 0.7;
                Layers.List.Append
                  (Make_Icon_Resource
                     ("unit"
-                     & Integer'Image (-(Tile.Stack.Asset (1).Unit.Index)),
+                     & Integer'Image (-(Stack.Asset (1).Unit.Index)),
                      Background));
             end;
          end if;

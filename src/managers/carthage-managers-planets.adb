@@ -1,3 +1,5 @@
+with WL.Random;
+
 with Carthage.Stacks;
 
 with Carthage.Managers.Assets;
@@ -132,18 +134,23 @@ package body Carthage.Managers.Planets is
                            Explored           => False,
                            Seen               => False,
                            Targeted           => False);
+               function At_War_With
+                 (Enemy : not null access constant
+                    Carthage.Stacks.Stack_Record'Class)
+                  return Boolean
+               is (Manager.House.At_War_With (Enemy.Owner));
+
             begin
                if Tile.Currently_Visible_To (Manager.House) then
 
-                  if Tile.Has_Stack
-                    and then Manager.House.At_War_With (Tile.Stack.Owner)
-                  then
+                  if Tile.Has_Stack (At_War_With'Access) then
                      Manager.Planet.Log
                        (Manager.House.Name
                         & ": hostile at "
                         & Carthage.Tiles.Position_Image (Tile.Position));
-                     Info.Interest := 1_000 + Natural (Tile.Stack.Count);
-
+                     Info.Interest := 1_000
+                       + Natural (Tile.Find_Stack (At_War_With'Access).Count)
+                       + WL.Random.Random_Number (1, 100);
                      Manager.Hostile_Tiles.Append (Tile);
                   end if;
 
@@ -157,7 +164,8 @@ package body Carthage.Managers.Planets is
                     and then Tile.City.Owner /= Manager.House
                     and then Manager.House.At_War_With (Tile.City.Owner)
                   then
-                     Info.Interest := 600;
+                     Info.Interest := 600
+                       + WL.Random.Random_Number (1, 100);
                   end if;
 
                   Manager.Explored_Tiles.Append (Tile);
@@ -167,7 +175,7 @@ package body Carthage.Managers.Planets is
                elsif Tile.Seen_By (Manager.House) then
                   Manager.Seen_Tiles.Append (Tile);
                   Info.Nearest_Seen := Tile;
-
+                  Info.Interest := WL.Random.Random_Number (1, 100);
                else
                   Manager.Unseen_Tiles.Append (Tile);
                   declare
@@ -176,9 +184,11 @@ package body Carthage.Managers.Planets is
                   begin
                      Manager.Planet.Get_Tiles
                        (Tile, 1, 3, null, Ns);
+                     Info.Interest := 100;
                      for I in 1 .. Tile_Count (Ns) loop
                         if Get_Tile (Ns, I).Seen_By (Manager.House) then
-                           Info.Interest := Info.Interest + 12;
+                           Info.Interest := Info.Interest + 6
+                             + WL.Random.Random_Number (1, 6);
                         end if;
                      end loop;
                   end;
@@ -238,6 +248,9 @@ package body Carthage.Managers.Planets is
           (Higher_Interest);
 
    begin
+      Manager.Planet.Log
+        (Manager.House.Name & ": looking for unexplored tiles");
+
       for Unseen of Manager.Unseen_Tiles loop
          Tiles.Append (Unseen.Position);
       end loop;
@@ -245,9 +258,17 @@ package body Carthage.Managers.Planets is
          Tiles.Append (Seen.Position);
       end loop;
 
+      Manager.Planet.Log
+        (Manager.House.Name & ":" & Natural'Image (Natural (Tiles.Length))
+         & " tiles found");
+
       Sorting.Sort (Tiles);
 
       for Tile of Tiles loop
+         Manager.House.Log
+           ("interest:"
+            & Manager.Tile_Info (Tile.X, Tile.Y).Interest'Img
+            & ": " & Manager.Planet.Tile (Tile).Description);
          declare
             Goal : constant Carthage.Goals.Goal_Record'Class :=
                      Manager.Ground_Asset_Manager.Recon_Goal

@@ -5,23 +5,12 @@ package body Carthage.Stacks is
    ---------------
 
    procedure Add_Asset
-     (To    : Stack_Type;
+     (To    : in out Stack_Record;
       Asset : Carthage.Assets.Asset_Type)
    is
-      procedure Update (Stack : in out Stack_Class);
-
-      ------------
-      -- Update --
-      ------------
-
-      procedure Update (Stack : in out Stack_Class) is
-      begin
-         Stack.Count := Stack.Count + 1;
-         Stack.Assets (Stack.Count) := Asset;
-      end Update;
-
    begin
-      Db.Update (To.Reference, Update'Access);
+      To.Count := To.Count + 1;
+      To.Assets (To.Count) := Asset;
    end Add_Asset;
 
    ------------------
@@ -65,6 +54,32 @@ package body Carthage.Stacks is
          end return;
       end if;
    end Movement;
+
+   ------------------
+   -- Remove_Asset --
+   ------------------
+
+   procedure Remove_Asset
+     (From  : in out Stack_Record;
+      Asset : Carthage.Assets.Asset_Type)
+   is
+      use type Carthage.Assets.Asset_Type;
+      Found : Boolean := False;
+   begin
+      for I in 1 .. From.Count loop
+         if From.Assets (I) = Asset then
+            Found := True;
+         elsif Found then
+            From.Assets (I - 1) := From.Assets (I);
+         end if;
+      end loop;
+      if not Found then
+         raise Program_Error with
+           "assertion failed: " & From.Identifier
+           & ": expected to find asset: " & Asset.Identifier;
+      end if;
+      From.Count := From.Count - 1;
+   end Remove_Asset;
 
    ------------------------
    -- Remove_Dead_Assets --

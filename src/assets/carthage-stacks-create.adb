@@ -28,7 +28,7 @@ package body Carthage.Stacks.Create is
       Stack : constant Stack_Type :=
                 Db.Create (Create'Access);
    begin
-      Tile.Update.Set_Stack (Stack);
+      Tile.Update.Add_Stack (Stack);
       return Stack;
    end New_Ground_Stack;
 

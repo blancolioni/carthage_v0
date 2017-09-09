@@ -13,6 +13,11 @@ package Carthage.Managers.Assets is
      and Carthage.Stacks.Stack_Manager_Interface
    with private;
 
+   overriding function Have_Immediate_Capacity
+     (Manager : Asset_Manager_Record;
+      Goal    : Carthage.Goals.Goal_Record'Class)
+      return Boolean;
+
    function Recon_Goal
      (Manager : Asset_Manager_Record;
       Tile    : Carthage.Tiles.Tile_Type)
@@ -66,28 +71,32 @@ private
          Parameters : Goal_Parameter_Record;
       end record;
 
-   type Managed_Asset_Record is
-      record
-         Asset : Carthage.Assets.Asset_Type;
-         Stack : Carthage.Stacks.Stack_Type;
-         Tile  : Carthage.Tiles.Tile_Type;
-      end record;
-
    type Managed_Stack_Record is
       record
          Stack        : Carthage.Stacks.Stack_Type;
          Goal         : Goal_Lists.Cursor;
-         Minimum_Food : Natural;
-         Desired_Food : Natural;
+         Minimum_Food : Natural := 0;
+         Desired_Food : Natural := 0;
+      end record;
+
+   package Managed_Stack_List is
+     new Ada.Containers.Doubly_Linked_Lists
+       (Managed_Stack_Record);
+
+   type Managed_Asset_Record is
+      record
+         Asset : Carthage.Assets.Asset_Type;
+         Stack : Managed_Stack_List.Cursor;
+         Tile  : Carthage.Tiles.Tile_Type;
       end record;
 
    package Managed_Asset_List is
      new Ada.Containers.Doubly_Linked_Lists
        (Managed_Asset_Record);
 
-   package Managed_Stack_List is
+   package Asset_Classification_List is
      new Ada.Containers.Doubly_Linked_Lists
-       (Managed_Stack_Record);
+       (Managed_Asset_List.Cursor, Managed_Asset_List."=");
 
    type Asset_Manager_Record is
      new Manager_Record
@@ -96,6 +105,8 @@ private
          Planet       : Carthage.Planets.Planet_Type;
          Assets       : Managed_Asset_List.List;
          Stacks       : Managed_Stack_List.List;
+         Spotters     : Asset_Classification_List.List;
+         Movers       : Asset_Classification_List.List;
          Minimum_Food : Natural;
          Desired_Food : Natural;
       end record;
@@ -107,5 +118,9 @@ private
      (Manager : Asset_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
       return Boolean;
+
+   overriding procedure Add_Goal
+     (Manager : in out Asset_Manager_Record;
+      Goal    : Carthage.Goals.Goal_Record'Class);
 
 end Carthage.Managers.Assets;

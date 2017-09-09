@@ -43,6 +43,10 @@ package Carthage.Assets is
      (Asset : Asset_Record)
       return Natural;
 
+   function Spot
+     (Asset : Asset_Record)
+      return Natural;
+
    function Health
      (Asset : Asset_Record)
       return Asset_Health;
@@ -117,6 +121,11 @@ private
      (Asset : Asset_Record)
       return Natural
    is (Asset.Unit.Movement);
+
+   function Spot
+     (Asset : Asset_Record)
+      return Natural
+   is (Asset.Unit.Spot);
 
    function Health
      (Asset : Asset_Record)

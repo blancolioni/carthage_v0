@@ -1,3 +1,5 @@
+with Carthage.Stacks.Create;
+
 package body Carthage.Managers.Assets is
 
    ----------------------
@@ -18,6 +20,111 @@ package body Carthage.Managers.Assets is
 --              Parameters =>
 --                (Military => High, Spot => High, others => <>)));
 --     end Add_Capture_Goal;
+
+   --------------
+   -- Add_Goal --
+   --------------
+
+   overriding procedure Add_Goal
+     (Manager : in out Asset_Manager_Record;
+      Goal    : Carthage.Goals.Goal_Record'Class)
+   is
+      Asset_Goal : Asset_Manager_Goal renames Asset_Manager_Goal (Goal);
+
+      function Best_Available
+        (List   : Asset_Classification_List.List;
+         Target : Tile_Position)
+         return Managed_Asset_List.Cursor;
+
+      --------------------
+      -- Best_Available --
+      --------------------
+
+      function Best_Available
+        (List   : Asset_Classification_List.List;
+         Target : Tile_Position)
+         return Managed_Asset_List.Cursor
+      is
+         Best_Asset    : Managed_Asset_List.Cursor :=
+                           Managed_Asset_List.No_Element;
+         Best_Distance : Natural := Natural'Last;
+
+      begin
+         for Cursor of List loop
+            declare
+               Managed_Asset : Managed_Asset_Record renames
+                                 Manager.Assets (Cursor);
+               Managed_Stack : Managed_Stack_Record renames
+                                 Manager.Stacks (Managed_Asset.Stack);
+            begin
+               if not Goal_Lists.Has_Element (Managed_Stack.Goal) then
+                  declare
+                     Position : constant Tile_Position :=
+                                  Manager.Stacks (Managed_Asset.Stack)
+                                  .Stack.Tile.Position;
+                     Distance : constant Natural :=
+                                  Carthage.Planets.Hex_Distance
+                                    (Position, Target);
+                  begin
+                     if not Managed_Asset_List.Has_Element (Best_Asset)
+                       or else Distance < Best_Distance
+                     then
+                        Best_Asset := Cursor;
+                        Best_Distance := Distance;
+                     end if;
+                  end;
+               end if;
+            end;
+         end loop;
+         return Best_Asset;
+      end Best_Available;
+
+   begin
+      case Asset_Goal.Class is
+         when None =>
+            null;
+         when Recon =>
+            declare
+               use type Carthage.Stacks.Asset_Count;
+               Asset_Cursor : constant Managed_Asset_List.Cursor :=
+                                Best_Available (Manager.Spotters,
+                                                Asset_Goal.Tile.Position);
+               Asset        : constant Carthage.Assets.Asset_Type :=
+                                Manager.Assets (Asset_Cursor).Asset;
+               Stack_Cursor : Managed_Stack_List.Cursor :=
+                                Manager.Assets (Asset_Cursor).Stack;
+               Stack        : Carthage.Stacks.Stack_Type :=
+                                  Manager.Stacks (Stack_Cursor).Stack;
+            begin
+               if Stack.Count > 1 then
+                  declare
+                     New_Stack : constant Carthage.Stacks.Stack_Type :=
+                                   Carthage.Stacks.Create.New_Ground_Stack
+                                     (Stack.Owner, Stack.Planet, Stack.Tile);
+                  begin
+                     Stack.Update.Remove_Asset (Asset);
+                     New_Stack.Update.Add_Asset (Asset);
+                     Manager.Stacks.Append
+                       ((New_Stack, others => <>));
+                     Stack_Cursor := Manager.Stacks.Last;
+                     Manager.Assets (Asset_Cursor).Stack := Stack_Cursor;
+                     Stack := New_Stack;
+                  end;
+               end if;
+
+               Asset.Log ("assigned to recon of "
+                          & Asset_Goal.Tile.Description);
+               Manager.Goals.Append (Goal);
+               Manager.Stacks (Stack_Cursor).Goal :=
+                 Manager.Goals.Last;
+               Manager.Stacks (Stack_Cursor).Stack.Update.Move_To_Tile
+                 (Asset_Goal.Tile);
+            end;
+
+         when Capture =>
+            null;
+      end case;
+   end Add_Goal;
 
    -----------------
    -- Check_Goals --
@@ -108,6 +215,56 @@ package body Carthage.Managers.Assets is
       Desired.Add (Food_Resource, Desired_Food);
    end Get_Resource_Requirements;
 
+   -----------------------------
+   -- Have_Immediate_Capacity --
+   -----------------------------
+
+   overriding function Have_Immediate_Capacity
+     (Manager : Asset_Manager_Record;
+      Goal    : Carthage.Goals.Goal_Record'Class)
+      return Boolean
+   is
+      Asset_Goal : Asset_Manager_Goal renames Asset_Manager_Goal (Goal);
+
+      function Have_Capacity
+        (List : Asset_Classification_List.List)
+         return Boolean;
+
+      -------------------
+      -- Have_Capacity --
+      -------------------
+
+      function Have_Capacity
+        (List : Asset_Classification_List.List)
+         return Boolean
+      is
+      begin
+         for Position of List loop
+            declare
+               Managed_Asset : Managed_Asset_Record renames
+                                 Manager.Assets (Position);
+               Managed_Stack : Managed_Stack_Record renames
+                                 Manager.Stacks (Managed_Asset.Stack);
+            begin
+               if not Goal_Lists.Has_Element (Managed_Stack.Goal) then
+                  return True;
+               end if;
+            end;
+         end loop;
+         return False;
+      end Have_Capacity;
+
+   begin
+      case Asset_Goal.Class is
+         when None =>
+            return True;
+         when Recon =>
+            return Have_Capacity (Manager.Spotters);
+         when Capture =>
+            return False;
+      end case;
+   end Have_Immediate_Capacity;
+
    ------------------------
    -- Load_Initial_State --
    ------------------------
@@ -118,6 +275,49 @@ package body Carthage.Managers.Assets is
       procedure Add_Stack
         (Stack : not null access constant
            Carthage.Stacks.Stack_Record'Class);
+
+      procedure Add_Asset_Classification
+        (Asset_Cursor : Managed_Asset_List.Cursor;
+         To_List      : in out Asset_Classification_List.List;
+         Rate         : not null access
+           function (Asset : Carthage.Assets.Asset_Type) return Natural);
+
+      ------------------------------
+      -- Add_Asset_Classification --
+      ------------------------------
+
+      procedure Add_Asset_Classification
+        (Asset_Cursor : Managed_Asset_List.Cursor;
+         To_List      : in out Asset_Classification_List.List;
+         Rate         : not null access
+           function (Asset : Carthage.Assets.Asset_Type) return Natural)
+      is
+         use Carthage.Assets;
+      begin
+         if To_List.Is_Empty then
+            To_List.Append (Asset_Cursor);
+         else
+            declare
+               Current_First : constant Asset_Type :=
+                                 Managed_Asset_List.Element
+                                   (To_List.First_Element).Asset;
+               Current_Rating : constant Natural :=
+                                  Rate (Current_First);
+               New_Asset      : constant Asset_Type :=
+                                  Managed_Asset_List.Element
+                                    (Asset_Cursor).Asset;
+               New_Rating     : constant Natural :=
+                                  Rate (New_Asset);
+            begin
+               if New_Rating = Current_Rating then
+                  To_List.Append (Asset_Cursor);
+               elsif New_Rating > Current_Rating then
+                  To_List.Clear;
+                  To_List.Append (Asset_Cursor);
+               end if;
+            end;
+         end if;
+      end Add_Asset_Classification;
 
       ---------------
       -- Add_Stack --
@@ -139,7 +339,7 @@ package body Carthage.Managers.Assets is
             Manager.Assets.Append
               (Managed_Asset_Record'
                  (Asset => Stack.Asset (I),
-                  Stack => Carthage.Stacks.Stack_Type (Stack),
+                  Stack => Manager.Stacks.Last,
                   Tile  => Stack.Tile));
          end loop;
       end Add_Stack;
@@ -148,6 +348,25 @@ package body Carthage.Managers.Assets is
       Manager.Planet.Scan_Stacks
         (Manager.House,
          Add_Stack'Access);
+
+      declare
+         use Carthage.Assets;
+         function Rate_Movement (Asset : Asset_Type) return Natural
+         is (Asset.Movement);
+
+         function Rate_Spot (Asset : Asset_Type) return Natural
+         is (Asset.Spot);
+      begin
+         for Position in Manager.Assets.Iterate loop
+            Add_Asset_Classification
+              (Position, Manager.Movers,
+               Rate_Movement'Access);
+            Add_Asset_Classification
+              (Position, Manager.Spotters,
+               Rate_Spot'Access);
+         end loop;
+      end;
+
    end Load_Initial_State;
 
    ----------------
@@ -168,6 +387,10 @@ package body Carthage.Managers.Assets is
            (Speed => High, Spot => High, others => <>);
       end return;
    end Recon_Goal;
+
+   ------------------------
+   -- Transfer_Resources --
+   ------------------------
 
    procedure Transfer_Resources
      (Manager   : in out Asset_Manager_Record;

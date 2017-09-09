@@ -455,7 +455,7 @@ package body Carthage.Houses.Configure is
          declare
             function Tile_OK (Position : Tile_Position) return Boolean
             is (not Planet.Tile (Position).Is_Water
-                and then not Planet.Tile (Position).Has_Stack);
+                and then not Planet.Tile (Position).Has_Stacks);
 
             Start      : constant Tile_Position :=
                            Planet.Find_Tile
@@ -472,12 +472,12 @@ package body Carthage.Houses.Configure is
                                  Asset_Config.Get ("count", 1);
                   Unit       : constant Carthage.Units.Unit_Type :=
                                  Carthage.Units.Get (Unit_Name);
-
+                  Update     : constant Carthage.Stacks.Updateable_Reference :=
+                                 Stack.Update;
                begin
                   for I in 1 .. Unit_Count loop
-                     Carthage.Stacks.Add_Asset
-                       (Stack,
-                        Carthage.Assets.Create.New_Asset
+                     Update.Add_Asset
+                       (Carthage.Assets.Create.New_Asset
                           (Unit    => Unit,
                            Owner   => House,
                            XP      => Carthage.Assets.Expert));

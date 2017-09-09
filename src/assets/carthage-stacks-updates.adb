@@ -21,9 +21,7 @@ package body Carthage.Stacks.Updates is
                      function Move_Cost
                        (Tile : Carthage.Tiles.Tile_Type)
                         return Float
-                     is (if Tile.Has_Stack
-                         then Float'Last
-                         elsif Tile.Has_Road
+                     is (if Tile.Has_Road
                          then 1.0
                          else 3.0);
 
@@ -36,13 +34,20 @@ package body Carthage.Stacks.Updates is
                         declare
                            Cost : constant Float :=
                                     Move_Cost (Stack.Planet.Tile (Path (I)));
+
+                           function Match (S : not null access constant
+                                             Stack_Record'Class)
+                                           return Boolean
+                           is (Memor."=" (S.Reference, Stack.Reference));
                            Ref  : constant Stack_Type :=
-                                    Stack.Tile.Stack;
+                                    Stack_Type
+                                      (Stack.Tile.Find_Stack
+                                         (Match'Access));
                         begin
-                           Stack.Tile.Update.Clear_Stack;
+                           Stack.Tile.Update.Remove_Stack (Ref);
                            Stack.Tile :=
                              Stack.Planet.Tile (Path (I));
-                           Stack.Tile.Update.Set_Stack (Ref);
+                           Stack.Tile.Update.Add_Stack (Ref);
 
                            Stack.Log ("destination: "
                                       & Carthage.Tiles.Position_Image

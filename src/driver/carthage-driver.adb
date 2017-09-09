@@ -47,6 +47,7 @@ begin
 
       procedure Create_Manager (House : Carthage.Houses.House_Type) is
       begin
+         Ada.Text_IO.Put_Line ("  " & House.Name);
          Carthage.Managers.Houses.Create_House_Manager (House);
       end Create_Manager;
 

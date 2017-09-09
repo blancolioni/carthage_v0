@@ -693,13 +693,13 @@ package body Carthage.Import.Galaxy is
          Stack    : constant Carthage.Stacks.Stack_Type :=
                       (if In_Space
                        then Planet.Stack (Asset.Owner)
-                       elsif Tile.Has_Stack
-                       then Tile.Stack
+                       elsif Tile.Has_Stacks
+                       then Tile.First_Stack
                        else Carthage.Stacks.Create.New_Ground_Stack
                          (Asset.Owner, Planet, Tile));
       begin
          if In_Space then
-            Carthage.Stacks.Add_Asset (Stack, Asset);
+            Stack.Update.Add_Asset (Asset);
          else
             declare
                use type Carthage.Stacks.Asset_Count;
@@ -714,9 +714,9 @@ package body Carthage.Import.Galaxy is
                   end if;
                end if;
             end;
-            Carthage.Stacks.Add_Asset (Stack, Asset);
-            if not Tile.Has_Stack then
-               Tile.Update.Set_Stack (Stack);
+            Stack.Update.Add_Asset (Asset);
+            if not Tile.Has_Stacks then
+               Tile.Update.Add_Stack (Stack);
             end if;
          end if;
       end;

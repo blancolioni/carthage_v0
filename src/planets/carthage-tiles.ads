@@ -1,3 +1,4 @@
+private with Ada.Containers.Doubly_Linked_Lists;
 private with Memor.Database;
 
 with Carthage.Objects;
@@ -59,15 +60,22 @@ package Carthage.Tiles is
 
    function Has_City (Tile : Tile_Record) return Boolean;
    function Has_Road (Tile : Tile_Record) return Boolean;
-   function Has_Stack (Tile : Tile_Record) return Boolean;
+   function Has_Stacks (Tile : Tile_Record) return Boolean;
 
    function City (Tile : Tile_Record)
                   return access constant Carthage.Cities.City_Record'Class
      with Pre => Tile.Has_City;
 
-   function Stack (Tile : Tile_Record)
-                  return access constant Carthage.Stacks.Stack_Record'Class
-     with Pre => Tile.Has_Stack;
+   function First_Stack
+     (Tile : Tile_Record)
+      return access constant Carthage.Stacks.Stack_Record'Class
+     with Pre => Tile.Has_Stacks;
+
+   procedure Scan_Stacks
+     (Tile : Tile_Record;
+      Process : not null access
+        procedure (Stack : not null access constant
+                     Carthage.Stacks.Stack_Record'Class));
 
    function Description
      (Tile : Tile_Record)
@@ -77,14 +85,46 @@ package Carthage.Tiles is
      (Tile : in out Tile_Record;
       City : not null access constant Carthage.Cities.City_Record'Class);
 
-   procedure Set_Stack
-     (Tile  : in out Tile_Record;
-      Stack : not null access constant Carthage.Stacks.Stack_Record'Class);
+   function Has_Stack
+     (Tile  : Tile_Record;
+      Stack : not null access constant
+        Carthage.Stacks.Stack_Record'Class)
+      return Boolean;
 
-   procedure Clear_Stack
-     (Tile : in out Tile_Record)
-     with Pre => Tile.Has_Stack,
-     Post => not Tile.Has_Stack;
+   procedure Add_Stack
+     (Tile  : in out Tile_Record;
+      Stack : not null access constant Carthage.Stacks.Stack_Record'Class)
+     with Pre => not Tile.Has_Stack (Stack),
+     Post => Tile.Has_Stack (Stack);
+
+   procedure Remove_Stack
+     (Tile  : in out Tile_Record;
+      Stack : not null access constant Carthage.Stacks.Stack_Record'Class)
+     with Pre => Tile.Has_Stack (Stack),
+     Post => not Tile.Has_Stack (Stack);
+
+   procedure Remove_Stacks
+     (Tile  : in out Tile_Record;
+      Match : not null access
+        function (Stack : not null access constant
+                    Carthage.Stacks.Stack_Record'Class)
+      return Boolean);
+
+   function Has_Stack
+     (Tile  : Tile_Record;
+      Match : not null access
+        function (Stack : not null access constant
+                    Carthage.Stacks.Stack_Record'Class)
+      return Boolean)
+      return Boolean;
+
+   function Find_Stack
+     (Tile  : Tile_Record;
+      Match : not null access
+        function (Stack : not null access constant
+                    Carthage.Stacks.Stack_Record'Class)
+      return Boolean)
+      return access constant Carthage.Stacks.Stack_Record'Class;
 
    procedure Set_Road
      (Tile : in out Tile_Record;
@@ -121,6 +161,11 @@ private
    type Terrain_Layer_Array is
      array (Terrain_Layer) of Carthage.Terrain.Terrain_Type;
 
+   type Stack_Access is access constant Carthage.Stacks.Stack_Record'Class;
+
+   package Stack_Lists is
+     new Ada.Containers.Doubly_Linked_Lists (Stack_Access);
+
    type Tile_Record is
      new Carthage.Objects.Root_Carthage_Object with
       record
@@ -135,8 +180,7 @@ private
          River     : Boolean;
          City      : access constant
            Carthage.Cities.City_Record'Class;
-         Stack     : access constant
-           Carthage.Stacks.Stack_Record'Class;
+         Stacks    : Stack_Lists.List;
       end record;
 
    overriding function Object_Database
@@ -172,14 +216,31 @@ private
    is (for some Item of Tile.Terrain =>
           Carthage.Terrain."=" (Item, Terrain));
 
+   function Has_Stack
+     (Tile  : Tile_Record;
+      Stack : not null access constant
+        Carthage.Stacks.Stack_Record'Class)
+      return Boolean
+   is (for some S of Tile.Stacks =>
+          S = Stack_Access (Stack));
+
+   function Has_Stack
+     (Tile  : Tile_Record;
+      Match : not null access
+        function (Stack : not null access constant
+                    Carthage.Stacks.Stack_Record'Class)
+      return Boolean)
+      return Boolean
+   is (for some S of Tile.Stacks => Match (S));
+
    function Is_Water (Tile : Tile_Record) return Boolean
    is (Tile.Terrain (1).Water);
 
    function Has_City (Tile : Tile_Record) return Boolean
    is (Tile.City /= null);
 
-   function Has_Stack (Tile : Tile_Record) return Boolean
-   is (Tile.Stack /= null);
+   function Has_Stacks (Tile : Tile_Record) return Boolean
+   is (not Tile.Stacks.Is_Empty);
 
    function Has_Road (Tile : Tile_Record) return Boolean
    is (Tile.Road);
@@ -189,9 +250,10 @@ private
       return access constant Carthage.Cities.City_Record'Class
    is (Tile.City);
 
-   function Stack (Tile : Tile_Record)
-                   return access constant Carthage.Stacks.Stack_Record'Class
-   is (Tile.Stack);
+   function First_Stack
+     (Tile : Tile_Record)
+      return access constant Carthage.Stacks.Stack_Record'Class
+   is (Tile.Stacks.First_Element);
 
    function Position
      (Tile : Tile_Record)

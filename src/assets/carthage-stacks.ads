@@ -89,6 +89,25 @@ package Carthage.Stacks is
    procedure Remove_Dead_Assets
      (Stack : in out Stack_Record);
 
+   function Has_Asset
+     (Stack : Stack_Record;
+      Asset : Carthage.Assets.Asset_Type)
+      return Boolean;
+
+   procedure Add_Asset
+     (To    : in out Stack_Record;
+      Asset : Carthage.Assets.Asset_Type)
+     with Pre => To.Count < Maximum_Stack_Size
+     and then Carthage.Houses."=" (To.Owner, Asset.Owner)
+     and then not To.Has_Asset (Asset),
+     Post => To.Has_Asset (Asset);
+
+   procedure Remove_Asset
+     (From  : in out Stack_Record;
+      Asset : Carthage.Assets.Asset_Type)
+     with Pre => From.Has_Asset (Asset),
+     Post => not From.Has_Asset (Asset);
+
    procedure Set_Manager
      (Stack : in out Stack_Record;
       Manager : not null access Stack_Manager_Interface'Class);
@@ -96,12 +115,6 @@ package Carthage.Stacks is
    subtype Stack_Class is Stack_Record'Class;
 
    type Stack_Type is access constant Stack_Record'Class;
-
-   procedure Add_Asset
-     (To    : Stack_Type;
-      Asset : Carthage.Assets.Asset_Type)
-     with Pre => To.Count < Maximum_Stack_Size
-       and then Carthage.Houses."=" (To.Owner, Asset.Owner);
 
    procedure Scan_Stacks
      (Process : not null access procedure (Stack : Stack_Type));
@@ -202,6 +215,12 @@ private
 
    function Count (Stack : Stack_Record) return Asset_Count
    is (Stack.Count);
+
+   function Has_Asset (Stack : Stack_Record;
+                       Asset : Carthage.Assets.Asset_Type)
+                       return Boolean
+   is (for some X of Stack.Assets (1 .. Stack.Count) =>
+          Carthage.Assets."=" (X, Asset));
 
    function Asset (Stack : Stack_Record;
                    Index : Asset_Index)

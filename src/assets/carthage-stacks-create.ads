@@ -5,8 +5,8 @@ package Carthage.Stacks.Create is
       Planet    : Carthage.Planets.Planet_Type;
       Tile      : Carthage.Tiles.Tile_Type)
       return Stack_Type
-     with Pre => not Tile.Has_Stack,
-     Post => Tile.Has_Stack and then Tile.Stack = New_Ground_Stack'Result;
+     with Post => Tile.Has_Stacks
+       and then Carthage.Tiles."=" (New_Ground_Stack'Result.Tile, Tile);
 
    function New_Orbital_Stack
      (Owner     : Carthage.Houses.House_Type;

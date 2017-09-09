@@ -4,6 +4,10 @@ with Carthage.Cities;
 
 package body Carthage.Tiles is
 
+   --------------------
+   -- Position_Image --
+   --------------------
+
    function Position_Image (Position : Tile_Position) return String
    is ("("
        & Ada.Strings.Fixed.Trim (Tile_X'Image (Position.X), Ada.Strings.Left)
@@ -11,16 +15,17 @@ package body Carthage.Tiles is
        & Ada.Strings.Fixed.Trim (Tile_Y'Image (Position.Y), Ada.Strings.Left)
        & ")");
 
-   -----------------
-   -- Clear_Stack --
-   -----------------
+   ---------------
+   -- Add_Stack --
+   ---------------
 
-   procedure Clear_Stack
-     (Tile : in out Tile_Record)
+   procedure Add_Stack
+     (Tile  : in out Tile_Record;
+      Stack : not null access constant Carthage.Stacks.Stack_Record'Class)
    is
    begin
-      Tile.Stack := null;
-   end Clear_Stack;
+      Tile.Stacks.Append (Stack);
+   end Add_Stack;
 
    ----------------------
    -- Clear_Visibility --
@@ -56,6 +61,85 @@ package body Carthage.Tiles is
         & " "
         & (if City = "" then "" else City & " ") & Terrain;
    end Description;
+
+   ----------------
+   -- Find_Stack --
+   ----------------
+
+   function Find_Stack
+     (Tile  : Tile_Record;
+      Match : not null access
+        function (Stack : not null access constant
+                    Carthage.Stacks.Stack_Record'Class)
+      return Boolean)
+      return access constant Carthage.Stacks.Stack_Record'Class
+   is
+   begin
+      for Stack of Tile.Stacks loop
+         if Match (Stack) then
+            return Stack;
+         end if;
+      end loop;
+      return null;
+   end Find_Stack;
+
+   ------------------
+   -- Remove_Stack --
+   ------------------
+
+   procedure Remove_Stack
+     (Tile  : in out Tile_Record;
+      Stack : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is
+      S : constant Stack_Access := Stack_Access (Stack);
+      Position : Stack_Lists.Cursor := Tile.Stacks.First;
+   begin
+      while Stack_Lists.Element (Position) /= S loop
+         Stack_Lists.Next (Position);
+      end loop;
+      Tile.Stacks.Delete (Position);
+   end Remove_Stack;
+
+   -------------------
+   -- Remove_Stacks --
+   -------------------
+
+   procedure Remove_Stacks
+     (Tile  : in out Tile_Record;
+      Match : not null access
+        function (Stack : not null access constant
+                    Carthage.Stacks.Stack_Record'Class)
+      return Boolean)
+   is
+      Position : Stack_Lists.Cursor := Tile.Stacks.First;
+   begin
+      while Stack_Lists.Has_Element (Position) loop
+         declare
+            Current : Stack_Lists.Cursor := Position;
+         begin
+            Stack_Lists.Next (Position);
+            if Match (Stack_Lists.Element (Current)) then
+               Tile.Stacks.Delete (Current);
+            end if;
+         end;
+      end loop;
+   end Remove_Stacks;
+
+   -----------------
+   -- Scan_Stacks --
+   -----------------
+
+   procedure Scan_Stacks
+     (Tile    : Tile_Record;
+      Process : not null access
+        procedure (Stack : not null access constant
+                     Carthage.Stacks.Stack_Record'Class))
+   is
+   begin
+      for Stack of Tile.Stacks loop
+         Process (Stack);
+      end loop;
+   end Scan_Stacks;
 
    --------------
    -- Set_City --
@@ -119,18 +203,6 @@ package body Carthage.Tiles is
    begin
       Carthage.Houses.Insert (Tile.Seen, House);
    end Set_Seen_By;
-
-   ---------------
-   -- Set_Stack --
-   ---------------
-
-   procedure Set_Stack
-     (Tile  : in out Tile_Record;
-      Stack : not null access constant Carthage.Stacks.Stack_Record'Class)
-   is
-   begin
-      Tile.Stack := Stack;
-   end Set_Stack;
 
    ------------
    -- Update --
