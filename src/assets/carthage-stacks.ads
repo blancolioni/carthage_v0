@@ -1,4 +1,5 @@
 private with Ada.Containers.Indefinite_Doubly_Linked_Lists;
+private with Ada.Containers.Indefinite_Holders;
 private with Memor.Database;
 
 with Carthage.Assets;
@@ -152,16 +153,22 @@ private
    package Stack_Order_Lists is
      new Ada.Containers.Indefinite_Doubly_Linked_Lists (Stack_Order_Record);
 
+   package Stack_Path_Holders is
+     new Ada.Containers.Indefinite_Holders
+       (Carthage.Planets.Array_Of_Positions, Carthage.Planets."=");
+
    type Stack_Record is
      new Carthage.Objects.Root_Named_Object with
       record
-         Owner       : Carthage.Houses.House_Type;
-         Planet      : Carthage.Planets.Planet_Type;
-         Tile        : Carthage.Tiles.Tile_Type;
-         Count       : Asset_Count;
-         Assets      : Asset_Array;
-         Orders      : Stack_Order_Lists.List;
-         Manager     : access Stack_Manager_Interface'Class;
+         Owner              : Carthage.Houses.House_Type;
+         Planet             : Carthage.Planets.Planet_Type;
+         Tile               : Carthage.Tiles.Tile_Type;
+         Count              : Asset_Count;
+         Assets             : Asset_Array;
+         Orders             : Stack_Order_Lists.List;
+         Current_Path       : Stack_Path_Holders.Holder;
+         Current_Path_Index : Natural := 0;
+         Manager            : access Stack_Manager_Interface'Class;
       end record;
 
    overriding function Object_Database
