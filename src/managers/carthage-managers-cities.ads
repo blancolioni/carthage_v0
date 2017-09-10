@@ -68,7 +68,7 @@ private
       end record;
 
    overriding procedure Load_Initial_State
-     (Manager : in out City_Manager_Record);
+     (Manager : not null access City_Manager_Record);
 
    overriding function Check_Goal
      (Manager : City_Manager_Record;

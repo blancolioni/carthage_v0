@@ -79,7 +79,7 @@ private
       end record;
 
    overriding procedure Load_Initial_State
-     (Manager : in out Planet_Manager_Record);
+     (Manager : not null access Planet_Manager_Record);
 
    overriding procedure Check_Goals
      (Manager : in out Planet_Manager_Record);

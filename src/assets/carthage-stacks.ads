@@ -22,29 +22,29 @@ package Carthage.Stacks is
      new Carthage.Objects.Root_Named_Object with private;
 
    procedure On_Hostile_Spotted
-     (Manager : Stack_Manager_Interface;
+     (Manager : in out Stack_Manager_Interface;
       Stack   : not null access constant Stack_Record'Class;
       Hostile : not null access constant Stack_Record'Class)
    is null;
 
    procedure On_Movement_Ended
-     (Manager : Stack_Manager_Interface;
+     (Manager : in out Stack_Manager_Interface;
       Stack   : not null access constant Stack_Record'Class)
    is null;
 
    procedure On_Stack_Removed
-     (Manager : Stack_Manager_Interface;
+     (Manager : in out Stack_Manager_Interface;
       Stack   : not null access constant Stack_Record'Class)
    is null;
 
    procedure On_Asset_Added
-     (Manager : Stack_Manager_Interface;
+     (Manager : in out Stack_Manager_Interface;
       Stack   : not null access constant Stack_Record'Class;
       Asset   : not null access constant Carthage.Assets.Asset_Record'Class)
    is null;
 
    procedure On_Asset_Removed
-     (Manager : Stack_Manager_Interface;
+     (Manager : in out Stack_Manager_Interface;
       Stack   : not null access constant Stack_Record'Class;
       Asset   : not null access constant Carthage.Assets.Asset_Record'Class)
    is null;

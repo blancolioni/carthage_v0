@@ -9,7 +9,7 @@ package Carthage.Managers is
    type Manager_Record is abstract tagged private;
 
    procedure Load_Initial_State
-     (Manager : in out Manager_Record)
+     (Manager : not null access Manager_Record)
    is abstract;
 
    function Check_Goal
@@ -24,7 +24,7 @@ package Carthage.Managers is
    procedure Execute_Turn (Manager : in out Manager_Record) is null;
 
    procedure Add_Goal
-     (Manager : in out Manager_Record;
+     (Manager : not null access Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class);
 
    function Have_Immediate_Capacity

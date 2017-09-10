@@ -60,8 +60,34 @@ package body Carthage.Stacks.Updates is
                   declare
                      Tile : constant Carthage.Tiles.Tile_Type :=
                               Get_Tile (Spotted, I);
+
+                     procedure Check_Hostile
+                       (Check : not null access constant Stack_Record'Class);
+
+                     -------------------
+                     -- Check_Hostile --
+                     -------------------
+
+                     procedure Check_Hostile
+                       (Check : not null access constant Stack_Record'Class)
+                     is
+                     begin
+                        if Stack.Owner.At_War_With (Check.Owner) then
+                           if Stack.Manager = null then
+                              Stack.Log
+                                ("hostile " & Check.Identifier
+                                 & " on " & Check.Tile.Description
+                                 & " but no manager");
+                           else
+                              Stack.Manager.On_Hostile_Spotted
+                                (Ref, Check);
+                           end if;
+                        end if;
+                     end Check_Hostile;
+
                   begin
                      Tile.Update.Set_Currently_Visible_To (Stack.Owner);
+                     Tile.Scan_Stacks (Check_Hostile'Access);
                   end;
                end loop;
             end;

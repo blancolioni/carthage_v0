@@ -26,7 +26,7 @@ package body Carthage.Managers.Assets is
    --------------
 
    overriding procedure Add_Goal
-     (Manager : in out Asset_Manager_Record;
+     (Manager : not null access Asset_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
    is
       Asset_Goal : Asset_Manager_Goal renames Asset_Manager_Goal (Goal);
@@ -104,6 +104,7 @@ package body Carthage.Managers.Assets is
                   begin
                      Stack.Update.Remove_Asset (Asset);
                      New_Stack.Update.Add_Asset (Asset);
+                     New_Stack.Update.Set_Manager (Manager);
                      Manager.Stacks.Append
                        ((New_Stack, others => <>));
                      Stack_Cursor := Manager.Stacks.Last;
@@ -270,7 +271,7 @@ package body Carthage.Managers.Assets is
    ------------------------
 
    overriding procedure Load_Initial_State
-     (Manager : in out Asset_Manager_Record)
+     (Manager : not null access Asset_Manager_Record)
    is
       procedure Add_Stack
         (Stack : not null access constant
@@ -335,6 +336,8 @@ package body Carthage.Managers.Assets is
                Minimum_Food => 0,
                Desired_Food => 0));
 
+         Stack.Update.Set_Manager (Manager);
+
          for I in 1 .. Stack.Count loop
             Manager.Assets.Append
               (Managed_Asset_Record'
@@ -368,6 +371,21 @@ package body Carthage.Managers.Assets is
       end;
 
    end Load_Initial_State;
+
+   ------------------------
+   -- On_Hostile_Spotted --
+   ------------------------
+
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Asset_Manager_Record;
+      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is
+   begin
+      Manager.House.Log
+        (Stack.Identifier & " spotted hostile " & Hostile.Identifier
+         & " at " & Hostile.Tile.Description);
+   end On_Hostile_Spotted;
 
    ----------------
    -- Recon_Goal --

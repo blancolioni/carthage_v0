@@ -108,7 +108,7 @@ package body Carthage.Managers.Planets is
    ------------------------
 
    overriding procedure Load_Initial_State
-     (Manager : in out Planet_Manager_Record)
+     (Manager : not null access Planet_Manager_Record)
    is
       use type Carthage.Houses.House_Type;
    begin

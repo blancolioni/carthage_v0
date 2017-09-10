@@ -9,7 +9,7 @@ package body Carthage.Managers.Houses is
      new House_Manager_Record with null record;
 
    overriding procedure Load_Initial_State
-     (Manager : in out Noble_House_Manager_Record);
+     (Manager : not null access Noble_House_Manager_Record);
 
    overriding procedure Check_Goals
      (Manager : in out Noble_House_Manager_Record);
@@ -181,7 +181,7 @@ package body Carthage.Managers.Houses is
    ------------------------
 
    overriding procedure Load_Initial_State
-     (Manager : in out House_Manager_Record)
+     (Manager : not null access House_Manager_Record)
    is
       procedure Add_Planet_Info
         (Planet : Carthage.Planets.Planet_Type);
@@ -240,10 +240,10 @@ package body Carthage.Managers.Houses is
    ------------------------
 
    overriding procedure Load_Initial_State
-     (Manager : in out Noble_House_Manager_Record)
+     (Manager : not null access Noble_House_Manager_Record)
    is
    begin
-      House_Manager_Record (Manager).Load_Initial_State;
+      House_Manager_Record (Manager.all).Load_Initial_State;
 
       for Info of Manager.Planets loop
          declare

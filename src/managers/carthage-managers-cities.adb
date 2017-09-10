@@ -290,7 +290,7 @@ package body Carthage.Managers.Cities is
    ------------------------
 
    overriding procedure Load_Initial_State
-     (Manager : in out City_Manager_Record)
+     (Manager : not null access City_Manager_Record)
    is
 
       procedure Add_City_Info

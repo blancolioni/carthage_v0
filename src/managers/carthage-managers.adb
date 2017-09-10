@@ -1,3 +1,5 @@
+with Ada.Text_IO;
+
 package body Carthage.Managers is
 
    --------------
@@ -5,7 +7,7 @@ package body Carthage.Managers is
    --------------
 
    procedure Add_Goal
-     (Manager : in out Manager_Record;
+     (Manager : not null access Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
    is
    begin
@@ -67,6 +69,7 @@ package body Carthage.Managers is
    procedure Start_Managers is
    begin
       for Manager of Top_Managers loop
+         Ada.Text_IO.Put_Line (Manager.House.Name);
          Manager.Load_Initial_State;
       end loop;
    end Start_Managers;

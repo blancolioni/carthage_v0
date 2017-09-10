@@ -77,7 +77,7 @@ private
       end record;
 
    overriding procedure Load_Initial_State
-     (Manager : in out House_Manager_Record);
+     (Manager : not null access House_Manager_Record);
 
    overriding procedure Check_Goals
      (Manager : in out House_Manager_Record);

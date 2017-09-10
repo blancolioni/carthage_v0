@@ -112,7 +112,7 @@ private
       end record;
 
    overriding procedure Load_Initial_State
-     (Manager : in out Asset_Manager_Record);
+     (Manager : not null access Asset_Manager_Record);
 
    overriding function Check_Goal
      (Manager : Asset_Manager_Record;
@@ -120,7 +120,12 @@ private
       return Boolean;
 
    overriding procedure Add_Goal
-     (Manager : in out Asset_Manager_Record;
+     (Manager : not null access Asset_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class);
+
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Asset_Manager_Record;
+      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class);
 
 end Carthage.Managers.Assets;
