@@ -161,7 +161,7 @@ private
      (House : House_Record;
       Other : not null access constant House_Record'Class)
       return Treaty_Status
-   is (if House.Category = Rebels or else Other.Category = Rebels
+   is (if House.Category = Rebels xor Other.Category = Rebels
        then War
        else Neutral);
 
