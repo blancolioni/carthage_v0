@@ -44,9 +44,15 @@ package body Carthage.Planets is
       function Local_Cost (From, To : Tile_Position) return Float
       is (Cost (Planet.Tile (To)));
 
+      function Cost_Estimate
+        (From, To : Tile_Position)
+            return Float
+      is (Float (Hex_Distance (From, To)));
+
       Path : constant Tile_Graphs.Path :=
                Surface_Graph.Shortest_Path
-                 (Index_Of (Start), Index_Of (Finish), Local_Cost'Access);
+                 (Index_Of (Start), Index_Of (Finish),
+                  Local_Cost'Access, Cost_Estimate'Access);
       Vs   : constant Tile_Graphs.Array_Of_Vertices :=
                Tile_Graphs.Get_Path (Path);
    begin
