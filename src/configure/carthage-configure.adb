@@ -1177,7 +1177,7 @@ package body Carthage.Configure is
 
          if Carthage.Options.Clear_Import_Cache
            or else not Ada.Directories.Exists
-             (Unit_Path & "/noble.txt")
+             (Unit_Path & "/noble-45.txt")
          then
             Ada.Text_IO.Put_Line ("  importing fading suns units");
             Import_Units
