@@ -19,13 +19,18 @@ package body Carthage.Stacks.Updates is
 
          Remaining_Movement : Float := Float (Stack.Movement);
 
-         procedure Move (Path : Carthage.Planets.Array_Of_Positions);
+         procedure Move
+           (Path : Carthage.Planets.Array_Of_Positions;
+            Stop : out Boolean);
 
          ----------
          -- Move --
          ----------
 
-         procedure Move (Path : Carthage.Planets.Array_Of_Positions) is
+         procedure Move
+           (Path : Carthage.Planets.Array_Of_Positions;
+            Stop : out Boolean)
+         is
 
             Position : constant Tile_Position :=
                          Path (Stack.Current_Path_Index);
@@ -82,6 +87,7 @@ package body Carthage.Stacks.Updates is
                               Stack.Manager.On_Hostile_Spotted
                                 (Ref, Check);
                            end if;
+                           Stop := True;
                         end if;
                      end Check_Hostile;
 
@@ -131,16 +137,19 @@ package body Carthage.Stacks.Updates is
             declare
                Path : constant Carthage.Planets.Array_Of_Positions :=
                         Stack.Current_Path.Element;
+               Stop : Boolean := False;
             begin
-               while Remaining_Movement > 0.0
+               while not Stop and then Remaining_Movement > 0.0
                  and then Stack.Current_Path_Index <= Path'Last
                loop
-                  Move (Path);
-                  Stack.Current_Path_Index :=
-                    Stack.Current_Path_Index + 1;
+                  Move (Path, Stop);
                end loop;
-               if Stack.Current_Path_Index > Path'Last then
+
+               if Stop
+                 or else Stack.Current_Path_Index > Path'Last
+               then
                   Stack.Current_Path_Index := 0;
+                  Stack.Current_Path.Clear;
                end if;
             end;
          end if;
