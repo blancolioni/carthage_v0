@@ -8,6 +8,13 @@ with Carthage.Tiles;
 
 package Carthage.Managers.Assets is
 
+   type Asset_Meta_Manager_Interface is interface;
+
+   procedure On_Hostile_Spotted
+     (Manager : Asset_Meta_Manager_Interface;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is null;
+
    type Asset_Manager_Record is
      new Manager_Record
      and Carthage.Stacks.Stack_Manager_Interface
@@ -37,8 +44,9 @@ package Carthage.Managers.Assets is
    type Asset_Manager_Type is access all Asset_Manager_Record'Class;
 
    function Create_Asset_Manager
-     (House  : Carthage.Houses.House_Type;
-      Planet : Carthage.Planets.Planet_Type)
+     (Meta_Manager : not null access Asset_Meta_Manager_Interface'Class;
+      House        : Carthage.Houses.House_Type;
+      Planet       : Carthage.Planets.Planet_Type)
       return Asset_Manager_Type;
 
 private
@@ -102,6 +110,7 @@ private
      new Manager_Record
      and Carthage.Stacks.Stack_Manager_Interface with
       record
+         Meta_Manager : access Asset_Meta_Manager_Interface'Class;
          Planet       : Carthage.Planets.Planet_Type;
          Assets       : Managed_Asset_List.List;
          Stacks       : Managed_Stack_List.List;

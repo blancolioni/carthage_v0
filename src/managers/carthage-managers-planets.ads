@@ -1,8 +1,9 @@
-limited with Carthage.Managers.Assets;
-limited with Carthage.Managers.Cities;
+with Carthage.Managers.Assets;
+with Carthage.Managers.Cities;
 
 with Carthage.Planets;
 with Carthage.Resources;
+with Carthage.Stacks;
 with Carthage.Tiles;
 
 package Carthage.Managers.Planets is
@@ -10,6 +11,7 @@ package Carthage.Managers.Planets is
    type Planet_Manager_Record is
      new Manager_Record
      and Carthage.Planets.Planet_Manager_Interface
+     and Carthage.Managers.Assets.Asset_Meta_Manager_Interface
    with private;
 
    procedure Add_Surface_Exploration_Goal
@@ -29,6 +31,10 @@ private
    package List_Of_Tiles is
      new Ada.Containers.Doubly_Linked_Lists
        (Carthage.Tiles.Tile_Type, Carthage.Tiles."=");
+
+   package Stack_Lists is
+     new Ada.Containers.Doubly_Linked_Lists
+       (Carthage.Stacks.Stack_Type, Carthage.Stacks."=");
 
    type Tile_Info_Record is
       record
@@ -61,7 +67,8 @@ private
 
    type Planet_Manager_Record is
      new Manager_Record
-     and Carthage.Planets.Planet_Manager_Interface with
+     and Carthage.Planets.Planet_Manager_Interface
+     and Carthage.Managers.Assets.Asset_Meta_Manager_Interface with
       record
          Planet               : Carthage.Planets.Planet_Type;
          Ground_Asset_Manager : access
@@ -76,6 +83,7 @@ private
          Hostile_Tiles        : List_Of_Tiles.List;
          Active_Targets       : List_Of_Tiles.List;
          Tile_Info            : Tile_Info_Array;
+         Hostile_Stacks       : Stack_Lists.List;
       end record;
 
    overriding procedure Load_Initial_State

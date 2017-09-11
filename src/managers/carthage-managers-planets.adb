@@ -1,10 +1,5 @@
 with WL.Random;
 
-with Carthage.Stacks;
-
-with Carthage.Managers.Assets;
-with Carthage.Managers.Cities;
-
 package body Carthage.Managers.Planets is
 
    package Tiles_Of_Interest_Lists is
@@ -71,7 +66,7 @@ package body Carthage.Managers.Planets is
       Manager.Planet := Planet;
       Manager.Ground_Asset_Manager :=
         Carthage.Managers.Assets.Create_Asset_Manager
-          (House, Planet);
+          (Manager, House, Planet);
       Manager.City_Manager :=
         Carthage.Managers.Cities.Create_City_Manager
           (House, Planet);

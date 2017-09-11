@@ -158,15 +158,17 @@ package body Carthage.Managers.Assets is
    --------------------------
 
    function Create_Asset_Manager
-     (House  : Carthage.Houses.House_Type;
-      Planet : Carthage.Planets.Planet_Type)
+     (Meta_Manager : not null access Asset_Meta_Manager_Interface'Class;
+      House        : Carthage.Houses.House_Type;
+      Planet       : Carthage.Planets.Planet_Type)
       return Asset_Manager_Type
    is
    begin
       return new Asset_Manager_Record'
-        (House  => House,
-         Planet => Planet,
-         others => <>);
+        (Meta_Manager => Meta_Manager,
+         House        => House,
+         Planet       => Planet,
+         others       => <>);
    end Create_Asset_Manager;
 
    -------------------------------
@@ -385,6 +387,7 @@ package body Carthage.Managers.Assets is
       Manager.House.Log
         (Stack.Identifier & " spotted hostile " & Hostile.Identifier
          & " at " & Hostile.Tile.Description);
+      Manager.Meta_Manager.On_Hostile_Spotted (Hostile);
    end On_Hostile_Spotted;
 
    ----------------
