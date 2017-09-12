@@ -1,3 +1,5 @@
+with Carthage.Units;
+
 package body Carthage.Stacks is
 
    ---------------
@@ -164,6 +166,59 @@ package body Carthage.Stacks is
          end return;
       end if;
    end Spot;
+
+   -----------
+   -- Total --
+   -----------
+
+   function Total
+     (Stack : Stack_Record;
+      Value : not null access
+        function (Asset : Carthage.Assets.Asset_Type) return Integer)
+      return Integer
+   is
+   begin
+      return T : Integer := 0 do
+         for I in 1 .. Stack.Count loop
+            T := T + Value (Stack.Asset (I));
+         end loop;
+      end return;
+   end Total;
+
+   --------------------
+   -- Total_Strength --
+   --------------------
+
+   function Total_Strength
+     (Stack : Stack_Record'Class)
+      return Natural
+   is
+      function Asset_Strength
+        (Asset : Carthage.Assets.Asset_Type)
+         return Integer;
+
+      --------------------
+      -- Asset_Strength --
+      --------------------
+
+      function Asset_Strength
+        (Asset : Carthage.Assets.Asset_Type)
+         return Integer
+      is
+         use Carthage.Units;
+      begin
+         return Strength : Integer := 0 do
+            for Weapon in Weapon_Category loop
+               if Asset.Unit.Has_Attack (Weapon) then
+                  Strength := Strength + Asset.Unit.Strength (Weapon);
+               end if;
+            end loop;
+         end return;
+      end Asset_Strength;
+
+   begin
+      return Stack.Total (Asset_Strength'Access);
+   end Total_Strength;
 
    ------------
    -- Update --

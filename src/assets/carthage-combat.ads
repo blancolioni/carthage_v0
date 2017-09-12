@@ -7,6 +7,10 @@ with Carthage.Units;
 
 package Carthage.Combat is
 
+   procedure New_Battle
+     (Attacker : Carthage.Stacks.Stack_Type;
+      Defender : Carthage.Stacks.Stack_Type);
+
    type Attack_Record is private;
 
    function Image (Attack : Attack_Record) return String;
@@ -62,6 +66,14 @@ package Carthage.Combat is
       Attacker : Carthage.Houses.House_Type;
       Defender : Carthage.Houses.House_Type);
 
+   function Attacker
+     (Battle : Battle_Record)
+      return Carthage.Houses.House_Type;
+
+   function Defender
+     (Battle : Battle_Record)
+      return Carthage.Houses.House_Type;
+
    procedure Add_Stack
      (Battle : in out Battle_Record;
       Stack  : Carthage.Stacks.Stack_Type);
@@ -72,6 +84,10 @@ package Carthage.Combat is
      (Battle : in out Battle_Record;
       Weapon : Carthage.Units.Weapon_Category)
       return Attack_Record_Array;
+
+   procedure Scan_Battles
+     (Process : not null access
+        procedure (Battle : in out Battle_Record));
 
 private
 
@@ -156,5 +172,15 @@ private
          Attackers : Asset_Vectors.Vector;
          Defenders : Asset_Vectors.Vector;
       end record;
+
+   function Attacker
+     (Battle : Battle_Record)
+      return Carthage.Houses.House_Type
+   is (Battle.Attacker);
+
+   function Defender
+     (Battle : Battle_Record)
+      return Carthage.Houses.House_Type
+   is (Battle.Defender);
 
 end Carthage.Combat;

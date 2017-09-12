@@ -57,7 +57,7 @@ package body Carthage.Managers.Assets is
                Managed_Stack : Managed_Stack_Record renames
                                  Manager.Stacks (Managed_Asset.Stack);
             begin
-               if not Goal_Lists.Has_Element (Managed_Stack.Goal) then
+               if Managed_Stack.Goal.Is_Empty then
                   declare
                      Position : constant Tile_Position :=
                                   Manager.Stacks (Managed_Asset.Stack)
@@ -116,16 +116,95 @@ package body Carthage.Managers.Assets is
                Asset.Log ("assigned to recon of "
                           & Asset_Goal.Tile.Description);
                Manager.Goals.Append (Goal);
-               Manager.Stacks (Stack_Cursor).Goal :=
-                 Manager.Goals.Last;
+               Manager.Stacks (Stack_Cursor).Goal.Replace_Element
+                 (Asset_Goal);
                Manager.Stacks (Stack_Cursor).Stack.Update.Move_To_Tile
                  (Asset_Goal.Tile);
             end;
 
          when Capture =>
-            null;
+            declare
+               Closest_Stack : Managed_Stack_List.Cursor :=
+                                 Managed_Stack_List.No_Element;
+               Smallest_D    : Natural := Natural'Last;
+               Current_Str   : Natural := 0;
+               Required_Str  : constant Natural :=
+                                 Asset_Goal.Parameters.Strength;
+            begin
+               for Position in Manager.Stacks.Iterate loop
+                  declare
+                     use type Carthage.Tiles.Tile_Type;
+                     Stack : constant Carthage.Stacks.Stack_Type :=
+                               Manager.Stacks (Position).Stack;
+                     Str   : constant Natural :=
+                               Stack.Total_Strength;
+                     D     : constant Natural :=
+                               (if Stack.Tile = null
+                                then Natural'Last
+                                else Carthage.Planets.Hex_Distance
+                                  (Stack.Tile.Position,
+                                   Asset_Goal.Tile.Position));
+                  begin
+                     if Stack.Tile = null then
+                        Stack.Log ("no tile: " & Stack.Description);
+                     elsif (D < Smallest_D
+                            and then Str >= Required_Str)
+                       or else (D / 2 < Smallest_D
+                                and then Str * 2 / 3 > Current_Str)
+                     then
+                        Closest_Stack := Position;
+                        Smallest_D := D;
+                        Current_Str := Str;
+                     end if;
+                  end;
+               end loop;
+
+               if Managed_Stack_List.Has_Element (Closest_Stack) then
+                  declare
+                     Stack : constant Carthage.Stacks.Stack_Type :=
+                               Managed_Stack_List.Element
+                                 (Closest_Stack).Stack;
+                  begin
+                     Stack.Log (Stack.Description
+                                & ": assigned to capture of "
+                                & Asset_Goal.Tile.Description);
+                     for I in 1 .. Stack.Count loop
+                        Stack.Log ("asset: " & Stack.Asset (I).Identifier
+                                   & " move"
+                                   & Natural'Image (Stack.Asset (I).Movement));
+                     end loop;
+
+                     Manager.Goals.Append (Goal);
+                     Manager.Stacks (Closest_Stack).Goal.Replace_Element
+                       (Asset_Goal);
+                     Manager.Stacks (Closest_Stack).Stack.Update.Move_To_Tile
+                       (Asset_Goal.Tile);
+                  end;
+               end if;
+            end;
+
       end case;
    end Add_Goal;
+
+   ------------------
+   -- Capture_Goal --
+   ------------------
+
+   function Capture_Goal
+     (Manager  : Asset_Manager_Record;
+      Tile     : Carthage.Tiles.Tile_Type;
+      Strength : Natural)
+      return Carthage.Goals.Goal_Record'Class
+   is
+      pragma Unreferenced (Manager);
+   begin
+      return Result : Asset_Manager_Goal (Default_Priority (Capture)) do
+         Result.Class := Capture;
+         Result.Tile := Tile;
+         Result.Parameters :=
+           (Speed => Low, Spot => Low, Military => High, Strength => Strength);
+      end return;
+   end Capture_Goal;
 
    -----------------
    -- Check_Goals --
@@ -136,7 +215,6 @@ package body Carthage.Managers.Assets is
       Goal    : Carthage.Goals.Goal_Record'Class)
       return Boolean
    is
-      pragma Unreferenced (Manager);
       Asset_Goal : Asset_Manager_Goal renames Asset_Manager_Goal (Goal);
    begin
       case Asset_Goal.Class is
@@ -147,8 +225,8 @@ package body Carthage.Managers.Assets is
 --                                 & Asset_Goal.Tile.Description);
             return True;
          when Capture =>
---              Manager.House.Log ("pretending we just captured "
---                                 & Asset_Goal.Tile.Description);
+            Manager.House.Log ("pretending we are going to capture "
+                               & Asset_Goal.Tile.Description);
             return True;
       end case;
    end Check_Goal;
@@ -249,7 +327,7 @@ package body Carthage.Managers.Assets is
                Managed_Stack : Managed_Stack_Record renames
                                  Manager.Stacks (Managed_Asset.Stack);
             begin
-               if not Goal_Lists.Has_Element (Managed_Stack.Goal) then
+               if Managed_Stack.Goal.Is_Empty then
                   return True;
                end if;
             end;
@@ -381,13 +459,31 @@ package body Carthage.Managers.Assets is
    overriding procedure On_Hostile_Spotted
      (Manager : in out Asset_Manager_Record;
       Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
-      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Stop    : out Boolean)
    is
+      use Carthage.Stacks;
    begin
       Manager.House.Log
         (Stack.Identifier & " spotted hostile " & Hostile.Identifier
          & " at " & Hostile.Tile.Description);
-      Manager.Meta_Manager.On_Hostile_Spotted (Hostile);
+      Stop := False;
+
+      for S of Manager.Stacks loop
+         if S.Stack = Stack then
+            if not S.Goal.Is_Empty
+              and then S.Goal.Element.Class /= Capture
+            then
+               Stack.Log ("stopping because goal class is "
+                      & Goal_Class'Image (S.Goal.Element.Class));
+               S.Goal.Clear;
+               Stop := True;
+            end if;
+            exit;
+         end if;
+      end loop;
+
+      Manager.Meta_Manager.On_Hostile_Spotted (Stack, Hostile);
    end On_Hostile_Spotted;
 
    ----------------

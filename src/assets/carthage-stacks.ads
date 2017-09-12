@@ -21,10 +21,15 @@ package Carthage.Stacks is
    type Stack_Record is
      new Carthage.Objects.Root_Named_Object with private;
 
+   function Description
+     (Item : Stack_Record)
+      return String;
+
    procedure On_Hostile_Spotted
      (Manager : in out Stack_Manager_Interface;
       Stack   : not null access constant Stack_Record'Class;
-      Hostile : not null access constant Stack_Record'Class)
+      Hostile : not null access constant Stack_Record'Class;
+      Stop    : out Boolean)
    is null;
 
    procedure On_Movement_Ended
@@ -75,6 +80,16 @@ package Carthage.Stacks is
 
    function Spot
      (Stack : Stack_Record)
+      return Natural;
+
+   function Total
+     (Stack : Stack_Record;
+      Value : not null access
+        function (Asset : Carthage.Assets.Asset_Type) return Integer)
+      return Integer;
+
+   function Total_Strength
+     (Stack : Stack_Record'Class)
       return Natural;
 
    function Count (Stack : Stack_Record) return Asset_Count;
@@ -163,8 +178,8 @@ private
          Owner              : Carthage.Houses.House_Type;
          Planet             : Carthage.Planets.Planet_Type;
          Tile               : Carthage.Tiles.Tile_Type;
-         Count              : Asset_Count;
-         Assets             : Asset_Array;
+         Count              : Asset_Count := 0;
+         Assets             : Asset_Array := (others => null);
          Orders             : Stack_Order_Lists.List;
          Current_Path       : Stack_Path_Holders.Holder;
          Current_Path_Index : Natural := 0;
@@ -175,7 +190,7 @@ private
      (Item : Stack_Record)
       return Memor.Memor_Database;
 
-   overriding function Identifier
+   function Description
      (Item : Stack_Record)
       return String
    is (Item.Owner.Name & " stack size" & Asset_Count'Image (Item.Count)

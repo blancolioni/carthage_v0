@@ -1,3 +1,6 @@
+with Carthage.Combat;
+with Carthage.Units;
+
 package body Carthage.Stacks.Updates is
 
    procedure Execute_Orders is
@@ -19,9 +22,47 @@ package body Carthage.Stacks.Updates is
 
          Remaining_Movement : Float := Float (Stack.Movement);
 
+         procedure Check_Hostile
+           (Tile        : Carthage.Tiles.Tile_Type;
+            Has_Hostile : out Boolean;
+            Hostile     : out Carthage.Stacks.Stack_Type);
+
          procedure Move
            (Path : Carthage.Planets.Array_Of_Positions;
             Stop : out Boolean);
+
+         procedure Check_Hostile
+           (Tile        : Carthage.Tiles.Tile_Type;
+            Has_Hostile : out Boolean;
+            Hostile     : out Carthage.Stacks.Stack_Type)
+         is
+            procedure Check_Stack
+              (Check : not null access constant Stack_Record'Class);
+
+            -------------------
+            -- Check_Hostile --
+            -------------------
+
+            procedure Check_Stack
+              (Check : not null access constant Stack_Record'Class)
+            is
+            begin
+               if Stack.Owner.At_War_With (Check.Owner) then
+                  if Stack.Manager = null then
+                     Stack.Log
+                       ("hostile " & Check.Identifier
+                        & " on " & Check.Tile.Description
+                        & " but no manager");
+                  else
+                     Has_Hostile := True;
+                     Hostile     := Carthage.Stacks.Stack_Type (Check);
+                  end if;
+               end if;
+            end Check_Stack;
+         begin
+            Has_Hostile := False;
+            Tile.Scan_Stacks (Check_Stack'Access);
+         end Check_Hostile;
 
          ----------
          -- Move --
@@ -49,7 +90,42 @@ package body Carthage.Stacks.Updates is
                      Stack_Type
                        (Stack.Tile.Find_Stack
                           (Match'Access));
+            Hostile     : Carthage.Stacks.Stack_Type;
+            Has_Hostile : Boolean;
          begin
+
+            Check_Hostile (Tile, Has_Hostile, Hostile);
+
+            if Has_Hostile then
+               Carthage.Combat.New_Battle
+                 (Ref, Hostile);
+
+--                 declare
+--                    use Carthage.Combat;
+--                    Battle : Battle_Record;
+--                 begin
+--                    Stack.Planet.Log ("Starting the Battle of "
+--                                      & Stack.Planet.Name);
+--                    Create (Battle, Stack.Owner, Hostile.Owner);
+--                    Add_Stack (Battle, Ref);
+--                    Add_Stack (Battle, Hostile);
+--                    for Weapon in Carthage.Units.Weapon_Category loop
+--                       declare
+--                          Round : constant Attack_Record_Array :=
+--                                    Attack_Round (Battle, Weapon);
+--                       begin
+--                          for Attack of Round loop
+--                             Stack.Planet.Log (Image (Attack));
+--                          end loop;
+--                       end;
+--                    end loop;
+
+               Stop := True;
+               --  end;
+               return;
+            end if;
+
+            Stop := False;
             Stack.Tile.Update.Remove_Stack (Ref);
             Stack.Tile := Tile;
             Stack.Tile.Update.Add_Stack (Ref);
@@ -76,6 +152,7 @@ package body Carthage.Stacks.Updates is
                      procedure Check_Hostile
                        (Check : not null access constant Stack_Record'Class)
                      is
+                        Check_Stop : Boolean;
                      begin
                         if Stack.Owner.At_War_With (Check.Owner) then
                            if Stack.Manager = null then
@@ -85,9 +162,9 @@ package body Carthage.Stacks.Updates is
                                  & " but no manager");
                            else
                               Stack.Manager.On_Hostile_Spotted
-                                (Ref, Check);
+                                (Ref, Check, Check_Stop);
                            end if;
-                           Stop := True;
+                           Stop := Stop or else Check_Stop;
                         end if;
                      end Check_Hostile;
 
@@ -122,8 +199,13 @@ package body Carthage.Stacks.Updates is
                                    (Stack.Tile.Position, Order.Destination,
                                     Move_Cost'Access);
                      begin
+                        Stack.Log ("moving to "
+                                   & Carthage.Tiles.Position_Image
+                                     (Order.Destination)
+                                   & ": path length ="
+                                   & Natural'Image (Path'Length));
                         Stack.Current_Path.Replace_Element (Path);
-                        Stack.Current_Path_Index := 1;
+                        Stack.Current_Path_Index := 2;
                      end;
                   when Move_To_Asset =>
                      null;
@@ -137,19 +219,25 @@ package body Carthage.Stacks.Updates is
             declare
                Path : constant Carthage.Planets.Array_Of_Positions :=
                         Stack.Current_Path.Element;
+               Path_Index : Positive := Stack.Current_Path_Index;
                Stop : Boolean := False;
             begin
                while not Stop and then Remaining_Movement > 0.0
-                 and then Stack.Current_Path_Index <= Path'Last
+                 and then Path_Index <= Path'Last
                loop
                   Move (Path, Stop);
+                  Path_Index := Path_Index + 1;
                end loop;
 
                if Stop
-                 or else Stack.Current_Path_Index > Path'Last
+                 or else Path_Index > Path'Last
                then
+                  Stack.Log ("stopping at " & Stack.Tile.Description);
                   Stack.Current_Path_Index := 0;
                   Stack.Current_Path.Clear;
+               else
+                  Stack.Log ("waypoint at " & Stack.Tile.Description);
+                  Stack.Current_Path_Index := Path_Index;
                end if;
             end;
          end if;

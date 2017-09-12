@@ -1,3 +1,5 @@
+private with WL.String_Maps;
+
 with Carthage.Managers.Assets;
 with Carthage.Managers.Cities;
 
@@ -65,6 +67,9 @@ private
    is (case Class is
           when Explore_Surface => 20);
 
+   package Identifier_Sets is
+     new WL.String_Maps (Boolean);
+
    type Planet_Manager_Record is
      new Manager_Record
      and Carthage.Planets.Planet_Manager_Interface
@@ -84,6 +89,7 @@ private
          Active_Targets       : List_Of_Tiles.List;
          Tile_Info            : Tile_Info_Array;
          Hostile_Stacks       : Stack_Lists.List;
+         Spotted_Hostiles     : Identifier_Sets.Map;
       end record;
 
    overriding procedure Load_Initial_State
@@ -99,6 +105,11 @@ private
      (Manager : Planet_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
       return Boolean;
+
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Planet_Manager_Record;
+      Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class);
 
    function Scan_Unexplored_Tiles
      (Manager : Planet_Manager_Record'Class)

@@ -19,6 +19,11 @@ package body Carthage.Combat is
                      7 => (50, 60, 70, 80, 90, 100, 100, 100, 100, 100),
                      8 => (60, 70, 80, 90, 100, 100, 100, 100, 100, 100));
 
+   package Battle_Vectors is
+     new Ada.Containers.Vectors (Positive, Battle_Record);
+
+   Current_Battles : Battle_Vectors.Vector;
+
    procedure Resolve
      (Attack : in out Attack_Record);
 
@@ -213,6 +218,22 @@ package body Carthage.Combat is
            else ": miss");
    end Image;
 
+   ----------------
+   -- New_Battle --
+   ----------------
+
+   procedure New_Battle
+     (Attacker : Carthage.Stacks.Stack_Type;
+      Defender : Carthage.Stacks.Stack_Type)
+   is
+      Battle : Battle_Record;
+   begin
+      Create (Battle, Attacker.Owner, Defender.Owner);
+      Add_Stack (Battle, Attacker);
+      Add_Stack (Battle, Defender);
+      Current_Battles.Append (Battle);
+   end New_Battle;
+
    -------------
    -- Resolve --
    -------------
@@ -243,5 +264,19 @@ package body Carthage.Combat is
          end;
       end if;
    end Resolve;
+
+   ------------------
+   -- Scan_Battles --
+   ------------------
+
+   procedure Scan_Battles
+     (Process : not null access
+        procedure (Battle : in out Battle_Record))
+   is
+   begin
+      for Battle of Current_Battles loop
+         Process (Battle);
+      end loop;
+   end Scan_Battles;
 
 end Carthage.Combat;

@@ -224,6 +224,26 @@ package body Carthage.Managers.Planets is
 --        Manager.City_Manager.Execute;
 --     end Execute;
 
+   ------------------------
+   -- On_Hostile_Spotted --
+   ------------------------
+
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Planet_Manager_Record;
+      Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is
+      pragma Unreferenced (Spotter);
+   begin
+      if not Manager.Spotted_Hostiles.Contains (Hostile.Identifier) then
+         Manager.Spotted_Hostiles.Insert (Hostile.Identifier, True);
+         Manager.Ground_Asset_Manager.Add_Goal
+           (Manager.Ground_Asset_Manager.Capture_Goal
+              (Tile     => Hostile.Tile,
+               Strength => Hostile.Total_Strength * 3));
+      end if;
+   end On_Hostile_Spotted;
+
    ---------------------------
    -- Scan_Unexplored_Tiles --
    ---------------------------

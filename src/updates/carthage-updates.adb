@@ -8,7 +8,9 @@ with Carthage.Planets;
 with Carthage.Stacks.Updates;
 with Carthage.Structures;
 with Carthage.Tiles;
+with Carthage.Units;
 
+with Carthage.Combat;
 with Carthage.Managers;
 
 with Carthage.Logging;
@@ -269,6 +271,32 @@ package body Carthage.Updates is
    ------------
 
    procedure Update is
+
+      procedure Execute_Round
+        (Battle : in out Carthage.Combat.Battle_Record);
+
+      -------------------
+      -- Execute_Round --
+      -------------------
+
+      procedure Execute_Round
+        (Battle : in out Carthage.Combat.Battle_Record)
+      is
+         use Carthage.Combat;
+      begin
+         Attacker (Battle).Log ("attacking " & Defender (Battle).Name);
+         for Weapon in Carthage.Units.Weapon_Category loop
+            declare
+               Round : constant Carthage.Combat.Attack_Record_Array :=
+                         Carthage.Combat.Attack_Round (Battle, Weapon);
+            begin
+               for Attack of Round loop
+                  Attacker (Battle).Log (Image (Attack));
+               end loop;
+            end;
+         end loop;
+      end Execute_Round;
+
    begin
       Ada.Text_IO.Put_Line
         ("Update: "
@@ -285,6 +313,8 @@ package body Carthage.Updates is
       Ada.Text_IO.Put_Line ("  - execute stack orders");
       Carthage.Stacks.Updates.Execute_Orders;
       Carthage.Houses.Scan (Carthage.Houses.Log_Status'Access);
+      Ada.Text_IO.Put_Line ("  - battles");
+      Carthage.Combat.Scan_Battles (Execute_Round'Access);
       Carthage.Logging.Log ("update complete");
       Carthage.Calendar.Next_Day;
    end Update;

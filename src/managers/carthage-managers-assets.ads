@@ -1,4 +1,5 @@
 private with Ada.Containers.Doubly_Linked_Lists;
+private with Ada.Containers.Indefinite_Holders;
 
 with Carthage.Assets;
 with Carthage.Planets;
@@ -11,7 +12,8 @@ package Carthage.Managers.Assets is
    type Asset_Meta_Manager_Interface is interface;
 
    procedure On_Hostile_Spotted
-     (Manager : Asset_Meta_Manager_Interface;
+     (Manager : in out Asset_Meta_Manager_Interface;
+      Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
       Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
    is null;
 
@@ -28,6 +30,12 @@ package Carthage.Managers.Assets is
    function Recon_Goal
      (Manager : Asset_Manager_Record;
       Tile    : Carthage.Tiles.Tile_Type)
+      return Carthage.Goals.Goal_Record'Class;
+
+   function Capture_Goal
+     (Manager  : Asset_Manager_Record;
+      Tile     : Carthage.Tiles.Tile_Type;
+      Strength : Natural)
       return Carthage.Goals.Goal_Record'Class;
 
    procedure Get_Resource_Requirements
@@ -69,6 +77,7 @@ private
          Speed     : Relative_Value := Low;
          Spot      : Relative_Value := Low;
          Military  : Relative_Value := Low;
+         Strength  : Natural        := 0;
       end record;
 
    type Asset_Manager_Goal is
@@ -79,10 +88,13 @@ private
          Parameters : Goal_Parameter_Record;
       end record;
 
+   package Asset_Manager_Goal_Holders is
+     new Ada.Containers.Indefinite_Holders (Asset_Manager_Goal);
+
    type Managed_Stack_Record is
       record
          Stack        : Carthage.Stacks.Stack_Type;
-         Goal         : Goal_Lists.Cursor;
+         Goal         : Asset_Manager_Goal_Holders.Holder;
          Minimum_Food : Natural := 0;
          Desired_Food : Natural := 0;
       end record;
@@ -135,6 +147,7 @@ private
    overriding procedure On_Hostile_Spotted
      (Manager : in out Asset_Manager_Record;
       Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
-      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class);
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Stop    : out Boolean);
 
 end Carthage.Managers.Assets;
