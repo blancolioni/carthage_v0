@@ -76,6 +76,11 @@ package body Carthage.UI.Models.Planets is
      (Model : in out Root_Planet_Model)
    is null;
 
+   overriding procedure On_Drag
+     (Model : in out Root_Planet_Model;
+      DX, DY : Integer)
+   is null;
+
    type Planet_Model_Type is access all Root_Planet_Model'Class;
 
    ------------------
