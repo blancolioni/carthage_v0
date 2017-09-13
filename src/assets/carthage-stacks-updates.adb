@@ -28,7 +28,7 @@ package body Carthage.Stacks.Updates is
             Hostile     : out Carthage.Stacks.Stack_Type);
 
          procedure Move
-           (Path : Carthage.Planets.Array_Of_Positions;
+           (To   : Tile_Position;
             Stop : out Boolean);
 
          procedure Check_Hostile
@@ -69,15 +69,12 @@ package body Carthage.Stacks.Updates is
          ----------
 
          procedure Move
-           (Path : Carthage.Planets.Array_Of_Positions;
+           (To   : Tile_Position;
             Stop : out Boolean)
          is
 
-            Position : constant Tile_Position :=
-                         Path (Stack.Current_Path_Index);
-
             Tile : constant Carthage.Tiles.Tile_Type :=
-                     Stack.Planet.Tile (Position);
+                     Stack.Planet.Tile (To);
 
             Cost : constant Float := Move_Cost (Tile);
 
@@ -97,8 +94,12 @@ package body Carthage.Stacks.Updates is
             Check_Hostile (Tile, Has_Hostile, Hostile);
 
             if Has_Hostile then
+               Stack.Log
+                 ("at " & Stack.Tile.Description
+                  & " attacking hostile " & Hostile.Identifier
+                  & " in target tile " & Tile.Description);
                Carthage.Combat.New_Battle
-                 (Ref, Hostile);
+                 (Ref, Hostile, Stack.Planet, Stack.Tile);
 
 --                 declare
 --                    use Carthage.Combat;
@@ -225,7 +226,7 @@ package body Carthage.Stacks.Updates is
                while not Stop and then Remaining_Movement > 0.0
                  and then Path_Index <= Path'Last
                loop
-                  Move (Path, Stop);
+                  Move (Path (Path_Index), Stop);
                   Path_Index := Path_Index + 1;
                end loop;
 
