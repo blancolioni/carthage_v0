@@ -153,6 +153,7 @@ package body Carthage.Managers.Assets is
                         if (D < Smallest_D
                             and then Str >= Required_Str)
                           or else (D / 2 < Smallest_D
+                                   and then Str >= Required_Str
                                    and then Str * 2 / 3 > Current_Str)
                         then
                            Closest_Stack := Position;
