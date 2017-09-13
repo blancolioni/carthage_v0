@@ -315,6 +315,8 @@ package body Carthage.Updates is
       Carthage.Houses.Scan (Carthage.Houses.Log_Status'Access);
       Ada.Text_IO.Put_Line ("  - battles");
       Carthage.Combat.Scan_Battles (Execute_Round'Access);
+      Ada.Text_IO.Put_Line ("  - cleanup");
+      Carthage.Stacks.Remove_Empty_Ground_Stacks;
       Carthage.Logging.Log ("update complete");
       Carthage.Calendar.Next_Day;
    end Update;

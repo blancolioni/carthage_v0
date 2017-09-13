@@ -1,3 +1,5 @@
+with Ada.Containers.Doubly_Linked_Lists;
+
 with Carthage.Units;
 
 package body Carthage.Stacks is
@@ -111,8 +113,48 @@ package body Carthage.Stacks is
    --------------------------------
 
    procedure Remove_Empty_Ground_Stacks is
+
+      package Deleted_Lists is
+        new Ada.Containers.Doubly_Linked_Lists
+          (Memor.Database_Reference, Memor."=");
+
+      Deleted : Deleted_Lists.List;
+
+      procedure Check_Stack
+        (Stack : not null access Stack_Record'Class);
+
+      -----------------
+      -- Check_Stack --
+      -----------------
+
+      procedure Check_Stack
+        (Stack : not null access Stack_Record'Class)
+      is
+         Back : Asset_Count := 0;
+      begin
+         for I in 1 .. Stack.Count loop
+            if not Stack.Asset (I).Alive then
+               Back := Back + 1;
+            elsif Back > 0 then
+               Stack.Assets (I - Back) := Stack.Assets (I);
+            end if;
+         end loop;
+         Stack.Count := Stack.Count - Back;
+         if Stack.Has_Tile and then Stack.Count = 0 then
+            Stack.Log ("deleting empty " & Stack.Owner.Name & " stack");
+            Stack.Tile.Update.Remove_Stack (Stack);
+            if Stack.Manager /= null then
+               Stack.Manager.On_Stack_Removed (Stack_Type (Stack));
+            end if;
+            Deleted.Append (Stack.Reference);
+         end if;
+      end Check_Stack;
+
    begin
-      null;
+      Db.Iterate (Check_Stack'Access);
+      for Ref of Deleted loop
+         Db.Delete (Ref);
+      end loop;
    end Remove_Empty_Ground_Stacks;
 
    -----------------
