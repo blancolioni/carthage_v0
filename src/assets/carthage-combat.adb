@@ -1,5 +1,7 @@
 with WL.Random;
 
+with Carthage.Logging;
+
 package body Carthage.Combat is
 
    Under_Damage : constant array (1 .. 5, 1 .. 10) of Positive :=
@@ -50,8 +52,10 @@ package body Carthage.Combat is
 
       for I in 1 .. Stack.Count loop
          if Attacking then
+            Stack.Asset (I).Log ("attacker asset");
             Battle.Attackers.Append (Stack.Asset (I));
          else
+            Stack.Asset (I).Log ("defender asset");
             Battle.Defenders.Append (Stack.Asset (I));
          end if;
       end loop;
@@ -192,6 +196,7 @@ package body Carthage.Combat is
       Defender : Carthage.Houses.House_Type)
    is
    begin
+      Battle.Active := True;
       Battle.Attacker := Attacker;
       Battle.Defender := Defender;
       Battle.Attackers.Clear;
@@ -224,11 +229,15 @@ package body Carthage.Combat is
 
    procedure New_Battle
      (Attacker : Carthage.Stacks.Stack_Type;
-      Defender : Carthage.Stacks.Stack_Type)
+      Defender : Carthage.Stacks.Stack_Type;
+      Planet   : Carthage.Planets.Planet_Type;
+      Tile     : Carthage.Tiles.Tile_Type)
    is
       Battle : Battle_Record;
    begin
       Create (Battle, Attacker.Owner, Defender.Owner);
+      Battle.Planet := Planet;
+      Battle.Tile := Tile;
       Add_Stack (Battle, Attacker);
       Add_Stack (Battle, Defender);
       Current_Battles.Append (Battle);
@@ -275,7 +284,59 @@ package body Carthage.Combat is
    is
    begin
       for Battle of Current_Battles loop
-         Process (Battle);
+         if Battle.Active then
+            declare
+               use type Carthage.Tiles.Tile_Type;
+               Attackers : Natural := 0;
+               Defenders : Natural := 0;
+               Name      : constant String :=
+                             "The Battle of " & Battle.Planet.Name
+                             & (if Battle.Tile = null then ""
+                                else " at " & Battle.Tile.Description);
+            begin
+               for Asset of Battle.Attackers loop
+                  if Asset.Alive then
+                     Attackers := Attackers + 1;
+                  end if;
+               end loop;
+               for Asset of Battle.Defenders loop
+                  if Asset.Alive then
+                     Defenders := Defenders + 1;
+                  end if;
+               end loop;
+
+               if Defenders = 0 then
+                  if Attackers = 0 then
+                     Battle.Attacker.Log
+                       (Name & " vs " & Battle.Defender.Name
+                        & ": mutual destruction");
+                  else
+                     Battle.Attacker.Log
+                       (Name & ": victory against " & Battle.Defender.Name);
+                  end if;
+                  Battle.Active := False;
+               elsif Attackers = 0 then
+                  Battle.Defender.Log
+                    (Name & ": victory against " & Battle.Attacker.Name);
+                  Battle.Active := False;
+               end if;
+            end;
+         end if;
+      end loop;
+
+      for Battle of Current_Battles loop
+         if Battle.Active then
+            declare
+               use type Carthage.Tiles.Tile_Type;
+               Name      : constant String :=
+                             "The Battle of " & Battle.Planet.Name
+                             & (if Battle.Tile = null then ""
+                                else " at " & Battle.Tile.Description);
+            begin
+               Carthage.Logging.Log (Name);
+            end;
+            Process (Battle);
+         end if;
       end loop;
    end Scan_Battles;
 

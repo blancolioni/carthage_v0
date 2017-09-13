@@ -2,14 +2,18 @@ private with Ada.Containers.Vectors;
 
 with Carthage.Assets;
 with Carthage.Houses;
+with Carthage.Planets;
 with Carthage.Stacks;
+with Carthage.Tiles;
 with Carthage.Units;
 
 package Carthage.Combat is
 
    procedure New_Battle
      (Attacker : Carthage.Stacks.Stack_Type;
-      Defender : Carthage.Stacks.Stack_Type);
+      Defender : Carthage.Stacks.Stack_Type;
+      Planet   : Carthage.Planets.Planet_Type;
+      Tile     : Carthage.Tiles.Tile_Type);
 
    type Attack_Record is private;
 
@@ -167,8 +171,11 @@ private
 
    type Battle_Record is
       record
+         Active    : Boolean;
          Attacker  : Carthage.Houses.House_Type;
          Defender  : Carthage.Houses.House_Type;
+         Planet    : Carthage.Planets.Planet_Type;
+         Tile      : Carthage.Tiles.Tile_Type;
          Attackers : Asset_Vectors.Vector;
          Defenders : Asset_Vectors.Vector;
       end record;
