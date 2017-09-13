@@ -1,5 +1,9 @@
+with Ada.Containers.Doubly_Linked_Lists;
+with Ada.Text_IO;
+
 with Lui.Rendering;
 
+with Carthage.Stacks;
 with Carthage.Tiles;
 
 with Carthage.UI.Maps;
@@ -16,13 +20,24 @@ package body Carthage.UI.Models.Planets is
    Zoomed_Icon_Size : constant array (Zoom_Level) of Positive :=
                         (64, 48, 32, 32, 24, 16, 8);
 
+   type Rendered_Stack_Icon is
+      record
+         Stack : Carthage.Stacks.Stack_Type;
+         Left, Top, Right, Bottom : Integer;
+      end record;
+
+   package Rendered_Stack_Lists is
+     new Ada.Containers.Doubly_Linked_Lists (Rendered_Stack_Icon);
+
    type Root_Planet_Model is
      new Root_Carthage_Model with
       record
-         Planet       : Carthage.Planets.Planet_Type;
-         Centre       : Tile_Position;
-         Needs_Render : Boolean := False;
-         Current_Zoom : Zoom_Level := 0;
+         Planet          : Carthage.Planets.Planet_Type;
+         Centre          : Tile_Position;
+         Selected_Stack  : Carthage.Stacks.Stack_Type;
+         Rendered_Stacks : Rendered_Stack_Lists.List;
+         Needs_Render    : Boolean := False;
+         Current_Zoom    : Zoom_Level := 0;
       end record;
 
    overriding function Handle_Update
@@ -39,11 +54,9 @@ package body Carthage.UI.Models.Planets is
       Child : not null access Lui.Models.Root_Object_Model'Class)
    is null;
 
-   overriding function Select_XY
+   overriding procedure Select_XY
      (Model : in out Root_Planet_Model;
-      X, Y  : Natural)
-      return Lui.Models.Object_Model
-   is (null);
+      X, Y  : Natural);
 
    overriding procedure Zoom
      (Model   : in out Root_Planet_Model;
@@ -163,6 +176,8 @@ package body Carthage.UI.Models.Planets is
 
    begin
 
+      Model.Rendered_Stacks.Clear;
+
       for Y in Top .. Bottom loop
          if Y in 1 .. Planet_Height then
             for Extended_X in Left .. Right loop
@@ -178,7 +193,8 @@ package body Carthage.UI.Models.Planets is
                   Layers   : Carthage.UI.Maps.Tile_Layers;
                   Position : constant Tile_Position :=
                                (X, Tile_Y (Y));
-
+                  Tile     : constant Carthage.Tiles.Tile_Type :=
+                               Model.Planet.Tile (Position);
                   Screen_X : Integer;
                   Screen_Y : Integer;
 
@@ -189,6 +205,23 @@ package body Carthage.UI.Models.Planets is
                      Screen_X := Screen_X - Column_Width * Planet_Width;
                   elsif Extended_X > Planet_Width then
                      Screen_X := Screen_X + Column_Width * Planet_Width;
+                  end if;
+
+                  if Tile.Has_Stacks then
+                     declare
+                        Left : constant Integer := Screen_X - Icon_Size / 2;
+                        Right : constant Integer := Screen_X + Icon_Size / 2;
+                        Top   : constant Integer :=
+                                  Screen_Y + Tile_Height - Icon_Size;
+                        Bottom : constant Integer := Screen_Y + Tile_Height;
+                     begin
+                        Tile.First_Stack.Log
+                          (Left'Img & Top'Img & Right'Img & Bottom'Img);
+
+                        Model.Rendered_Stacks.Append
+                          (Rendered_Stack_Icon'
+                             (Tile.First_Stack, Left, Top, Right, Bottom));
+                     end;
                   end if;
 
                   Carthage.UI.Maps.Get_Tile_Layers
@@ -266,6 +299,44 @@ package body Carthage.UI.Models.Planets is
          end if;
       end loop;
 
+      if Carthage.Stacks."/=" (Model.Selected_Stack, null)
+        and then Model.Selected_Stack.Has_Movement
+      then
+         declare
+            Path   : constant Array_Of_Positions :=
+                       Model.Selected_Stack.Current_Movement;
+            X1, Y1 : Integer := 0;
+            Draw   : Boolean := False;
+         begin
+            Ada.Text_IO.Put_Line
+              ("drawing path for selected stack "
+               & Model.Selected_Stack.Identifier);
+            for Next of Path loop
+               declare
+                  X2, Y2 : Integer;
+               begin
+                  Get_Screen_Tile_Centre (Next, X2, Y2);
+                  if X1 /= 0 then
+                     Renderer.Draw_Line
+                       (X1, Y1, X2, Y2,
+                        Colour     => Lui.Colours.To_Colour (200, 200, 0),
+                        Line_Width => 5);
+                  end if;
+
+                  if Draw then
+                     X1 := X2;
+                     Y1 := Y2;
+                  end if;
+
+                  if Next = Model.Selected_Stack.Tile.Position then
+                     Draw := True;
+                  end if;
+
+               end;
+            end loop;
+         end;
+      end if;
+
       if Check_Neighbours then
          for Y in Top .. Top + Tiles_Down - 1 loop
             if Y in 1 .. Planet_Height then
@@ -296,7 +367,32 @@ package body Carthage.UI.Models.Planets is
             end if;
          end loop;
       end if;
+      Model.Needs_Render := False;
    end Render;
+
+   ---------------
+   -- Select_XY --
+   ---------------
+
+   overriding procedure Select_XY
+     (Model : in out Root_Planet_Model;
+      X, Y  : Natural)
+   is
+   begin
+      Ada.Text_IO.Put_Line ("select:" & X'Img & Y'Img);
+      for Rendered_Stack of Model.Rendered_Stacks loop
+         if X in Rendered_Stack.Left .. Rendered_Stack.Right
+           and then Y in Rendered_Stack.Top .. Rendered_Stack.Bottom
+         then
+            Ada.Text_IO.Put_Line ("selecting: "
+                                  & Rendered_Stack.Stack.Identifier
+                                  & ": " & Rendered_Stack.Stack.Description);
+            Model.Selected_Stack := Rendered_Stack.Stack;
+            Model.Queue_Render;
+            exit;
+         end if;
+      end loop;
+   end Select_XY;
 
    -------------
    -- Tooltip --
@@ -327,7 +423,8 @@ package body Carthage.UI.Models.Planets is
          Map_X := Map_X - Planet_Width;
       end loop;
       if Map_Y in 1 .. Planet_Height then
-         return Model.Planet.Tile ((Tile_X (Map_X), Tile_Y (Map_Y)))
+         return X'Img & Y'Img & " "
+           & Model.Planet.Tile ((Tile_X (Map_X), Tile_Y (Map_Y)))
            .Description;
       else
          return "";
