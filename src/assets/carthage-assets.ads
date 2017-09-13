@@ -78,10 +78,10 @@ private
       record
          Owner       : Carthage.Houses.House_Type;
          Unit        : Carthage.Units.Unit_Type;
-         Health      : Asset_Health;
-         Loyalty     : Asset_Loyalty;
-         Experience  : Asset_Experience;
-         Movement    : Natural;
+         Health      : Asset_Health := Asset_Health'Last;
+         Loyalty     : Asset_Loyalty := Asset_Loyalty'Last;
+         Experience  : Asset_Experience := Asset_Experience'First;
+         Movement    : Natural := 0;
          Stock       : Carthage.Resources.Stock_Record;
       end record;
 

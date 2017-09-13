@@ -93,8 +93,8 @@ private
 
    type Weapon_Record is
       record
-         Accuracy : Natural;
-         Strength : Natural;
+         Accuracy : Natural := 0;
+         Strength : Natural := 0;
       end record;
 
    type Weapon_Array is array (Weapon_Category) of Weapon_Record;
@@ -110,26 +110,26 @@ private
    type Unit_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with
       record
-         Index          : Natural;
+         Index          : Natural := 0;
          Category       : Unit_Category;
-         Move           : Natural;
-         Spot           : Natural;
-         Camouflage     : Natural;
-         Agility        : Natural;
-         Armour         : Natural;
-         Psy_Defence    : Natural;
-         Weapons        : Weapon_Array;
-         Cargo          : Natural;
-         Can_Be_Cargo   : Boolean;
-         Combat         : Boolean;
-         Maintenance    : Natural;
-         Credit_Cost    : Natural;
-         Eat            : Natural;
-         Rank           : Natural;
+         Move           : Natural := 0;
+         Spot           : Natural := 0;
+         Camouflage     : Natural := 0;
+         Agility        : Natural := 0;
+         Armour         : Natural := 0;
+         Psy_Defence    : Natural := 0;
+         Weapons        : Weapon_Array := (others => (0, 0));
+         Cargo          : Natural := 0;
+         Can_Be_Cargo   : Boolean := False;
+         Combat         : Boolean := False;
+         Maintenance    : Natural := 0;
+         Credit_Cost    : Natural := 0;
+         Eat            : Natural := 0;
+         Rank           : Natural := 0;
          Resource_Cost  : Resource_Cost_Vectors.Vector;
-         Build_Unit     : Unit_Type;
-         Enabled_By     : Enabling_Tech;
-         Turns_To_Build : Natural;
+         Build_Unit     : Unit_Type := null;
+         Enabled_By     : Enabling_Tech := (others => null);
+         Turns_To_Build : Natural := 0;
          Image_Resource : Ada.Strings.Unbounded.Unbounded_String;
       end record;
 
