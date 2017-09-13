@@ -78,6 +78,15 @@ package Carthage.Stacks is
      (Stack : Stack_Record)
       return Natural;
 
+   function Has_Movement
+     (Stack : Stack_Record)
+      return Boolean;
+
+   function Current_Movement
+     (Stack : Stack_Record)
+      return Array_Of_Positions
+     with Pre => Stack.Has_Movement;
+
    function Spot
      (Stack : Stack_Record)
       return Natural;
@@ -169,8 +178,7 @@ private
      new Ada.Containers.Indefinite_Doubly_Linked_Lists (Stack_Order_Record);
 
    package Stack_Path_Holders is
-     new Ada.Containers.Indefinite_Holders
-       (Carthage.Planets.Array_Of_Positions, Carthage.Planets."=");
+     new Ada.Containers.Indefinite_Holders (Array_Of_Positions);
 
    type Stack_Record is
      new Carthage.Objects.Root_Named_Object with
@@ -234,6 +242,16 @@ private
      (Stack : Stack_Record)
       return Carthage.Houses.House_Type
    is (Stack.Owner);
+
+   function Has_Movement
+     (Stack : Stack_Record)
+      return Boolean
+   is (not Stack.Current_Path.Is_Empty);
+
+   function Current_Movement
+     (Stack : Stack_Record)
+      return Array_Of_Positions
+   is (Stack.Current_Path.Element);
 
    function Count (Stack : Stack_Record) return Asset_Count
    is (Stack.Count);

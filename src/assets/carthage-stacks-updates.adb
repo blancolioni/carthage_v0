@@ -95,8 +95,12 @@ package body Carthage.Stacks.Updates is
 
             if Has_Hostile then
                Stack.Log
-                 ("at " & Stack.Tile.Description
+                 ("strength"
+                  & Natural'Image (Stack.Total_Strength)
+                  & " at " & Stack.Tile.Description
                   & " attacking hostile " & Hostile.Identifier
+                  & " strength"
+                  & Natural'Image (Hostile.Total_Strength)
                   & " in target tile " & Tile.Description);
                Carthage.Combat.New_Battle
                  (Ref, Hostile, Stack.Planet, Stack.Tile);
@@ -218,7 +222,7 @@ package body Carthage.Stacks.Updates is
 
          if Stack.Current_Path_Index > 0 then
             declare
-               Path : constant Carthage.Planets.Array_Of_Positions :=
+               Path : constant Array_Of_Positions :=
                         Stack.Current_Path.Element;
                Path_Index : Positive := Stack.Current_Path_Index;
                Stop : Boolean := False;

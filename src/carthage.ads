@@ -12,4 +12,6 @@ package Carthage is
          Y : Tile_Y;
       end record;
 
+   type Array_Of_Positions is array (Positive range <>) of Tile_Position;
+
 end Carthage;

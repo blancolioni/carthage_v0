@@ -19,8 +19,6 @@ package Carthage.Planets is
 
    type Coordinate is new Float range 0.0 .. 1.0;
 
-   type Array_Of_Positions is array (Positive range <>) of Tile_Position;
-
    type Planet_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with private;
 

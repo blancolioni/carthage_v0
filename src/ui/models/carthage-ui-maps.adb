@@ -314,7 +314,7 @@ package body Carthage.UI.Maps is
 
             if Base_Index /= 0 then
                declare
-                  Ns     : constant Carthage.Planets.Array_Of_Positions :=
+                  Ns     : constant Array_Of_Positions :=
                              Planet.Neighbours (Tile.Position);
                begin
                   for Neighbour of Ns loop
@@ -502,7 +502,7 @@ package body Carthage.UI.Maps is
         function (Position : Tile_Position) return Boolean)
       return Direction_Flags
    is
-      Ns : constant Carthage.Planets.Array_Of_Positions :=
+      Ns : constant Array_Of_Positions :=
              Planet.Neighbours (Start);
       Result : Direction_Flags := 0;
    begin
