@@ -109,6 +109,8 @@ package body Carthage.Managers.Assets is
                        ((New_Stack, others => <>));
                      Stack_Cursor := Manager.Stacks.Last;
                      Manager.Assets (Asset_Cursor).Stack := Stack_Cursor;
+                     Manager.Stack_Maps.Insert (New_Stack.Identifier,
+                                                Stack_Cursor);
                      Stack := New_Stack;
                   end;
                end if;
@@ -147,14 +149,16 @@ package body Carthage.Managers.Assets is
                   begin
                      if Stack.Tile = null then
                         Stack.Log ("no tile: " & Stack.Description);
-                     elsif (D < Smallest_D
+                     elsif Manager.Stacks (Position).Goal.Is_Empty then
+                        if (D < Smallest_D
                             and then Str >= Required_Str)
-                       or else (D / 2 < Smallest_D
-                                and then Str * 2 / 3 > Current_Str)
-                     then
-                        Closest_Stack := Position;
-                        Smallest_D := D;
-                        Current_Str := Str;
+                          or else (D / 2 < Smallest_D
+                                   and then Str * 2 / 3 > Current_Str)
+                        then
+                           Closest_Stack := Position;
+                           Smallest_D := D;
+                           Current_Str := Str;
+                        end if;
                      end if;
                   end;
                end loop;
@@ -416,6 +420,9 @@ package body Carthage.Managers.Assets is
                Minimum_Food => 0,
                Desired_Food => 0));
 
+         Manager.Stack_Maps.Insert
+           (Stack.Identifier, Manager.Stacks.Last);
+
          Stack.Update.Set_Manager (Manager);
 
          for I in 1 .. Stack.Count loop
@@ -485,6 +492,21 @@ package body Carthage.Managers.Assets is
 
       Manager.Meta_Manager.On_Hostile_Spotted (Stack, Hostile);
    end On_Hostile_Spotted;
+
+   ----------------------
+   -- On_Stack_Removed --
+   ----------------------
+
+   overriding procedure On_Stack_Removed
+     (Manager : in out Asset_Manager_Record;
+      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is
+      Position : Managed_Stack_List.Cursor :=
+                   Manager.Stack_Maps.Element (Stack.Identifier);
+   begin
+      Manager.Stacks.Delete (Position);
+      Manager.Stack_Maps.Delete (Stack.Identifier);
+   end On_Stack_Removed;
 
    ----------------
    -- Recon_Goal --

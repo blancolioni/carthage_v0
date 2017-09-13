@@ -1,5 +1,6 @@
 private with Ada.Containers.Doubly_Linked_Lists;
 private with Ada.Containers.Indefinite_Holders;
+private with WL.String_Maps;
 
 with Carthage.Assets;
 with Carthage.Planets;
@@ -103,6 +104,9 @@ private
      new Ada.Containers.Doubly_Linked_Lists
        (Managed_Stack_Record);
 
+   package Managed_Stack_Maps is
+     new WL.String_Maps (Managed_Stack_List.Cursor, Managed_Stack_List."=");
+
    type Managed_Asset_Record is
       record
          Asset : Carthage.Assets.Asset_Type;
@@ -126,6 +130,7 @@ private
          Planet       : Carthage.Planets.Planet_Type;
          Assets       : Managed_Asset_List.List;
          Stacks       : Managed_Stack_List.List;
+         Stack_Maps   : Managed_Stack_Maps.Map;
          Spotters     : Asset_Classification_List.List;
          Movers       : Asset_Classification_List.List;
          Minimum_Food : Natural;
@@ -149,5 +154,9 @@ private
       Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
       Hostile : not null access constant Carthage.Stacks.Stack_Record'Class;
       Stop    : out Boolean);
+
+   overriding procedure On_Stack_Removed
+     (Manager : in out Asset_Manager_Record;
+      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class);
 
 end Carthage.Managers.Assets;
