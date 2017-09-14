@@ -67,11 +67,14 @@ package body Carthage.Worlds.Configure is
                         end if;
                      end Set_Movement;
 
+                     To_Category : constant array (1 .. 10) of Unit_Category :=
+                                     (Foot, Wheel, Tread, Air, Naval,
+                                      Space, Hover, Jump, Crawler, Lander);
                   begin
                      for Move_Config of World_Config loop
-                        Movement (Unit_Category'Val (Index)) :=
-                          Move_Config.Value;
                         Index := Index + 1;
+                        Movement (To_Category (Index)) :=
+                          Move_Config.Value;
                      end loop;
 
                      Db.Update (World.Reference, Set_Movement'Access);
