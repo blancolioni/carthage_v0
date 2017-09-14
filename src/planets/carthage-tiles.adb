@@ -204,6 +204,25 @@ package body Carthage.Tiles is
       Carthage.Houses.Insert (Tile.Seen, House);
    end Set_Seen_By;
 
+   -------------
+   -- Terrain --
+   -------------
+
+   function Terrain
+     (Tile  : Tile_Record)
+      return Terrain_Layer_Array
+   is
+      use type Carthage.Terrain.Terrain_Type;
+      Result : constant Terrain_Layer_Array := Tile.Terrain;
+   begin
+      for I in Result'Range loop
+         if Result (I) = null then
+            return Result (1 .. I - 1);
+         end if;
+      end loop;
+      return Result;
+   end Terrain;
+
    ------------
    -- Update --
    ------------

@@ -1,6 +1,7 @@
 with Ada.Containers.Doubly_Linked_Lists;
 
 with Carthage.Units;
+with Carthage.Worlds;
 
 package body Carthage.Stacks is
 
@@ -58,6 +59,48 @@ package body Carthage.Stacks is
          end return;
       end if;
    end Movement;
+
+   -------------------
+   -- Movement_Cost --
+   -------------------
+
+   function Movement_Cost
+     (Stack : Stack_Record;
+      Tile  : Carthage.Tiles.Tile_Type)
+      return Natural
+   is
+      World  : constant Carthage.Worlds.World_Type :=
+                 Stack.Planet.Category;
+      Terrain : constant Carthage.Tiles.Terrain_Layer_Array := Tile.Terrain;
+      Lowest : Float := Float'Last;
+   begin
+      if Stack.Count = 0 then
+         return 0;
+      end if;
+
+      for I in 1 .. Stack.Count loop
+         declare
+            Category : constant Carthage.Units.Unit_Category :=
+                         Stack.Asset (I).Unit.Category;
+            Cost : Float := 1.0;
+         begin
+            for T of Terrain loop
+               Cost := Cost * World.Movement_Multiplier (T, Category);
+            end loop;
+            Lowest := Float'Min (Lowest, Cost);
+            exit when Lowest = 0.0;
+         end;
+      end loop;
+
+      if Lowest = 0.0 then
+         return 0;
+      elsif Float'Truncation (Lowest) = Lowest then
+         return Natural (Lowest);
+      else
+         return Natural (Float'Truncation (Lowest)) + 1;
+      end if;
+
+   end Movement_Cost;
 
    ------------------
    -- Remove_Asset --

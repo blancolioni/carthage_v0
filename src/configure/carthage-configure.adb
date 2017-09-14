@@ -641,7 +641,6 @@ package body Carthage.Configure is
       Road_Cost_Config   : Tropos.Configuration;
       Move_Cost_Config   : Tropos.Configuration)
    is
-      pragma Unreferenced (Move_Cost_Config);
       Output : array (1 .. Colour_Config.Child (1).Child_Count / 2)
         of Tropos.Configuration;
 
@@ -700,6 +699,9 @@ package body Carthage.Configure is
                  ("terrain/" & Config.Config_Name & ".txt"));
          end if;
       end loop;
+
+      Carthage.Import.Import_Terrain_Cost (Move_Cost_Config);
+
    end Import_Terrain;
 
    ------------------
@@ -1135,6 +1137,9 @@ package body Carthage.Configure is
       Load_Directory_Configuration
         ("worlds",
          Carthage.Worlds.Configure.Configure_World'Access);
+      Carthage.Worlds.Configure.Configure_Movement_Costs
+        (Tropos.Reader.Read_Config
+           (Carthage.Paths.Config_File ("terrain-cost.txt")));
 
       declare
          Structure_Path : constant String :=

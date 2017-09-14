@@ -1,5 +1,7 @@
 with WL.Images;
 
+with Tropos;
+
 with Carthage.Colours;
 
 package Carthage.Import is
@@ -38,9 +40,17 @@ package Carthage.Import is
                    Setting : String));
 
    type Numeric_Settings is array (Positive range <>) of Integer;
+   type Float_Settings is array (Positive range <>) of Float;
 
    procedure Scan_Settings
      (Settings : String;
       Result   : in out Numeric_Settings);
+
+   procedure Scan_Settings
+     (Settings : String;
+      Result   : in out Float_Settings);
+
+   procedure Import_Terrain_Cost
+     (Config : Tropos.Configuration);
 
 end Carthage.Import;

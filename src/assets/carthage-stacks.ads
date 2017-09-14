@@ -91,6 +91,11 @@ package Carthage.Stacks is
      (Stack : Stack_Record)
       return Natural;
 
+   function Movement_Cost
+     (Stack : Stack_Record;
+      Tile  : Carthage.Tiles.Tile_Type)
+      return Natural;
+
    function Total
      (Stack : Stack_Record;
       Value : not null access

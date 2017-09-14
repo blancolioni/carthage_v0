@@ -1,3 +1,5 @@
+with Ada.Strings.Fixed;
+
 with WL.Binary_IO;                     use WL.Binary_IO;
 with WL.Bitmap_IO;
 with WL.Images.Bitmaps;
@@ -243,6 +245,57 @@ package body Carthage.Import is
       Have_Palette := True;
    end Import_Palette;
 
+   procedure Import_Terrain_Cost
+     (Config : Tropos.Configuration)
+   is
+      Cost_Config : Tropos.Configuration :=
+                      Tropos.New_Config ("terrain-cost");
+   begin
+      for Item_Config of Config loop
+         declare
+            First : Boolean := True;
+            World : Boolean := True;
+            Terrain_Child : Tropos.Configuration;
+            World_Child   : Tropos.Configuration;
+         begin
+            for Field_Config of Item_Config loop
+               declare
+                  Field : constant String := Field_Config.Config_Name;
+               begin
+                  if First then
+                     Terrain_Child := Tropos.New_Config (Field);
+                     First := False;
+                  elsif World then
+                     World_Child := Tropos.New_Config (Field);
+                     World := False;
+                  else
+                     declare
+                        Movement : Float_Settings (1 .. 10);
+                     begin
+                        Scan_Settings (Field, Movement);
+                        for I in Movement'Range loop
+                           World_Child.Add
+                             (Ada.Strings.Fixed.Trim
+                                (Positive'Image (I),
+                                 Ada.Strings.Left),
+                              Movement (I));
+                        end loop;
+                        Terrain_Child.Add (World_Child);
+                        World := True;
+                     end;
+                  end if;
+               end;
+            end loop;
+            Cost_Config.Add (Terrain_Child);
+         end;
+      end loop;
+
+      Tropos.Writer.Write_Config
+        (Cost_Config,
+         Carthage.Paths.Config_File ("terrain-cost.txt"));
+
+   end Import_Terrain_Cost;
+
    --------------------
    -- Palette_Colour --
    --------------------
@@ -343,6 +396,34 @@ package body Carthage.Import is
       begin
          if Index in Result'Range then
             Result (Index) := Integer'Value (Name);
+         end if;
+      end Set;
+
+   begin
+      Scan_Settings (Settings, Set'Access);
+   end Scan_Settings;
+
+   -------------------
+   -- Scan_Settings --
+   -------------------
+
+   procedure Scan_Settings
+     (Settings : String;
+      Result   : in out Float_Settings)
+   is
+      procedure Set (Index : Positive;
+                     Name  : String);
+
+      ---------
+      -- Set --
+      ---------
+
+      procedure Set (Index : Positive;
+                     Name  : String)
+      is
+      begin
+         if Index in Result'Range then
+            Result (Index) := Float'Value (Name);
          end if;
       end Set;
 

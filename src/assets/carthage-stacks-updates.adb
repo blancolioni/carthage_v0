@@ -13,14 +13,7 @@ package body Carthage.Stacks.Updates is
 
       procedure Execute (Stack : in out Stack_Class) is
 
-         function Move_Cost
-           (Tile : Carthage.Tiles.Tile_Type)
-                        return Float
-         is (if Tile.Has_Road
-             then 1.0
-             else 3.0);
-
-         Remaining_Movement : Float := Float (Stack.Movement);
+         Remaining_Movement : Natural := Stack.Movement;
 
          procedure Check_Hostile
            (Tile        : Carthage.Tiles.Tile_Type;
@@ -76,7 +69,7 @@ package body Carthage.Stacks.Updates is
             Tile : constant Carthage.Tiles.Tile_Type :=
                      Stack.Planet.Tile (To);
 
-            Cost : constant Float := Move_Cost (Tile);
+            Cost : constant Positive := Stack.Movement_Cost (Tile);
 
             function Match (S : not null access constant
                               Stack_Record'Class)
@@ -102,31 +95,11 @@ package body Carthage.Stacks.Updates is
                   & " strength"
                   & Natural'Image (Hostile.Total_Strength)
                   & " in target tile " & Tile.Description);
+
                Carthage.Combat.New_Battle
                  (Ref, Hostile, Stack.Planet, Stack.Tile);
 
---                 declare
---                    use Carthage.Combat;
---                    Battle : Battle_Record;
---                 begin
---                    Stack.Planet.Log ("Starting the Battle of "
---                                      & Stack.Planet.Name);
---                    Create (Battle, Stack.Owner, Hostile.Owner);
---                    Add_Stack (Battle, Ref);
---                    Add_Stack (Battle, Hostile);
---                    for Weapon in Carthage.Units.Weapon_Category loop
---                       declare
---                          Round : constant Attack_Record_Array :=
---                                    Attack_Round (Battle, Weapon);
---                       begin
---                          for Attack of Round loop
---                             Stack.Planet.Log (Image (Attack));
---                          end loop;
---                       end;
---                    end loop;
-
                Stop := True;
-               --  end;
                return;
             end if;
 
@@ -181,7 +154,7 @@ package body Carthage.Stacks.Updates is
             end;
 
             if Cost >= Remaining_Movement then
-               Remaining_Movement := 0.0;
+               Remaining_Movement := 0;
             else
                Remaining_Movement := Remaining_Movement - Cost;
             end if;
@@ -194,6 +167,28 @@ package body Carthage.Stacks.Updates is
             declare
                Order : constant Stack_Order_Record :=
                          Stack.Orders.First_Element;
+
+               function Move_Cost
+                 (Tile : Carthage.Tiles.Tile_Type)
+                  return Float;
+
+               ---------------
+               -- Move_Cost --
+               ---------------
+
+               function Move_Cost
+                 (Tile : Carthage.Tiles.Tile_Type)
+                  return Float
+               is
+                  Cost : constant Natural := Stack.Movement_Cost (Tile);
+               begin
+                  if Cost = 0 then
+                     return Float'Last;
+                  else
+                     return Float (Cost);
+                  end if;
+               end Move_Cost;
+
             begin
                case Order.Order_Type is
                   when Move_To_Tile =>
@@ -227,7 +222,7 @@ package body Carthage.Stacks.Updates is
                Path_Index : Positive := Stack.Current_Path_Index;
                Stop : Boolean := False;
             begin
-               while not Stop and then Remaining_Movement > 0.0
+               while not Stop and then Remaining_Movement > 0
                  and then Path_Index <= Path'Last
                loop
                   Move (Path (Path_Index), Stop);

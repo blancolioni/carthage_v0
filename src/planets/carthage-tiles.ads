@@ -13,6 +13,9 @@ package Carthage.Tiles is
 
    type Terrain_Layer is range 1 .. 3;
 
+   type Terrain_Layer_Array is
+     array (Terrain_Layer range <>) of Carthage.Terrain.Terrain_Type;
+
    function Position_Image (Position : Tile_Position) return String;
 
    type Tile_Record is
@@ -26,6 +29,10 @@ package Carthage.Tiles is
      (Tile : Tile_Record;
       Layer : Terrain_Layer)
       return Carthage.Terrain.Terrain_Type;
+
+   function Terrain
+     (Tile  : Tile_Record)
+      return Terrain_Layer_Array;
 
    function Base_Terrain
      (Tile  : Tile_Record)
@@ -158,9 +165,6 @@ package Carthage.Tiles is
 
 private
 
-   type Terrain_Layer_Array is
-     array (Terrain_Layer) of Carthage.Terrain.Terrain_Type;
-
    type Stack_Access is access constant Carthage.Stacks.Stack_Record'Class;
 
    package Stack_Lists is
@@ -175,7 +179,8 @@ private
          Seen      : Carthage.Houses.House_Set;
          Explored  : Carthage.Houses.House_Set;
          Visible   : Carthage.Houses.House_Set;
-         Terrain   : Terrain_Layer_Array;
+         Terrain   : Terrain_Layer_Array
+           (Terrain_Layer'First .. Terrain_Layer'Last);
          Road      : Boolean;
          River     : Boolean;
          City      : access constant

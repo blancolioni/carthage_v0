@@ -13,6 +13,75 @@ package body Carthage.Worlds.Configure is
 
    procedure Read_Terrain_Config;
 
+   procedure Configure_Movement_Costs
+     (Config : Tropos.Configuration)
+   is
+   begin
+      for Terrain_Config of Config loop
+         declare
+            use type Carthage.Terrain.Terrain_Type;
+            Terrain_Name : constant String :=
+                             (if Terrain_Config.Config_Name = "arid"
+                              then "arid_grass"
+                              else Terrain_Config.Config_Name);
+            Terrain      : constant Carthage.Terrain.Terrain_Type :=
+                             (if Carthage.Terrain.Exists (Terrain_Name)
+                              then Carthage.Terrain.Get (Terrain_Name)
+                              elsif Terrain_Name = "road"
+                              then null
+                              else raise Constraint_Error with
+                                "no such terrain in movement config: "
+                              & Terrain_Name);
+         begin
+            for World_Config of Terrain_Config loop
+               if Exists (World_Config.Config_Name) then
+                  declare
+                     use Carthage.Units;
+                     World : constant World_Type :=
+                               Get (World_Config.Config_Name);
+                     Index    : Natural := 0;
+                     Movement : Unit_Movement_Array;
+
+                     procedure Set_Movement
+                       (W : in out World_Record'Class);
+
+                     ------------------
+                     -- Set_Movement --
+                     ------------------
+
+                     procedure Set_Movement
+                       (W : in out World_Record'Class)
+                     is
+                     begin
+                        if Terrain = null then
+                           W.Road_Movement := Movement;
+                        else
+                           declare
+                              Current : Terrain_Info :=
+                                          W.Terrain_Info.Element (Terrain);
+                           begin
+                              Current.Movement := Movement;
+                              W.Terrain_Info.Replace_Element
+                                (Terrain, Current);
+                           end;
+                        end if;
+                     end Set_Movement;
+
+                  begin
+                     for Move_Config of World_Config loop
+                        Movement (Unit_Category'Val (Index)) :=
+                          Move_Config.Value;
+                        Index := Index + 1;
+                     end loop;
+
+                     Db.Update (World.Reference, Set_Movement'Access);
+                  end;
+               end if;
+            end loop;
+         end;
+      end loop;
+   end Configure_Movement_Costs;
+
    ---------------------
    -- Configure_World --
    ---------------------
