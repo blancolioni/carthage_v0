@@ -399,22 +399,40 @@ package body Carthage.Managers.Planets is
 
       Sorting.Sort (Tiles);
 
-      for Tile of Tiles loop
-         Manager.House.Log
-           ("interest:"
-            & Manager.Tile_Info (Tile.X, Tile.Y).Interest'Img
-            & ": " & Manager.Planet.Tile (Tile).Description);
+      while not Tiles.Is_Empty loop
+
          declare
-            Goal : constant Carthage.Goals.Goal_Record'Class :=
-                     Manager.Ground_Asset_Manager.Recon_Goal
-                       (Manager.Planet.Tile (Tile));
+            Tile : constant Tile_Position := Tiles.First_Element;
+            New_List : Tiles_Of_Interest_Lists.List;
          begin
-            if Manager.Ground_Asset_Manager.Have_Immediate_Capacity (Goal) then
-               Manager.Ground_Asset_Manager.Add_Goal (Goal);
-            else
-               exit;
-            end if;
+
+            Manager.House.Log
+              ("interest:"
+               & Manager.Tile_Info (Tile.X, Tile.Y).Interest'Img
+               & ": " & Manager.Planet.Tile (Tile).Description);
+            declare
+               Goal : constant Carthage.Goals.Goal_Record'Class :=
+                        Manager.Ground_Asset_Manager.Recon_Goal
+                          (Manager.Planet.Tile (Tile));
+            begin
+               if Manager.Ground_Asset_Manager.Have_Immediate_Capacity
+                 (Goal)
+               then
+                  Manager.Ground_Asset_Manager.Add_Goal (Goal);
+               else
+                  exit;
+               end if;
+            end;
+
+            for Check_Tile of Tiles loop
+               if Carthage.Planets.Hex_Distance (Tile, Check_Tile) > 6 then
+                  New_List.Append (Check_Tile);
+               end if;
+            end loop;
+
+            Tiles := New_List;
          end;
+
       end loop;
 
       return True;
