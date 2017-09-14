@@ -10,8 +10,6 @@ with Carthage.UI.Maps;
 
 package body Carthage.UI.Models.Planets is
 
-   Check_Neighbours : constant Boolean := False;
-
    subtype Zoom_Level is Integer range -3 .. 3;
 
    Zoomed_Tile_Size : constant array (Zoom_Level) of Positive :=
@@ -19,6 +17,16 @@ package body Carthage.UI.Models.Planets is
 
    Zoomed_Icon_Size : constant array (Zoom_Level) of Positive :=
                         (64, 48, 32, 32, 24, 16, 8);
+
+   Base_Layer      : constant Lui.Rendering.Render_Layer := 1;
+   Unit_Layer      : constant Lui.Rendering.Render_Layer := 2;
+   Path_Layer      : constant Lui.Rendering.Render_Layer := 3;
+   Selection_Layer : constant Lui.Rendering.Render_Layer := 4;
+
+   Last_Layer      : constant Lui.Rendering.Render_Layer := Selection_Layer;
+
+   subtype Planet_Model_Layer is
+     Lui.Rendering.Render_Layer range 1 .. Last_Layer;
 
    type Rendered_Stack_Icon is
       record
@@ -98,7 +106,7 @@ package body Carthage.UI.Models.Planets is
             use Carthage.Planets;
             Model : constant Planet_Model_Type := new Root_Planet_Model;
          begin
-            Model.Initialise (Planet.Name);
+            Model.Initialise (Planet.Name, Last_Render_Layer => Last_Layer);
             Model.Set_Background
               (Lui.Colours.To_Colour (200, 200, 200));
             Model.Planet := Planet;
@@ -181,218 +189,203 @@ package body Carthage.UI.Models.Planets is
 
    begin
 
-      Model.Rendered_Stacks.Clear;
+      case Planet_Model_Layer (Renderer.Current_Render_Layer) is
+         when Base_Layer =>
+            Model.Rendered_Stacks.Clear;
 
-      for Y in Top .. Bottom loop
-         if Y in 1 .. Planet_Height then
-            for Extended_X in Left .. Right loop
-               declare
-                  X : constant Tile_X :=
-                        Tile_X
-                          (if Extended_X < 1
-                           then Extended_X + Planet_Width
-                           elsif Extended_X > Planet_Width
-                           then Extended_X - Planet_Width
-                           else Extended_X);
-
-                  Layers   : Carthage.UI.Maps.Tile_Layers;
-                  Position : constant Tile_Position :=
-                               (X, Tile_Y (Y));
-                  Tile     : constant Carthage.Tiles.Tile_Type :=
-                               Model.Planet.Tile (Position);
-                  Screen_X : Integer;
-                  Screen_Y : Integer;
-
-               begin
-                  Get_Screen_Tile_Centre (Position, Screen_X, Screen_Y);
-
-                  if Extended_X < 1 then
-                     Screen_X := Screen_X - Column_Width * Planet_Width;
-                  elsif Extended_X > Planet_Width then
-                     Screen_X := Screen_X + Column_Width * Planet_Width;
-                  end if;
-
-                  if Tile.Has_Stacks then
+            for Y in Top .. Bottom loop
+               if Y in 1 .. Planet_Height then
+                  for Extended_X in Left .. Right loop
                      declare
-                        Left : constant Integer := Screen_X - Icon_Size / 2;
-                        Right : constant Integer := Screen_X + Icon_Size / 2;
-                        Top   : constant Integer :=
-                                  Screen_Y + Tile_Height / 2 - Icon_Size;
-                        Bottom : constant Integer :=
-                                   Screen_Y + Tile_Height / 2;
+                        X : constant Tile_X :=
+                              Tile_X
+                                (if Extended_X < 1
+                                 then Extended_X + Planet_Width
+                                 elsif Extended_X > Planet_Width
+                                 then Extended_X - Planet_Width
+                                 else Extended_X);
+
+                        Layers   : Carthage.UI.Maps.Tile_Layers;
+                        Position : constant Tile_Position :=
+                                     (X, Tile_Y (Y));
+                        Tile     : constant Carthage.Tiles.Tile_Type :=
+                                     Model.Planet.Tile (Position);
+                        Screen_X : Integer;
+                        Screen_Y : Integer;
+
                      begin
-                        Tile.First_Stack.Log
-                          (Left'Img & Top'Img & Right'Img & Bottom'Img);
+                        Get_Screen_Tile_Centre (Position, Screen_X, Screen_Y);
 
-                        Model.Rendered_Stacks.Append
-                          (Rendered_Stack_Icon'
-                             (Tile.First_Stack, Left, Top, Right, Bottom));
-                     end;
-                  end if;
+                        if Extended_X < 1 then
+                           Screen_X := Screen_X - Column_Width * Planet_Width;
+                        elsif Extended_X > Planet_Width then
+                           Screen_X := Screen_X + Column_Width * Planet_Width;
+                        end if;
 
-                  Carthage.UI.Maps.Get_Tile_Layers
-                    (Model.Planet, Model.House, Position, Layers);
+                        if Tile.Has_Stacks then
+                           declare
+                              Left   : constant Integer :=
+                                         Screen_X - Icon_Size / 2;
+                              Right  : constant Integer :=
+                                         Screen_X + Icon_Size / 2;
+                              Top    : constant Integer :=
+                                         Screen_Y + Tile_Height / 2
+                                           - Icon_Size;
+                              Bottom : constant Integer :=
+                                         Screen_Y + Tile_Height / 2;
+                           begin
+                              Tile.First_Stack.Log
+                                (Left'Img & Top'Img & Right'Img & Bottom'Img);
 
-                  declare
-                     use Carthage.UI.Maps;
+                              Model.Rendered_Stacks.Append
+                                (Rendered_Stack_Icon'
+                                   (Tile.First_Stack,
+                                    Left, Top, Right, Bottom));
+                           end;
+                        end if;
 
-                     procedure Draw
-                       (Element  : Layer_Element_Type;
-                        Resource : String;
-                        Color    : Carthage.Colours.Colour_Type);
+                        Carthage.UI.Maps.Get_Tile_Layers
+                          (Model.Planet, Model.House, Position, Layers);
 
-                     ----------
-                     -- Draw --
-                     ----------
+                        declare
+                           use Carthage.UI.Maps;
 
-                     procedure Draw
-                       (Element  : Layer_Element_Type;
-                        Resource : String;
-                        Color    : Carthage.Colours.Colour_Type)
-                     is
-                        use type Carthage.Colours.Colour_Element;
-                     begin
-                        case Element is
-                           when Background_Hex_Tile =>
-                              if not Renderer.Have_Resource (Resource) then
-                                 Renderer.Create_Image_Resource
-                                   (Resource_Name => Resource,
-                                    Image         =>
-                                      Create_Background_Hex
-                                        (Color));
-                              end if;
+                           procedure Draw
+                             (Element  : Layer_Element_Type;
+                              Resource : String;
+                              Color    : Carthage.Colours.Colour_Type);
 
-                              Renderer.Draw_Image
-                                (Screen_X - Tile_Width / 2,
-                                 Screen_Y - Tile_Height / 2,
-                                 Tile_Width, Tile_Height,
-                                 Resource);
+                           ----------
+                           -- Draw --
+                           ----------
 
-                           when Hex_Tile =>
-                              if Draw_Hex_Images then
-                                 pragma Assert
-                                   (Renderer.Have_Resource (Resource));
+                           procedure Draw
+                             (Element  : Layer_Element_Type;
+                              Resource : String;
+                              Color    : Carthage.Colours.Colour_Type)
+                           is
+                              use type Carthage.Colours.Colour_Element;
+                           begin
+                              case Element is
+                              when Background_Hex_Tile =>
+                                 if not Renderer.Have_Resource (Resource) then
+                                    Renderer.Create_Image_Resource
+                                      (Resource_Name => Resource,
+                                       Image         =>
+                                         Create_Background_Hex
+                                           (Color));
+                                 end if;
 
                                  Renderer.Draw_Image
                                    (Screen_X - Tile_Width / 2,
                                     Screen_Y - Tile_Height / 2,
                                     Tile_Width, Tile_Height,
                                     Resource);
-                              end if;
-                           when Icon =>
-                              if Color.Alpha > 0.0 then
-                                 Renderer.Draw_Rectangle
+
+                              when Hex_Tile =>
+                                 if Draw_Hex_Images then
+                                    pragma Assert
+                                      (Renderer.Have_Resource (Resource));
+
+                                    Renderer.Draw_Image
+                                      (Screen_X - Tile_Width / 2,
+                                       Screen_Y - Tile_Height / 2,
+                                       Tile_Width, Tile_Height,
+                                       Resource);
+                                 end if;
+                              when Icon =>
+                                 if Color.Alpha > 0.0 then
+                                    Renderer.Draw_Rectangle
+                                      (Screen_X - Icon_Size / 2,
+                                       Screen_Y + Tile_Height / 2 - Icon_Size,
+                                       Icon_Size, Icon_Size,
+                                       To_Lui_Colour (Color), True);
+                                 end if;
+
+                                 Renderer.Draw_Image
                                    (Screen_X - Icon_Size / 2,
                                     Screen_Y + Tile_Height / 2 - Icon_Size,
                                     Icon_Size, Icon_Size,
-                                    To_Lui_Colour (Color), True);
-                              end if;
+                                    Resource);
 
-                              Renderer.Draw_Image
-                                (Screen_X - Icon_Size / 2,
-                                 Screen_Y + Tile_Height / 2 - Icon_Size,
-                                 Icon_Size, Icon_Size,
-                                 Resource);
+                              end case;
+                           end Draw;
 
-                        end case;
-                     end Draw;
-
-                  begin
-                     Layers.Scan_Layers (Draw'Access);
-                  end;
-
-                  declare
-                     use type Carthage.Stacks.Stack_Type;
-                  begin
-                     if Model.Selected_Stack /= null
-                       and then Tile.Has_Stack (Model.Selected_Stack)
-                     then
-                        Renderer.Draw_Rectangle
-                          (X      =>
-                             Screen_X - Icon_Size / 2,
-                           Y      =>
-                             Screen_Y + Tile_Height / 2 - Icon_Size,
-                           W      => Icon_Size,
-                           H      => Icon_Size,
-                           Colour =>
-                             Lui.Colours.To_Colour
-                               (0, 200, 0),
-                           Filled => False);
-                     end if;
-                  end;
-               end;
-            end loop;
-         end if;
-      end loop;
-
-      if Carthage.Stacks."/=" (Model.Selected_Stack, null)
-        and then Model.Selected_Stack.Has_Movement
-      then
-         declare
-            Path   : constant Array_Of_Positions :=
-                       Model.Selected_Stack.Current_Movement;
-            X1, Y1 : Integer := 0;
-            Draw   : Boolean := False;
-         begin
-            Ada.Text_IO.Put_Line
-              ("drawing path for selected stack "
-               & Model.Selected_Stack.Identifier);
-            for Next of Path loop
-               declare
-                  X2, Y2 : Integer;
-               begin
-                  Get_Screen_Tile_Centre (Next, X2, Y2);
-                  if X1 /= 0 then
-                     Renderer.Draw_Line
-                       (X1, Y1, X2, Y2,
-                        Colour     => Lui.Colours.To_Colour (200, 200, 0),
-                        Line_Width => 5);
-                  end if;
-
-                  if Next = Model.Selected_Stack.Tile.Position then
-                     Draw := True;
-                  end if;
-
-                  if Draw then
-                     X1 := X2;
-                     Y1 := Y2;
-                  end if;
-
-               end;
-            end loop;
-         end;
-      end if;
-
-      if Check_Neighbours then
-         for Y in Top .. Top + Tiles_Down - 1 loop
-            if Y in 1 .. Planet_Height then
-               for Extended_X in Left .. Left + Tiles_Across - 1 loop
-                  declare
-                     X      : constant Tile_X :=
-                                Tile_X
-                                  (if Extended_X < 1
-                                   then Extended_X + Planet_Width
-                                   elsif Extended_X > Planet_Width
-                                   then Extended_X - Planet_Width
-                                   else Extended_X);
-                     X1, Y1 : Integer;
-                  begin
-                     Get_Screen_Tile_Centre ((X, Tile_Y (Y)), X1, Y1);
-
-                     for N of Model.Planet.Neighbours ((X, Tile_Y (Y))) loop
-                        declare
-                           X2, Y2 : Integer;
                         begin
-                           Get_Screen_Tile_Centre (N, X2, Y2);
-                           Renderer.Draw_Line (X1, Y1, X2, Y2,
-                                               Lui.Colours.Black, 1);
+                           Layers.Scan_Layers (Draw'Access);
                         end;
-                     end loop;
-                  end;
-               end loop;
+
+                        declare
+                           use type Carthage.Stacks.Stack_Type;
+                        begin
+                           if Model.Selected_Stack /= null
+                             and then Tile.Has_Stack (Model.Selected_Stack)
+                           then
+                              Renderer.Draw_Rectangle
+                                (X      =>
+                                   Screen_X - Icon_Size / 2,
+                                 Y      =>
+                                   Screen_Y + Tile_Height / 2 - Icon_Size,
+                                 W      => Icon_Size,
+                                 H      => Icon_Size,
+                                 Colour =>
+                                   Lui.Colours.To_Colour
+                                     (0, 200, 0),
+                                 Filled => False);
+                           end if;
+                        end;
+                     end;
+                  end loop;
+               end if;
+            end loop;
+
+         when Unit_Layer =>
+            null;
+
+         when Path_Layer =>
+            if Carthage.Stacks."/=" (Model.Selected_Stack, null)
+              and then Model.Selected_Stack.Has_Movement
+            then
+               declare
+                  Path   : constant Array_Of_Positions :=
+                             Model.Selected_Stack.Current_Movement;
+                  X1, Y1 : Integer := 0;
+                  Draw   : Boolean := False;
+               begin
+                  Ada.Text_IO.Put_Line
+                    ("drawing path for selected stack "
+                     & Model.Selected_Stack.Identifier);
+                  for Next of Path loop
+                     declare
+                        X2, Y2 : Integer;
+                     begin
+                        Get_Screen_Tile_Centre (Next, X2, Y2);
+                        if X1 /= 0 then
+                           Renderer.Draw_Line
+                             (X1, Y1, X2, Y2,
+                              Colour     =>
+                                Lui.Colours.To_Colour (200, 200, 0),
+                              Line_Width => 5);
+                        end if;
+
+                        if Next = Model.Selected_Stack.Tile.Position then
+                           Draw := True;
+                        end if;
+
+                        if Draw then
+                           X1 := X2;
+                           Y1 := Y2;
+                        end if;
+
+                     end;
+                  end loop;
+               end;
             end if;
-         end loop;
-      end if;
+
+         when Selection_Layer =>
+            null;
+
+      end case;
       Model.Needs_Render := False;
    end Render;
 
