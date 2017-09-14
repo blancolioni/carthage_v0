@@ -96,6 +96,11 @@ package Carthage.Stacks is
       Tile  : Carthage.Tiles.Tile_Type)
       return Natural;
 
+   function Find_Path
+     (Stack   : Stack_Record'Class;
+      Tile    : Carthage.Tiles.Tile_Type)
+      return Array_Of_Positions;
+
    function Total
      (Stack : Stack_Record;
       Value : not null access
