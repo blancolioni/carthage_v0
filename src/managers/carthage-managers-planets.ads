@@ -38,6 +38,17 @@ private
      new Ada.Containers.Doubly_Linked_Lists
        (Carthage.Stacks.Stack_Type, Carthage.Stacks."=");
 
+   type Planet_Area_Class is (Sea, Continent);
+
+   type Planet_Area_Record is
+      record
+         Class : Planet_Area_Class;
+         Tiles : List_Of_Tiles.List;
+      end record;
+
+   package Planet_Area_Lists is
+      new Ada.Containers.Doubly_Linked_Lists (Planet_Area_Record);
+
    type Tile_Info_Record is
       record
          Tile               : Carthage.Tiles.Tile_Type;
@@ -45,6 +56,8 @@ private
          Nearest_Explored   : Carthage.Tiles.Tile_Type;
          Nearest_Controlled : Carthage.Tiles.Tile_Type;
          Interest           : Integer := 0;
+         Continent          : Planet_Area_Lists.Cursor :=
+                                Planet_Area_Lists.No_Element;
          Controlled         : Boolean;
          Explored           : Boolean;
          Seen               : Boolean;
@@ -80,6 +93,7 @@ private
            Carthage.Managers.Assets.Asset_Manager_Record'Class;
          City_Manager         : access
            Carthage.Managers.Cities.City_Manager_Record'Class;
+         Areas                : Planet_Area_Lists.List;
          Controlled_Tiles     : List_Of_Tiles.List;
          Explored_Tiles       : List_Of_Tiles.List;
          Seen_Tiles           : List_Of_Tiles.List;

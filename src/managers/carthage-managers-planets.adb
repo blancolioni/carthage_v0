@@ -1,4 +1,5 @@
 with WL.Random;
+with Ada.Text_IO;
 
 package body Carthage.Managers.Planets is
 
@@ -106,6 +107,50 @@ package body Carthage.Managers.Planets is
      (Manager : not null access Planet_Manager_Record)
    is
       use type Carthage.Houses.House_Type;
+
+      procedure Scan_Area
+        (Start : Tile_Position);
+
+      ---------------
+      -- Scan_Area --
+      ---------------
+
+      procedure Scan_Area
+        (Start : Tile_Position)
+      is
+         Start_Tile : constant Carthage.Tiles.Tile_Type :=
+                        Manager.Planet.Tile (Start);
+         Class      : constant Planet_Area_Class :=
+                        (if Start_Tile.Is_Water
+                         then Sea else Continent);
+
+         function Is_Member (Tile : Carthage.Tiles.Tile_Type) return Boolean
+         is (case Class is
+                when Sea => Tile.Is_Water,
+                when Continent => not Tile.Is_Water);
+
+         procedure Process (Tile : Carthage.Tiles.Tile_Type);
+
+         -------------
+         -- Process --
+         -------------
+
+         procedure Process (Tile : Carthage.Tiles.Tile_Type) is
+         begin
+            Manager.Tile_Info (Tile.Position.X, Tile.Position.Y).Continent :=
+              Manager.Areas.Last;
+            Manager.Areas (Manager.Areas.Last).Tiles.Append (Tile);
+         end Process;
+
+      begin
+         Manager.Areas.Append (Planet_Area_Record'(Class, Tiles => <>));
+
+         Manager.Planet.Scan_Connected_Tiles
+           (Start   => Start,
+            Test    => Is_Member'Access,
+            Process => Process'Access);
+      end Scan_Area;
+
    begin
       Manager.Controlled_Tiles.Clear;
       Manager.Explored_Tiles.Clear;
@@ -125,6 +170,7 @@ package body Carthage.Managers.Planets is
                            Nearest_Explored   => null,
                            Nearest_Controlled => null,
                            Interest           => 0,
+                           Continent          => Planet_Area_Lists.No_Element,
                            Controlled         => False,
                            Explored           => False,
                            Seen               => False,
@@ -193,6 +239,22 @@ package body Carthage.Managers.Planets is
             end;
          end loop;
       end loop;
+
+      for Y in Tile_Y loop
+         for X in Tile_X loop
+            declare
+               Info : Tile_Info_Record renames Manager.Tile_Info (X, Y);
+            begin
+               if not Planet_Area_Lists.Has_Element (Info.Continent) then
+                  Scan_Area ((X, Y));
+               end if;
+            end;
+         end loop;
+      end loop;
+
+      Ada.Text_IO.Put_Line
+        (Manager.House.Name & ": " & Manager.Planet.Name
+         & ": area count:" & Natural'Image (Natural (Manager.Areas.Length)));
 
       Manager.Ground_Asset_Manager.Load_Initial_State;
       Manager.City_Manager.Load_Initial_State;
