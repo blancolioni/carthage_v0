@@ -217,8 +217,9 @@ package body Carthage.UI.Models.Planets is
                         Left : constant Integer := Screen_X - Icon_Size / 2;
                         Right : constant Integer := Screen_X + Icon_Size / 2;
                         Top   : constant Integer :=
-                                  Screen_Y + Tile_Height - Icon_Size;
-                        Bottom : constant Integer := Screen_Y + Tile_Height;
+                                  Screen_Y + Tile_Height / 2 - Icon_Size;
+                        Bottom : constant Integer :=
+                                   Screen_Y + Tile_Height / 2;
                      begin
                         Tile.First_Stack.Log
                           (Left'Img & Top'Img & Right'Img & Bottom'Img);
@@ -292,6 +293,7 @@ package body Carthage.UI.Models.Planets is
                                  Screen_Y + Tile_Height / 2 - Icon_Size,
                                  Icon_Size, Icon_Size,
                                  Resource);
+
                         end case;
                      end Draw;
 
@@ -299,6 +301,25 @@ package body Carthage.UI.Models.Planets is
                      Layers.Scan_Layers (Draw'Access);
                   end;
 
+                  declare
+                     use type Carthage.Stacks.Stack_Type;
+                  begin
+                     if Model.Selected_Stack /= null
+                       and then Tile.Has_Stack (Model.Selected_Stack)
+                     then
+                        Renderer.Draw_Rectangle
+                          (X      =>
+                             Screen_X - Icon_Size / 2,
+                           Y      =>
+                             Screen_Y + Tile_Height / 2 - Icon_Size,
+                           W      => Icon_Size,
+                           H      => Icon_Size,
+                           Colour =>
+                             Lui.Colours.To_Colour
+                               (0, 200, 0),
+                           Filled => False);
+                     end if;
+                  end;
                end;
             end loop;
          end if;
@@ -328,13 +349,13 @@ package body Carthage.UI.Models.Planets is
                         Line_Width => 5);
                   end if;
 
+                  if Next = Model.Selected_Stack.Tile.Position then
+                     Draw := True;
+                  end if;
+
                   if Draw then
                      X1 := X2;
                      Y1 := Y2;
-                  end if;
-
-                  if Next = Model.Selected_Stack.Tile.Position then
-                     Draw := True;
                   end if;
 
                end;
