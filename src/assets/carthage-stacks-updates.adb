@@ -69,7 +69,7 @@ package body Carthage.Stacks.Updates is
             Tile : constant Carthage.Tiles.Tile_Type :=
                      Stack.Planet.Tile (To);
 
-            Cost : constant Positive := Stack.Movement_Cost (Tile);
+            Cost : constant Natural := Stack.Movement_Cost (Tile);
 
             function Match (S : not null access constant
                               Stack_Record'Class)
@@ -83,6 +83,14 @@ package body Carthage.Stacks.Updates is
             Hostile     : Carthage.Stacks.Stack_Type;
             Has_Hostile : Boolean;
          begin
+
+            if Cost = 0 then
+               Stack.Log
+                 ("stopping because we cannot move to "
+                  & Tile.Description);
+               Stop := True;
+               return;
+            end if;
 
             Check_Hostile (Tile, Has_Hostile, Hostile);
 
