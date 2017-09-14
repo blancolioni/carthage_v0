@@ -28,6 +28,8 @@ with Lui.Gtk_UI;
 with Carthage.Paths;
 with Carthage.UI.Models;
 
+with Carthage.Updates;
+
 package body Carthage.UI.Gtk_UI is
 
    type Carthage_UI is
@@ -205,7 +207,7 @@ package body Carthage.UI.Gtk_UI is
    is
       UI : constant Carthage_UI_Access := Carthage_UI_Access (Slot);
    begin
---      Carthage.Updates.Daily_Update;
+      Carthage.Updates.Update;
 
       for I in 1 .. UI.Models.Count loop
          Carthage.UI.Models.Carthage_Model (UI.Models.Model (I)).Reload;
@@ -359,7 +361,7 @@ package body Carthage.UI.Gtk_UI is
          declare
             Step  : constant Gtk.Button.Gtk_Button :=
                       Gtk.Button.Gtk_Button
-                        (Builder.Get_Object ("End_Turn"));
+                        (Builder.Get_Object ("Update"));
          begin
             Step.On_Clicked (On_Step_Button_Clicked'Access, UI);
          end;
