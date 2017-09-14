@@ -3,6 +3,7 @@ private with WL.String_Maps;
 with Carthage.Managers.Assets;
 with Carthage.Managers.Cities;
 
+with Carthage.Cities;
 with Carthage.Planets;
 with Carthage.Resources;
 with Carthage.Stacks;
@@ -42,26 +43,30 @@ private
 
    type Planet_Area_Record is
       record
-         Class : Planet_Area_Class;
-         Tiles : List_Of_Tiles.List;
+         Class           : Planet_Area_Class;
+         Tiles           : List_Of_Tiles.List;
+         Internal_Border : List_Of_Tiles.List;
+         External_Border : List_Of_Tiles.List;
       end record;
 
    package Planet_Area_Lists is
-      new Ada.Containers.Doubly_Linked_Lists (Planet_Area_Record);
+     new Ada.Containers.Doubly_Linked_Lists (Planet_Area_Record);
 
    type Tile_Info_Record is
       record
-         Tile               : Carthage.Tiles.Tile_Type;
-         Nearest_Seen       : Carthage.Tiles.Tile_Type;
-         Nearest_Explored   : Carthage.Tiles.Tile_Type;
-         Nearest_Controlled : Carthage.Tiles.Tile_Type;
-         Interest           : Integer := 0;
-         Continent          : Planet_Area_Lists.Cursor :=
-                                Planet_Area_Lists.No_Element;
-         Controlled         : Boolean;
-         Explored           : Boolean;
-         Seen               : Boolean;
-         Targeted           : Boolean;
+         Tile                 : Carthage.Tiles.Tile_Type;
+         Nearest_Seen         : Carthage.Tiles.Tile_Type;
+         Nearest_Explored     : Carthage.Tiles.Tile_Type;
+         Nearest_Controlled   : Carthage.Tiles.Tile_Type;
+         Interest             : Integer := 0;
+         Continent            : Planet_Area_Lists.Cursor :=
+                                  Planet_Area_Lists.No_Element;
+         Area_Internal_Border : Boolean;
+         Area_External_Border : Boolean;
+         Controlled           : Boolean;
+         Explored             : Boolean;
+         Seen                 : Boolean;
+         Targeted             : Boolean;
       end record;
 
    type Tile_Info_Array is array (Tile_X, Tile_Y) of Tile_Info_Record;
@@ -89,6 +94,7 @@ private
      and Carthage.Managers.Assets.Asset_Meta_Manager_Interface with
       record
          Planet               : Carthage.Planets.Planet_Type;
+         Owned                : Boolean;
          Ground_Asset_Manager : access
            Carthage.Managers.Assets.Asset_Manager_Record'Class;
          City_Manager         : access
@@ -104,6 +110,8 @@ private
          Tile_Info            : Tile_Info_Array;
          Hostile_Stacks       : Stack_Lists.List;
          Spotted_Hostiles     : Identifier_Sets.Map;
+         Palace               : Carthage.Cities.City_Type;
+         Shield               : Carthage.Cities.City_Type;
       end record;
 
    overriding procedure Load_Initial_State

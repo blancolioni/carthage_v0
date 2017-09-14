@@ -1,5 +1,4 @@
 with WL.Random;
-with Ada.Text_IO;
 
 package body Carthage.Managers.Planets is
 
@@ -124,6 +123,9 @@ package body Carthage.Managers.Planets is
                         (if Start_Tile.Is_Water
                          then Sea else Continent);
 
+         Border : array (Tile_X, Tile_Y) of Boolean :=
+                    (others => (others => False));
+
          function Is_Member (Tile : Carthage.Tiles.Tile_Type) return Boolean
          is (case Class is
                 when Sea => Tile.Is_Water,
@@ -136,14 +138,39 @@ package body Carthage.Managers.Planets is
          -------------
 
          procedure Process (Tile : Carthage.Tiles.Tile_Type) is
+            Ns           : constant Carthage.Planets.Array_Of_Tiles :=
+                             Manager.Planet.Neighbour_Tiles (Tile.Position);
+            Area         : Planet_Area_Record renames
+                             Manager.Areas (Manager.Areas.Last);
+            Found_Border : Boolean := False;
          begin
             Manager.Tile_Info (Tile.Position.X, Tile.Position.Y).Continent :=
               Manager.Areas.Last;
-            Manager.Areas (Manager.Areas.Last).Tiles.Append (Tile);
+            Area.Tiles.Append (Tile);
+
+            for N of Ns loop
+               declare
+                  X : constant Tile_X := N.Position.X;
+                  Y : constant Tile_Y := N.Position.Y;
+               begin
+                  if not Border (X, Y) and then not Is_Member (N) then
+                     Area.External_Border.Append (N);
+                     Border (X, Y) := True;
+                     Manager.Tile_Info (X, Y).Area_External_Border := True;
+                     if not Found_Border then
+                        Found_Border := True;
+                        Area.Internal_Border.Append (Tile);
+                        Manager.Tile_Info (Tile.Position.X, Tile.Position.Y)
+                          .Area_Internal_Border := True;
+                     end if;
+                  end if;
+               end;
+            end loop;
+
          end Process;
 
       begin
-         Manager.Areas.Append (Planet_Area_Record'(Class, Tiles => <>));
+         Manager.Areas.Append (Planet_Area_Record'(Class, others => <>));
 
          Manager.Planet.Scan_Connected_Tiles
            (Start   => Start,
@@ -152,6 +179,10 @@ package body Carthage.Managers.Planets is
       end Scan_Area;
 
    begin
+      Manager.Owned :=
+        Manager.Planet.Has_Owner
+        and then Manager.Planet.Owner = Manager.House;
+
       Manager.Controlled_Tiles.Clear;
       Manager.Explored_Tiles.Clear;
       Manager.Seen_Tiles.Clear;
@@ -165,16 +196,20 @@ package body Carthage.Managers.Planets is
                         Manager.Planet.Tile (X, Y);
                Info : Tile_Info_Record :=
                         Tile_Info_Record'
-                          (Tile               => Tile,
-                           Nearest_Seen       => null,
-                           Nearest_Explored   => null,
-                           Nearest_Controlled => null,
-                           Interest           => 0,
-                           Continent          => Planet_Area_Lists.No_Element,
-                           Controlled         => False,
-                           Explored           => False,
-                           Seen               => False,
-                           Targeted           => False);
+                          (Tile                 => Tile,
+                           Nearest_Seen         => null,
+                           Nearest_Explored     => null,
+                           Nearest_Controlled   => null,
+                           Interest             => 0,
+                           Continent            =>
+                             Planet_Area_Lists.No_Element,
+                           Area_Internal_Border => False,
+                           Area_External_Border => False,
+                           Controlled           => False,
+                           Explored             => False,
+                           Seen                 => False,
+                           Targeted             => False);
+
                function At_War_With
                  (Enemy : not null access constant
                     Carthage.Stacks.Stack_Record'Class)
@@ -199,7 +234,9 @@ package body Carthage.Managers.Planets is
                   Info.Nearest_Seen := Tile;
                   Info.Nearest_Explored := Tile;
                   Info.Nearest_Controlled := Tile;
-               elsif Tile.Explored_By (Manager.House) then
+               end if;
+
+               if Tile.Explored_By (Manager.House) then
 
                   if Tile.Has_City
                     and then Tile.City.Owner /= Manager.House
@@ -207,6 +244,14 @@ package body Carthage.Managers.Planets is
                   then
                      Info.Interest := 600
                        + WL.Random.Random_Number (1, 100);
+                  end if;
+
+                  if Tile.Has_City then
+                     if Tile.City.Structure.Is_Palace then
+                        Manager.Palace := Tile.City;
+                     elsif Tile.City.Structure.Is_Shield then
+                        Manager.Shield := Tile.City;
+                     end if;
                   end if;
 
                   Manager.Explored_Tiles.Append (Tile);
@@ -252,9 +297,22 @@ package body Carthage.Managers.Planets is
          end loop;
       end loop;
 
-      Ada.Text_IO.Put_Line
-        (Manager.House.Name & ": " & Manager.Planet.Name
-         & ": area count:" & Natural'Image (Natural (Manager.Areas.Length)));
+      if Manager.Owned then
+         declare
+            Palace_Tile    : constant Carthage.Tiles.Tile_Type :=
+                               Manager.Palace.Tile;
+            Palace_Position : constant Tile_Position := Palace_Tile.Position;
+            Home_Continent : constant Planet_Area_Lists.Cursor :=
+                                Manager.Tile_Info
+                                  (Palace_Position.X, Palace_Position.Y)
+                                  .Continent;
+         begin
+            for Tile of Manager.Areas (Home_Continent).Internal_Border loop
+               Manager.Tile_Info (Tile.Position.X, Tile.Position.Y).Interest :=
+                 100 + WL.Random.Random_Number (1, 100);
+            end loop;
+         end;
+      end if;
 
       Manager.Ground_Asset_Manager.Load_Initial_State;
       Manager.City_Manager.Load_Initial_State;
