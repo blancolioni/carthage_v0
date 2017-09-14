@@ -57,7 +57,10 @@ package body Carthage.Managers.Assets is
                Managed_Stack : Managed_Stack_Record renames
                                  Manager.Stacks (Managed_Asset.Stack);
             begin
-               if Managed_Stack.Goal.Is_Empty then
+               if Managed_Stack.Goal.Is_Empty
+                 and then Managed_Stack.Stack.Movement_Cost
+                   (Manager.Planet.Tile (Target)) > 0
+               then
                   declare
                      Position : constant Tile_Position :=
                                   Manager.Stacks (Managed_Asset.Stack)
@@ -76,6 +79,12 @@ package body Carthage.Managers.Assets is
                end if;
             end;
          end loop;
+         if not Managed_Asset_List.Has_Element (Best_Asset) then
+            raise Constraint_Error with
+              "no asset found for tile "
+              & Manager.Planet.Tile (Target).Description;
+         end if;
+
          return Best_Asset;
       end Best_Available;
 
@@ -156,9 +165,17 @@ package body Carthage.Managers.Assets is
                                    and then Str >= Required_Str
                                    and then Str * 2 / 3 > Current_Str)
                         then
-                           Closest_Stack := Position;
-                           Smallest_D := D;
-                           Current_Str := Str;
+                           declare
+                              Path : constant Array_Of_Positions :=
+                                       Stack.Find_Path
+                                         (Asset_Goal.Tile);
+                           begin
+                              if Path'Length > 1 then
+                                 Closest_Stack := Position;
+                                 Smallest_D := D;
+                                 Current_Str := Str;
+                              end if;
+                           end;
                         end if;
                      end if;
                   end;
@@ -332,7 +349,10 @@ package body Carthage.Managers.Assets is
                Managed_Stack : Managed_Stack_Record renames
                                  Manager.Stacks (Managed_Asset.Stack);
             begin
-               if Managed_Stack.Goal.Is_Empty then
+               if Managed_Stack.Goal.Is_Empty
+                 and then Managed_Stack.Stack.Movement_Cost
+                   (Asset_Goal.Tile) > 0
+               then
                   return True;
                end if;
             end;
