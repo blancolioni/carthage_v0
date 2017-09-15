@@ -1067,8 +1067,8 @@ package body Carthage.Configure is
             Process   => Load_Localisation'Access);
       end;
 
-      Ada.Text_IO.Put_Line ("  surface graph");
-      Carthage.Planets.Configure.Create_Surface_Graph;
+--        Ada.Text_IO.Put_Line ("  surface graph");
+--        Carthage.Planets.Configure.Create_Surface_Graph;
 
       declare
          Technology_Path : constant String :=

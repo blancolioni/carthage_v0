@@ -116,7 +116,7 @@ package body Carthage.Houses.Configure is
       use Carthage.Planets;
 
       Planet : constant Planet_Type := Planet_Type (House.Capital);
-      Shield_Position : Tile_Position;
+      Shield_Position : constant Tile_Position := (1, 1);
       Available       : Carthage.Planets.Surface_Tiles;
 
       Minimum_Harvester_Distance : constant Natural :=
@@ -241,7 +241,8 @@ package body Carthage.Houses.Configure is
 
          function Position_OK
            (Position : Tile_Position)
-            return Boolean;
+            return Boolean
+           with Unreferenced;
 
          -----------------
          -- Position_OK --
@@ -329,48 +330,48 @@ package body Carthage.Houses.Configure is
                 (String'(Inner_Structures.Get (I)));
          end loop;
 
-         declare
-            Middle_Position : constant Tile_Position :=
-                                Planet.Find_Tile
-                                  ((Planet_Width / 2, Planet_Height / 2),
-                                   Position_OK'Access);
-         begin
-
-            Shield_Position := Middle_Position;
-
-            Carthage.Cities.Create.New_City
-              (Planet   => Planet,
-               Tile     => House.Capital.Tile (Middle_Position),
-               Structure => Middle,
-               Owner     => House);
-
-            Planet.Tile (Middle_Position).Update.Set_Road (True);
-
-            declare
-               Ns   : constant Array_Of_Tiles :=
-                        Planet.Neighbour_Tiles (Middle_Position);
-               Used : array (Ns'Range) of Boolean := (others => False);
-            begin
-               for Fac of Facs loop
-                  for Tile_Index in Ns'Range loop
-                     if not Used (Tile_Index)
-                       and then Fac.Terrain_OK
-                         (Ns (Tile_Index).Base_Terrain)
-                     then
-                        Carthage.Cities.Create.New_City
-                          (Planet   => Planet,
-                           Tile     => Ns (Tile_Index),
-                           Structure => Fac,
-                           Owner     => House);
-                        Ns (Tile_Index).Update.Set_Road (True);
-                        Used (Tile_Index) := True;
-                        exit;
-                     end if;
-                  end loop;
-               end loop;
-            end;
-
-         end;
+--           declare
+--              Middle_Position : constant Tile_Position :=
+--                                  Planet.Find_Tile
+--                                    ((Planet_Width / 2, Planet_Height / 2),
+--                                     Position_OK'Access);
+--           begin
+--
+--              Shield_Position := Middle_Position;
+--
+--              Carthage.Cities.Create.New_City
+--                (Planet   => Planet,
+--                 Tile     => House.Capital.Tile (Middle_Position),
+--                 Structure => Middle,
+--                 Owner     => House);
+--
+--              Planet.Tile (Middle_Position).Update.Set_Road (True);
+--
+--              declare
+--                 Ns   : constant Array_Of_Tiles :=
+--                          Planet.Neighbour_Tiles (Middle_Position);
+--                 Used : array (Ns'Range) of Boolean := (others => False);
+--              begin
+--                 for Fac of Facs loop
+--                    for Tile_Index in Ns'Range loop
+--                       if not Used (Tile_Index)
+--                         and then Fac.Terrain_OK
+--                           (Ns (Tile_Index).Base_Terrain)
+--                       then
+--                          Carthage.Cities.Create.New_City
+--                            (Planet   => Planet,
+--                             Tile     => Ns (Tile_Index),
+--                             Structure => Fac,
+--                             Owner     => House);
+--                          Ns (Tile_Index).Update.Set_Road (True);
+--                          Used (Tile_Index) := True;
+--                          exit;
+--                       end if;
+--                    end loop;
+--                 end loop;
+--              end;
+--
+--           end;
       end Configure_City_Group;
 
       ------------------------------
@@ -455,11 +456,12 @@ package body Carthage.Houses.Configure is
          declare
             function Tile_OK (Position : Tile_Position) return Boolean
             is (not Planet.Tile (Position).Is_Water
-                and then not Planet.Tile (Position).Has_Stacks);
+                and then not Planet.Tile (Position).Has_Stacks)
+            with Unreferenced;
 
-            Start      : constant Tile_Position :=
-                           Planet.Find_Tile
-                             (Shield_Position, Tile_OK'Access);
+            Start      : constant Tile_Position := (1, 1);
+--                             Planet.Find_Tile
+--                               (Shield_Position, Tile_OK'Access);
             Stack      : constant Carthage.Stacks.Stack_Type :=
                            Carthage.Stacks.Create.New_Ground_Stack
                              (House, Planet, Planet.Tile (Start));

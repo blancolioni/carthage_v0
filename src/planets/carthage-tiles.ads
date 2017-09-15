@@ -156,6 +156,8 @@ package Carthage.Tiles is
 
    type Tile_Type is access constant Tile_Record'Class;
 
+   type Array_Of_Tiles is array (Positive range <>) of Tile_Type;
+
    type Updateable_Reference (Item : not null access Tile_Record'Class)
    is private with Implicit_Dereference => Item;
 

@@ -1,7 +1,7 @@
 with Ada.Text_IO;
 
 with Carthage.Cities.Create;
-with Carthage.Planets.Surfaces;
+--  with Carthage.Planets.Surfaces;
 with Carthage.Structures.Configure;
 
 with Carthage.Galaxy.Configure;
@@ -49,8 +49,8 @@ package body Carthage.Planets.Configure is
 
          Planet.Megacity := Config.Get ("megacity");
 
-         Carthage.Planets.Surfaces.Create_Surface
-           (Planet.Category, Planet.Tiles);
+--           Carthage.Planets.Surfaces.Create_Surface
+--             (Planet.Category, Planet.Tiles);
 
          Create_Bonus_Tiles (Planet);
 
@@ -147,48 +147,48 @@ package body Carthage.Planets.Configure is
    -- Create_Surface_Graph --
    --------------------------
 
-   procedure Create_Surface_Graph is
-
-      subtype Offset_Range is Integer range -1 .. 1;
-
-      type Offset_Array is array (1 .. 6) of Offset_Range;
-
-      DX        : constant Offset_Array := (-1, 0, 1, 1, 0, -1);
-      DY_Odd_X  : constant Offset_Array := (1, 1, 1, 0, -1, 0);
-      DY_Even_X : constant Offset_Array := (0, 1, 0, -1, -1, -1);
-
-   begin
-      for Y in Tile_Y loop
-         for X in Tile_X loop
-            Surface_Graph.Append ((X, Y));
-         end loop;
-      end loop;
-
-      for Y in Tile_Y loop
-         for X in Tile_X loop
-            for I in Offset_Array'Range loop
-               declare
-                  Odd_X : constant Boolean := X mod 2 = 1;
-                  NX    : Integer := Integer (X) + DX (I);
-                  NY    : constant Integer := Integer (Y)
-                            + (if Odd_X then DY_Odd_X (I) else DY_Even_X (I));
-               begin
-                  if NY in 1 .. Planet_Height then
-                     if NX = 0 then
-                        NX := Planet_Width;
-                     elsif NX = Planet_Width + 1 then
-                        NX := 1;
-                     end if;
-
-                     Surface_Graph.Connect
-                       (Index_Of ((X, Y)),
-                        Index_Of ((Tile_X (NX), Tile_Y (NY))));
-                  end if;
-               end;
-            end loop;
-         end loop;
-      end loop;
-   end Create_Surface_Graph;
+--     procedure Create_Surface_Graph is
+--
+--        subtype Offset_Range is Integer range -1 .. 1;
+--
+--        type Offset_Array is array (1 .. 6) of Offset_Range;
+--
+--        DX        : constant Offset_Array := (-1, 0, 1, 1, 0, -1);
+--        DY_Odd_X  : constant Offset_Array := (1, 1, 1, 0, -1, 0);
+--        DY_Even_X : constant Offset_Array := (0, 1, 0, -1, -1, -1);
+--
+--     begin
+--        for Y in Tile_Y loop
+--           for X in Tile_X loop
+--              Surface_Graph.Append ((X, Y));
+--           end loop;
+--        end loop;
+--
+--        for Y in Tile_Y loop
+--           for X in Tile_X loop
+--              for I in Offset_Array'Range loop
+--                 declare
+--                    Odd_X : constant Boolean := X mod 2 = 1;
+--                    NX    : Integer := Integer (X) + DX (I);
+--                    NY    : constant Integer := Integer (Y)
+--                          + (if Odd_X then DY_Odd_X (I) else DY_Even_X (I));
+--                 begin
+--                    if NY in 1 .. Planet_Height then
+--                       if NX = 0 then
+--                          NX := Planet_Width;
+--                       elsif NX = Planet_Width + 1 then
+--                          NX := 1;
+--                       end if;
+--
+--                       Surface_Graph.Connect
+--                         (Index_Of ((X, Y)),
+--                          Index_Of ((Tile_X (NX), Tile_Y (NY))));
+--                    end if;
+--                 end;
+--              end loop;
+--           end loop;
+--        end loop;
+--     end Create_Surface_Graph;
 
    ----------------------
    -- Import_Jump_Gate --
@@ -264,6 +264,12 @@ package body Carthage.Planets.Configure is
          Planet.Create_With_Identity (Id);
 
          Planet.Index := Current_Planet_Count;
+         Planet.Grid.Create_Square_Grid
+           (Width             => Planet_Width,
+            Height            => Planet_Height,
+            Horizontal_Wrap   => True,
+            Vertical_Wrap     => False,
+            Has_Vertical_Axis => True);
 
          Planet.Category :=
            Carthage.Worlds.Get
@@ -282,9 +288,11 @@ package body Carthage.Planets.Configure is
 
          Planet.Megacity := Tile_Set = 1;
 
-         for Y in Planet.Tiles'Range (2) loop
-            for X in Planet.Tiles'Range (1) loop
-               Planet.Tiles (X, Y) := Create_Tile (X, Y);
+         for Y in Tile_Y loop
+            for X in Tile_X loop
+               Planet.Grid.Set_Tile
+                 (Position => Planet.To_Cubic ((X, Y)),
+                  Tile     => Create_Tile (X, Y));
             end loop;
          end loop;
 

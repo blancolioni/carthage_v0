@@ -1,8 +1,9 @@
 private with Ada.Containers.Doubly_Linked_Lists;
 private with Ada.Containers.Vectors;
-private with WL.Graphs;
 private with Memor.Database;
 private with Memor.Element_Vectors;
+
+private with Hexes.Grids;
 
 with Carthage.Colours;
 
@@ -108,12 +109,12 @@ package Carthage.Planets is
       Process  : not null access
         procedure (Tile : Carthage.Tiles.Tile_Type));
 
-   function Find_Tile
-     (Planet : Planet_Record;
-      Start  : Tile_Position;
-      Test   : not null access
-        function (Position : Tile_Position) return Boolean)
-      return Tile_Position;
+--     function Find_Tile
+--       (Planet : Planet_Record;
+--        Start  : Tile_Position;
+--        Test   : not null access
+--          function (Position : Tile_Position) return Boolean)
+--        return Tile_Position;
 
    function Has_Owner (Planet : Planet_Record) return Boolean;
 
@@ -245,25 +246,6 @@ package Carthage.Planets is
 
 private
 
-   type Tile_Array is
-     array (Tile_X, Tile_Y) of Carthage.Tiles.Tile_Type;
-
-   function Index_Of (Tile : Carthage.Tiles.Tile_Type) return Positive
-   is (Tile.Index);
-
-   function Index_Of (Position : Tile_Position) return Positive
-   is (Positive (Position.X) + Planet_Width * (Natural (Position.Y) - 1));
-
-   package Tile_Graphs is
-     new WL.Graphs
-       (Index_Type   => Positive,
-        Vertex_Type  => Tile_Position,
-        Cost_Type    => Float,
-        Default_Cost => 1.0,
-        Index_Of     => Index_Of);
-
-   Surface_Graph : Tile_Graphs.Graph;
-
    Orbital_Stack_Count : constant := 8;
 
    type Orbital_Stack_Type is
@@ -279,15 +261,19 @@ private
    package Planet_City_Lists is
      new Ada.Containers.Doubly_Linked_Lists (Planet_City_Access);
 
+   package Tile_Grids is
+     new Hexes.Grids (Carthage.Tiles.Tile_Type,
+                      Carthage.Tiles."=");
+
    type Planet_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with
       record
          Index    : Positive;
          X, Y     : Coordinate;
+         Grid     : Tile_Grids.Hex_Grid;
          Category : Carthage.Worlds.World_Type;
          Seen     : Carthage.Houses.House_Set;
          Explored : Carthage.Houses.House_Set;
-         Tiles    : Tile_Array;
          Megacity : Boolean;
          Owner    : Carthage.Houses.House_Type;
          Stacks   : Orbital_Stack_Vectors.Vector;
@@ -348,7 +334,12 @@ private
    function Tile (Planet   : Planet_Record;
                   Position : Tile_Position)
                   return Carthage.Tiles.Tile_Type
-   is (Planet.Tiles (Position.X, Position.Y));
+   is (Tile_Grids.Get_Tile
+       (Planet.Grid,
+        Tile_Grids.To_Cube_Coordinate
+          (Planet.Grid,
+           Hexes.Distance_Type (Position.X - 1),
+           Hexes.Distance_Type (Position.Y - 1))));
 
    package Tile_Vectors is
      new Ada.Containers.Vectors (Positive, Carthage.Tiles.Tile_Type,
@@ -390,6 +381,20 @@ private
       House  : Carthage.Houses.House_Type)
       return Boolean
    is (Carthage.Houses.Element (Planet.Explored, House));
+
+   function To_Cubic
+     (Planet : Planet_Record'Class;
+      Position : Tile_Position)
+      return Hexes.Cube_Coordinate
+   is (Planet.Grid.To_Cube_Coordinate
+       (Hexes.Distance_Type (Position.X - 1),
+        Hexes.Distance_Type (Position.Y - 1)));
+
+   function To_Position
+     (Planet : Planet_Record'Class;
+      Cubic  : Hexes.Cube_Coordinate)
+      return Tile_Position
+   is (Planet.Grid.Get_Tile (Cubic).Position);
 
    type Updateable_Reference (Item : not null access Planet_Record'Class) is
       record

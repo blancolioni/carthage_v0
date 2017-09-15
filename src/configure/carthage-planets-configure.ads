@@ -2,7 +2,7 @@ with Tropos;
 
 package Carthage.Planets.Configure is
 
-   procedure Create_Surface_Graph;
+--     procedure Create_Surface_Graph;
 
    procedure Configure_Planet
      (Config : Tropos.Configuration);

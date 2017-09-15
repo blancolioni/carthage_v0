@@ -20,10 +20,22 @@ package body Carthage.Planets is
    ----------------------
 
    procedure Clear_Visibility (Planet : in out Planet_Class) is
-   begin
-      for Tile of Planet.Tiles loop
+      procedure Clear_Tile_Visibility
+        (Tile : Carthage.Tiles.Tile_Type);
+
+      ---------------------------
+      -- Clear_Tile_Visibility --
+      ---------------------------
+
+      procedure Clear_Tile_Visibility
+        (Tile : Carthage.Tiles.Tile_Type)
+      is
+      begin
          Tile.Update.Clear_Visibility;
-      end loop;
+      end Clear_Tile_Visibility;
+
+   begin
+      Tile_Grids.Scan_Tiles (Planet.Grid, Clear_Tile_Visibility'Access);
       Carthage.Houses.Clear (Planet.Seen);
       Carthage.Houses.Clear (Planet.Explored);
    end Clear_Visibility;
@@ -41,43 +53,23 @@ package body Carthage.Planets is
       return Float)
       return Array_Of_Positions
    is
-      function Local_Cost (From, To : Tile_Position) return Float
-      is (Cost (Planet.Tile (To)));
 
-      function Cost_Estimate
-        (From, To : Tile_Position)
-            return Float
-      is (Float (Hex_Distance (From, To)));
+      function Passable (Tile : Carthage.Tiles.Tile_Type) return Boolean
+      is (Cost (Tile) /= 0.0);
 
-      Path : constant Tile_Graphs.Path :=
-               Surface_Graph.Shortest_Path
-                 (Index_Of (Start), Index_Of (Finish),
-                  Local_Cost'Access, Cost_Estimate'Access);
-      Vs   : constant Tile_Graphs.Array_Of_Vertices :=
-               Tile_Graphs.Get_Path (Path);
+      Path : constant Hexes.Cube_Coordinate_Array :=
+               Planet.Grid.Find_Path
+                 (Start    => Planet.To_Cubic (Start),
+                  Finish   => Planet.To_Cubic (Finish),
+                  Passable => Passable'Access,
+                  Cost     => Cost);
    begin
-      return Result : Array_Of_Positions (Vs'Range) do
+      return Result : Array_Of_Positions (Path'Range) do
          for I in Result'Range loop
-            Result (I) := Surface_Graph.Vertex (Vs (I));
+            Result (I) := Planet.To_Position (Path (I));
          end loop;
       end return;
    end Find_Path;
-
-   ---------------
-   -- Find_Tile --
-   ---------------
-
-   function Find_Tile
-     (Planet : Planet_Record;
-      Start  : Tile_Position;
-      Test   : not null access
-        function (Position : Tile_Position) return Boolean)
-      return Tile_Position
-   is
-      pragma Unreferenced (Planet);
-   begin
-      return Surface_Graph.Breadth_First_Search (Start, Test);
-   end Find_Tile;
 
    ---------------
    -- Get_Tiles --
@@ -97,19 +89,26 @@ package body Carthage.Planets is
    -- Get_Tiles --
    ---------------
 
-   procedure Get_Tiles (Planet : not null access constant Planet_Record'Class;
-                        Test   : not null access
-                          function (Tile : Carthage.Tiles.Tile_Type)
-                        return Boolean;
-                        Tiles  : out Surface_Tiles)
+   procedure Get_Tiles
+     (Planet : not null access constant Planet_Record'Class;
+      Test   : not null access
+        function (Tile : Carthage.Tiles.Tile_Type)
+      return Boolean;
+      Tiles  : out Surface_Tiles)
    is
-   begin
-      Tiles.Planet := Planet_Type (Planet);
-      for Tile of Planet.Tiles loop
+      procedure Check (Tile : Carthage.Tiles.Tile_Type);
+
+      procedure Check (Tile : Carthage.Tiles.Tile_Type) is
+      begin
          if Test (Tile) then
             Tiles.Tiles.Append (Tile);
          end if;
-      end loop;
+      end Check;
+
+   begin
+
+      Tiles.Planet := Planet_Type (Planet);
+      Planet.Grid.Scan_Tiles (Check'Access);
    end Get_Tiles;
 
    ---------------
@@ -198,15 +197,20 @@ package body Carthage.Planets is
       From, To : Tile_Position)
       return Boolean
    is
-      function Is_Land (Position : Tile_Position) return Boolean
-      is (not Planet.Tile (Position).Is_Water);
+      function Is_Land (Tile : Carthage.Tiles.Tile_Type) return Boolean
+      is (not Tile.Is_Water);
 
-      Path : constant Tile_Graphs.Path :=
-               Surface_Graph.Shortest_Path
-                 (Index_Of (From), Index_Of (To), Is_Land'Access);
+      function Constant_Cost (Tile : Carthage.Tiles.Tile_Type) return Float
+      is (1.0);
+
+      Path : constant Hexes.Cube_Coordinate_Array :=
+               Planet.Grid.Find_Path
+                 (Start    => Planet.To_Cubic (From),
+                  Finish   => Planet.To_Cubic (To),
+                  Passable => Is_Land'Access,
+                  Cost     => Constant_Cost'Access);
    begin
-      return From = To
-        or else Tile_Graphs.Vertex_Count (Path) > 1;
+      return From = To or else Path'Length > 1;
    end Land_Connection;
 
    ---------------------
@@ -236,33 +240,15 @@ package body Carthage.Planets is
       Position : Tile_Position)
       return Array_Of_Positions
    is
-      pragma Unreferenced (Planet);
-
-      Result : Array_Of_Positions (1 .. 6);
-      Count  : Natural := 0;
-
-      procedure Add_Neighbour
-        (Neighbour : Tile_Position;
-         Cost      : Float);
-
-      -------------------
-      -- Add_Neighbour --
-      -------------------
-
-      procedure Add_Neighbour
-        (Neighbour : Tile_Position;
-         Cost      : Float)
-      is
-         pragma Unreferenced (Cost);
-      begin
-         Count := Count + 1;
-         Result (Count) := Neighbour;
-      end Add_Neighbour;
-
+      Cubics : constant Hexes.Cube_Coordinate_Array :=
+                 Planet.Grid.Neighbours
+                   (Planet.To_Cubic (Position));
    begin
-      Surface_Graph.Iterate_Edges
-        (Position, Add_Neighbour'Access);
-      return Result (1 .. Count);
+      return Result : Array_Of_Positions (Cubics'Range) do
+         for I in Result'Range loop
+            Result (I) := Planet.To_Position (Cubics (I));
+         end loop;
+      end return;
    end Neighbours;
 
    -----------------
@@ -350,13 +336,13 @@ package body Carthage.Planets is
       Count   : Natural := 0;
    begin
       Rs.Append (Tiles.Planet.Tile (Position));
-      Removed (Index_Of (Position)) := True;
+      Removed (Tile_Position_Index (Position)) := True;
       for D in 1 .. Max_Distance loop
          Count := Rs.Last_Index;
          for I in Start .. Count loop
             for N of Tiles.Planet.Neighbours (Rs.Element (I).Position) loop
-               if not Removed (Index_Of (N)) then
-                  Removed (Index_Of (N)) := True;
+               if not Removed (Tile_Position_Index (N)) then
+                  Removed (Tile_Position_Index (N)) := True;
                   Rs.Append (Tiles.Planet.Tile (N));
                end if;
             end loop;
@@ -421,10 +407,6 @@ package body Carthage.Planets is
       end loop;
    end Scan_Cities;
 
-   --------------------------
-   -- Scan_Connected_Tiles --
-   --------------------------
-
    procedure Scan_Connected_Tiles
      (Planet  : Planet_Record;
       Start   : Tile_Position;
@@ -433,27 +415,8 @@ package body Carthage.Planets is
       Process : not null access
         procedure (Tile : Carthage.Tiles.Tile_Type))
    is
-      function Local_Test
-        (Position : Tile_Position)
-         return Boolean
-      is (Test (Planet.Tile (Position)));
-
-      procedure Local_Process (Position : Tile_Position);
-
-      -------------------
-      -- Local_Process --
-      -------------------
-
-      procedure Local_Process (Position : Tile_Position) is
-      begin
-         Process (Planet.Tile (Position));
-      end Local_Process;
-
-      Sub : Tile_Graphs.Sub_Graph;
    begin
-      Surface_Graph.Connected_Sub_Graph
-        (Start, Local_Test'Access, Sub);
-      Tile_Graphs.Iterate (Sub, Local_Process'Access);
+      null;
    end Scan_Connected_Tiles;
 
    ----------------------------

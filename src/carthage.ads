@@ -14,4 +14,9 @@ package Carthage is
 
    type Array_Of_Positions is array (Positive range <>) of Tile_Position;
 
+   function Tile_Position_Index
+     (Position : Tile_Position)
+      return Positive
+   is (Natural (Position.Y - 1) * Planet_Width + Positive (Position.X));
+
 end Carthage;
