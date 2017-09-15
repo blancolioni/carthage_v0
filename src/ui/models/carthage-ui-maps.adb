@@ -94,12 +94,6 @@ package body Carthage.UI.Maps is
       return Layer_Element
    is (Resource_Name'Length, Hex_Tile, Resource_Name, (0.0, 0.0, 0.0, 0.0));
 
-   function Make_Icon_Resource
-     (Icon_Name : String;
-      Background : Carthage.Colours.Colour_Type)
-      return Layer_Element
-   is (Icon_Name'Length, Icon, Icon_Name, Background);
-
 --     procedure Check_Unit_Resource
 --       (Renderer      : in out Lui.Rendering.Root_Renderer'Class;
 --        Resource_Name : String)
@@ -445,23 +439,7 @@ package body Carthage.UI.Maps is
 
       end if;
 
-      if Wizard_Mode or else Tile.Currently_Visible_To (House) then
-         if Tile.Has_Stacks then
-            declare
-               Stack : constant Carthage.Stacks.Stack_Type :=
-                         Tile.First_Stack;
-               Background : Carthage.Colours.Colour_Type :=
-                              Stack.Owner.Colour;
-            begin
-               Background.Alpha := 0.7;
-               Layers.List.Append
-                 (Make_Icon_Resource
-                    ("unit"
-                     & Integer'Image (-(Stack.Asset (1).Unit.Index)),
-                     Background));
-            end;
-         end if;
-      elsif Tile.Explored_By (House) then
+      if Tile.Explored_By (House) then
          Layers.List.Append
            (Make_Background_Resource
               ("explored-shadow-hex-tile", (0.0, 0.0, 0.0, 0.2)));

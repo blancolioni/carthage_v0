@@ -9,7 +9,7 @@ with Carthage.Planets;
 package Carthage.UI.Maps is
 
    type Layer_Element_Type is
-     (Background_Hex_Tile, Hex_Tile, Icon);
+     (Background_Hex_Tile, Hex_Tile);
 
    type Tile_Layers is tagged limited private;
 
