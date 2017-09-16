@@ -39,10 +39,7 @@ package body Hexes.Grids is
       Grid.Has_Vertical_Axis := Has_Vertical_Axis;
 
       Grid.Tiles.Set_Length
-        (Ada.Containers.Count_Type
-           (if Has_Vertical_Axis
-            then Width * (Height + Width / 2)
-            else Height * (Width + Height / 2)));
+        (Ada.Containers.Count_Type (Width * Height));
 
    end Create_Square_Grid;
 
@@ -127,6 +124,7 @@ package body Hexes.Grids is
                                 (New_Cost, N);
                            else
                               Frontier.Insert (New_Cost, N);
+                              Visited (Index) := True;
                            end if;
                            Cost_So_Far (Index) := New_Cost;
                            Came_From (Index) := Get_Tile_Index (Grid, Current);
@@ -140,15 +138,28 @@ package body Hexes.Grids is
 
       if Came_From (Get_Tile_Index (Grid, Finish)) /= 0 then
          declare
-            Path : Cube_Vectors.Vector;
-            It   : Natural := Get_Tile_Index (Grid, Finish);
-            Goal : constant Positive := Get_Tile_Index (Grid, Start);
+            Length : Natural := 0;
+            It     : Natural := Get_Tile_Index (Grid, Finish);
          begin
-            while It /= Goal loop
-               Path.Append (Get_Tile_Index_Coordinate (Grid, It));
+            while Came_From (It) /= 0 loop
+               Length := Length + 1;
                It := Came_From (It);
             end loop;
-            return To_Array (Path);
+
+            declare
+               Path : Cube_Coordinate_Array (1 .. Length) :=
+                        (others => (0, 0, 0));
+            begin
+               Length := 0;
+               It := Get_Tile_Index (Grid, Finish);
+               while Came_From (It) /= 0 loop
+                  Length := Length + 1;
+                  Path (Length) := Get_Tile_Index_Coordinate (Grid, It);
+                  It := Came_From (It);
+               end loop;
+
+               return Path;
+            end;
          end;
       else
          return Path : Cube_Coordinate_Array (1 .. 0);
@@ -177,8 +188,9 @@ package body Hexes.Grids is
       Position : Axial_Coordinate)
       return Hex_Tile
    is
+      Index : constant Positive := Get_Tile_Index (Grid, Position);
    begin
-      return Grid.Tiles.Element (Get_Tile_Index (Grid, Position));
+      return Grid.Tiles.Element (Index);
    end Get_Tile;
 
    --------------------
@@ -349,8 +361,10 @@ package body Hexes.Grids is
         procedure (Tile : Hex_Tile))
    is
    begin
-      for Tile of Grid.Tiles loop
-         Process (Tile);
+      for I in 1 .. Grid.Tiles.Last_Index loop
+--           Ada.Text_IO.Put_Line
+--             ("index:" & I'Img);
+         Process (Grid.Tiles.Element (I));
       end loop;
    end Scan_Tiles;
 
@@ -382,8 +396,12 @@ package body Hexes.Grids is
       Position : Axial_Coordinate;
       Tile     : Hex_Tile)
    is
+      Index : constant Positive := Get_Tile_Index (Grid, Position);
    begin
-      Grid.Tiles.Replace_Element (Get_Tile_Index (Grid, Position), Tile);
+--        Ada.Text_IO.Put_Line
+--          ("index:" & Index'Img & "; position:" & Image (Position));
+
+      Grid.Tiles.Replace_Element (Index, Tile);
    end Set_Tile;
 
    --------------
