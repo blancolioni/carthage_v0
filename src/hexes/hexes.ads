@@ -1,5 +1,3 @@
-private with Ada.Containers.Vectors;
-
 package Hexes is
 
    type Coordinate_Type is new Integer;
@@ -24,6 +22,8 @@ package Hexes is
       Distance : Distance_Type)
       return Cube_Coordinate_Array;
 
+   function Image (Hex : Cube_Coordinate) return String;
+
    type Axial_Coordinate is private;
 
    type Axial_Coordinate_Array is
@@ -38,6 +38,8 @@ package Hexes is
       Distance : Distance_Type)
       return Axial_Coordinate_Array;
 
+   function Image (Hex : Axial_Coordinate) return String;
+
    function To_Axial
      (Cube : Cube_Coordinate)
       return Axial_Coordinate;
@@ -50,7 +52,7 @@ private
 
    type Cube_Coordinate is
       record
-         X, Y, Z : Coordinate_Type;
+         X, Y, Z : Coordinate_Type := 0;
       end record
    with Invariant => X + Y + Z = 0;
 
@@ -62,7 +64,7 @@ private
 
    type Axial_Coordinate is
       record
-         Q, R : Coordinate_Type;
+         Q, R : Coordinate_Type := 0;
       end record;
 
    function To_Axial
@@ -83,11 +85,10 @@ private
      (Axials : Axial_Coordinate_Array)
       return Cube_Coordinate_Array;
 
-   package Cube_Vectors is
-     new Ada.Containers.Vectors (Positive, Cube_Coordinate);
+   function Image (Hex : Cube_Coordinate) return String
+   is ("<x" & Hex.X'Img & " y" & Hex.Y'Img & " z" & Hex.Z'Img & ">");
 
-   function To_Array
-     (Vector : Cube_Vectors.Vector)
-      return Cube_Coordinate_Array;
+   function Image (Hex : Axial_Coordinate) return String
+   is ("<q" & Hex.Q'Img & " r" & Hex.R'Img & ">");
 
 end Hexes;

@@ -17,16 +17,20 @@ package body Hexes is
       Distance : Distance_Type)
       return Cube_Coordinate_Array
    is
-      Vector : Cube_Vectors.Vector;
+      Max : constant Natural := (2 * Natural (Distance) + 1) ** 2;
+
+      Result : Cube_Coordinate_Array (1 .. Max);
+      Count  : Natural := 0;
    begin
       for DX in -Distance .. Distance loop
          for DY in Coordinate_Type'Max (-Distance, -DX - Distance)
            .. Coordinate_Type'Min (Distance, -DX + Distance)
          loop
-            Vector.Append (Hex + (DX, DY, -DX - DY));
+            Count := Count + 1;
+            Result (Count) := Hex + (DX, DY, -DX - DY);
          end loop;
       end loop;
-      return To_Array (Vector);
+      return Result (1 .. Count);
    end Coordinates_Within;
 
    ------------------------
@@ -83,22 +87,6 @@ package body Hexes is
       return To_Axial_Array
         (Neighbours (To_Cube (Hex)));
    end Neighbours;
-
-   --------------
-   -- To_Array --
-   --------------
-
-   function To_Array
-     (Vector : Cube_Vectors.Vector)
-      return Cube_Coordinate_Array
-   is
-   begin
-      return A : Cube_Coordinate_Array (1 .. Vector.Last_Index) do
-         for I in A'Range loop
-            A (I) := Vector (I);
-         end loop;
-      end return;
-   end To_Array;
 
    --------------------
    -- To_Axial_Array --
