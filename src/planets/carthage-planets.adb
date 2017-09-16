@@ -407,6 +407,10 @@ package body Carthage.Planets is
       end loop;
    end Scan_Cities;
 
+   --------------------------
+   -- Scan_Connected_Tiles --
+   --------------------------
+
    procedure Scan_Connected_Tiles
      (Planet  : Planet_Record;
       Start   : Tile_Position;
@@ -416,7 +420,8 @@ package body Carthage.Planets is
         procedure (Tile : Carthage.Tiles.Tile_Type))
    is
    begin
-      null;
+      Planet.Grid.Scan_Connected_Tiles
+        (Planet.To_Cubic (Start), Test, Process);
    end Scan_Connected_Tiles;
 
    ----------------------------
