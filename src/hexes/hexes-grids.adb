@@ -243,9 +243,33 @@ package body Hexes.Grids is
       Position : Cube_Coordinate)
       return Cube_Coordinate_Array
    is
-      pragma Unreferenced (Grid);
+      Result : Cube_Coordinate_Array := Neighbours (Position);
+      Back   : Natural := 0;
    begin
-      return Neighbours (Position);
+      if Grid.Horizontal_Wrap and then Grid.Has_Vertical_Axis then
+         for I in Result'Range loop
+            declare
+               Item : Cube_Coordinate := Result (I);
+            begin
+               if Item.X < 0 then
+                  Item :=
+                    To_Cube ((Item.X + Grid.Width, Item.Y - Grid.Width / 2));
+               elsif Item.X >= Grid.Width then
+                  Item :=
+                    To_Cube ((Item.X - Grid.Width, Item.Y + Grid.Width / 2));
+               end if;
+               if Item.X + 2 * Item.Y < 0
+                 or else Item.X / 2 + Item.Y >= Grid.Height
+               then
+                  Back := Back + 1;
+               else
+                  Result (I - Back) := Item;
+               end if;
+            end;
+         end loop;
+      end if;
+
+      return Result (1 .. Result'Last - Back);
    end Neighbours;
 
    --------------------------
