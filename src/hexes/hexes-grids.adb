@@ -150,12 +150,11 @@ package body Hexes.Grids is
                Path : Cube_Coordinate_Array (1 .. Length) :=
                         (others => (0, 0, 0));
             begin
-               Length := 0;
                It := Get_Tile_Index (Grid, Finish);
                while Came_From (It) /= 0 loop
-                  Length := Length + 1;
                   Path (Length) := Get_Tile_Index_Coordinate (Grid, It);
                   It := Came_From (It);
+                  Length := Length - 1;
                end loop;
 
                return Path;
