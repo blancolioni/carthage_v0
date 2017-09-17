@@ -3,6 +3,8 @@ private with Ada.Containers.Vectors;
 private with Memor.Database;
 private with Memor.Element_Vectors;
 
+with Hexes;
+
 private with Hexes.Grids;
 
 with Carthage.Colours;
@@ -53,6 +55,11 @@ package Carthage.Planets is
       return Carthage.Tiles.Tile_Type
    is (Planet.Tile ((X, Y)));
 
+   function To_Cubic
+     (Planet   : Planet_Record'Class;
+      Position : Tile_Position)
+      return Hexes.Cube_Coordinate;
+
    function Road_Cost
      (Planet   : Planet_Record;
       Position : Tile_Position)
@@ -71,6 +78,11 @@ package Carthage.Planets is
    function Hex_Distance
      (From, To : Tile_Position)
       return Natural;
+
+   procedure Scan_Tiles
+     (Planet  : Planet_Record;
+      Process : not null access
+        procedure (Tile : Carthage.Tiles.Tile_Type));
 
    function Find_Path
      (Planet : Planet_Record;
@@ -337,12 +349,10 @@ private
    function Tile (Planet   : Planet_Record;
                   Position : Tile_Position)
                   return Carthage.Tiles.Tile_Type
-   is (Tile_Grids.Get_Tile
-       (Planet.Grid,
-        Tile_Grids.To_Cube_Coordinate
-          (Planet.Grid,
-           Hexes.Distance_Type (Position.X - 1),
-           Hexes.Distance_Type (Position.Y - 1))));
+   is (Planet.Grid.Get_Tile
+       (Planet.Grid.To_Cube_Coordinate
+        (Hexes.Distance_Type (Position.X - 1),
+         Hexes.Distance_Type (Position.Y - 1))));
 
    package Tile_Vectors is
      new Ada.Containers.Vectors (Positive, Carthage.Tiles.Tile_Type,

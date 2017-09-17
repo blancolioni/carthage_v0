@@ -16,9 +16,14 @@ with Carthage.Game;
 with Carthage.Options;
 with Carthage.Paths;
 
+with Carthage.Tests;
+
 procedure Carthage.Driver is
    Fading_Suns_Scenario : constant Boolean := True;
 begin
+
+   Carthage.Tests.Run_Tests;
+
    Carthage.Logging.Start_Logging ("carthage.log");
    WL.Command_Line.Load_Defaults
      (Carthage.Paths.Config_File ("default-options.txt"));

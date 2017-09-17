@@ -488,6 +488,19 @@ package body Carthage.Planets is
       Carthage.Stacks.Scan_Stacks (Check'Access);
    end Scan_Stacks;
 
+   ----------------
+   -- Scan_Tiles --
+   ----------------
+
+   procedure Scan_Tiles
+     (Planet  : Planet_Record;
+      Process : not null access
+        procedure (Tile : Carthage.Tiles.Tile_Type))
+   is
+   begin
+      Planet.Grid.Scan_Tiles (Process);
+   end Scan_Tiles;
+
    ---------------------
    -- Set_Explored_By --
    ---------------------

@@ -13,10 +13,16 @@ package Hexes.Grids is
       Height            : Distance_Type;
       Horizontal_Wrap   : Boolean;
       Vertical_Wrap     : Boolean;
-      Has_Vertical_Axis : Boolean);
+      Has_Vertical_Axis : Boolean;
+      Offset_Odd        : Boolean);
 
    function Width (Grid : Hex_Grid) return Distance_Type;
    function Height (Grid : Hex_Grid) return Distance_Type;
+
+   function To_Offset_Coordinate
+     (Grid : Hex_Grid;
+      Cube : Cube_Coordinate)
+      return Offset_Coordinate;
 
    function To_Cube_Coordinate
      (Grid          : Hex_Grid;
@@ -25,14 +31,14 @@ package Hexes.Grids is
       return Cube_Coordinate
      with Pre => Across_Offset < Width (Grid)
      and then Down_Offset < Height (Grid);
-
-   function To_Axial_Coordinate
-     (Grid          : Hex_Grid;
-      Across_Offset : Distance_Type;
-      Down_Offset   : Distance_Type)
-      return Axial_Coordinate
-     with Pre => Across_Offset < Width (Grid)
-     and then Down_Offset < Height (Grid);
+--
+--     function To_Axial_Coordinate
+--       (Grid          : Hex_Grid;
+--        Across_Offset : Distance_Type;
+--        Down_Offset   : Distance_Type)
+--        return Axial_Coordinate
+--       with Pre => Across_Offset < Width (Grid)
+--       and then Down_Offset < Height (Grid);
 
    procedure Set_Tile
      (Grid     : in out Hex_Grid;
@@ -118,55 +124,66 @@ private
          Horizontal_Wrap   : Boolean;
          Vertical_Wrap     : Boolean;
          Has_Vertical_Axis : Boolean;
+         Offset_Odd        : Boolean;
       end record;
 
-   procedure Get_XY
-     (Grid  : Hex_Grid;
-      Axial : Axial_Coordinate;
-      X, Y  : out Natural);
-
-   function Get_Tile_Index
-     (Grid  : Hex_Grid;
-      Axial : Axial_Coordinate)
+   function Square_Tile_Index
+     (Grid : Hex_Grid;
+      Cube : Cube_Coordinate)
       return Positive;
 
-   function Get_Tile_Index
-     (Grid  : Hex_Grid;
-      Cube  : Cube_Coordinate)
-      return Positive
-   is (Get_Tile_Index (Grid, To_Axial (Cube)));
-
-   function Get_Tile_Index_Coordinate
-     (Grid  : Hex_Grid;
+   function Square_Tile_Coordinate
+     (Grid : Hex_Grid;
       Index : Positive)
-      return Axial_Coordinate;
+     return Cube_Coordinate;
 
-   function Get_Tile_Index_Coordinate
-     (Grid  : Hex_Grid;
-      Index : Positive)
-      return Cube_Coordinate
-   is (To_Cube (Get_Tile_Index_Coordinate (Grid, Index)));
-
-   function To_Axial_Coordinate
-     (Grid          : Hex_Grid;
-      Across_Offset : Distance_Type;
-      Down_Offset   : Distance_Type)
-      return Axial_Coordinate
-   is (if Grid.Has_Vertical_Axis
-       then (Across_Offset, Down_Offset - Across_Offset / 2)
-       else (Across_Offset - Down_Offset / 2, Down_Offset));
-
-   function To_Cube_Coordinate
-     (Grid          : Hex_Grid;
-      Across_Offset : Distance_Type;
-      Down_Offset   : Distance_Type)
-      return Cube_Coordinate
-   is (To_Cube (To_Axial_Coordinate (Grid, Across_Offset, Down_Offset)));
+   --     procedure Get_XY
+--       (Grid  : Hex_Grid;
+--        Axial : Axial_Coordinate;
+--        X, Y  : out Natural);
+--
+--     function Get_Tile_Index
+--       (Grid  : Hex_Grid;
+--        Axial : Axial_Coordinate)
+--        return Positive;
+--
+--     function Get_Tile_Index
+--       (Grid  : Hex_Grid;
+--        Cube  : Cube_Coordinate)
+--        return Positive
+--     is (Get_Tile_Index (Grid, To_Axial (Cube)));
+--
+--     function Get_Tile_Index_Coordinate
+--       (Grid  : Hex_Grid;
+--        Index : Positive)
+--        return Axial_Coordinate;
+--
+--     function Get_Tile_Index_Coordinate
+--       (Grid  : Hex_Grid;
+--        Index : Positive)
+--        return Cube_Coordinate
+--     is (To_Cube (Get_Tile_Index_Coordinate (Grid, Index)));
+--
+--     function To_Cube_Coordinate
+--       (Grid          : Hex_Grid;
+--        Across_Offset : Distance_Type;
+--        Down_Offset   : Distance_Type)
+--        return Cube_Coordinate
+--     is (To_Cube (To_Axial_Coordinate (Grid, Across_Offset, Down_Offset)));
 
    function Width (Grid : Hex_Grid) return Distance_Type
    is (Grid.Width);
 
    function Height (Grid : Hex_Grid) return Distance_Type
    is (Grid.Height);
+
+   function To_Offset_Coordinate
+     (Grid : Hex_Grid;
+      Cube : Cube_Coordinate)
+      return Offset_Coordinate
+   is (To_Offset
+       (Cube        => Cube,
+        Offset_Rows => not Grid.Has_Vertical_Axis,
+        Offset_Odd  => Grid.Offset_Odd));
 
 end Hexes.Grids;

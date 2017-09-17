@@ -29,7 +29,8 @@ package body Hexes.Grids is
       Height            : Distance_Type;
       Horizontal_Wrap   : Boolean;
       Vertical_Wrap     : Boolean;
-      Has_Vertical_Axis : Boolean)
+      Has_Vertical_Axis : Boolean;
+      Offset_Odd        : Boolean)
    is
    begin
       Grid.Width := Width;
@@ -37,6 +38,7 @@ package body Hexes.Grids is
       Grid.Horizontal_Wrap := Horizontal_Wrap;
       Grid.Vertical_Wrap := Vertical_Wrap;
       Grid.Has_Vertical_Axis := Has_Vertical_Axis;
+      Grid.Offset_Odd := Offset_Odd;
 
       Grid.Tiles.Set_Length
         (Ada.Containers.Count_Type (Width * Height));
@@ -90,16 +92,18 @@ package body Hexes.Grids is
       Visited : array (1 .. Count) of Boolean := (others => False);
       Came_From : array (1 .. Count) of Natural := (others => 0);
       Cost_So_Far : array (1 .. Count) of Float := (others => 0.0);
+      Start_Index : constant Positive := Grid.Square_Tile_Index (Start);
+      Finish_Index : constant Positive := Grid.Square_Tile_Index (Finish);
    begin
       Frontier.Insert (0.0, Start);
-      Visited (Get_Tile_Index (Grid, Start)) := True;
+      Visited (Start_Index) := True;
 
       while not Frontier.Is_Empty loop
          declare
             Current      : constant Cube_Coordinate :=
                              Frontier.Maximum_Element;
             Current_Cost : constant Float :=
-                             Cost_So_Far (Get_Tile_Index (Grid, Current));
+                             Cost_So_Far (Grid.Square_Tile_Index (Current));
          begin
             Frontier.Delete_Maximum;
 
@@ -114,7 +118,7 @@ package body Hexes.Grids is
                         New_Cost : constant Float :=
                                      Current_Cost + Cost (Tile);
                         Index    : constant Positive :=
-                                     Get_Tile_Index (Grid, N);
+                                     Grid.Square_Tile_Index (N);
                      begin
                         if not Visited (Index)
                           or else New_Cost < Cost_So_Far (Index)
@@ -127,7 +131,8 @@ package body Hexes.Grids is
                               Visited (Index) := True;
                            end if;
                            Cost_So_Far (Index) := New_Cost;
-                           Came_From (Index) := Get_Tile_Index (Grid, Current);
+                           Came_From (Index) :=
+                             Grid.Square_Tile_Index (Current);
                         end if;
                      end;
                   end if;
@@ -136,10 +141,10 @@ package body Hexes.Grids is
          end;
       end loop;
 
-      if Came_From (Get_Tile_Index (Grid, Finish)) /= 0 then
+      if Came_From (Finish_Index) /= 0 then
          declare
             Length : Natural := 0;
-            It     : Natural := Get_Tile_Index (Grid, Finish);
+            It     : Natural := Finish_Index;
          begin
             while Came_From (It) /= 0 loop
                Length := Length + 1;
@@ -150,9 +155,9 @@ package body Hexes.Grids is
                Path : Cube_Coordinate_Array (1 .. Length) :=
                         (others => (0, 0, 0));
             begin
-               It := Get_Tile_Index (Grid, Finish);
+               It := Finish_Index;
                while Came_From (It) /= 0 loop
-                  Path (Length) := Get_Tile_Index_Coordinate (Grid, It);
+                  Path (Length) := Grid.Square_Tile_Coordinate (It);
                   It := Came_From (It);
                   Length := Length - 1;
                end loop;
@@ -174,8 +179,9 @@ package body Hexes.Grids is
       Position : Cube_Coordinate)
       return Hex_Tile
    is
+      Index : constant Positive := Grid.Square_Tile_Index (Position);
    begin
-      return Get_Tile (Grid, To_Axial (Position));
+      return Grid.Tiles.Element (Index);
    end Get_Tile;
 
    --------------
@@ -187,63 +193,9 @@ package body Hexes.Grids is
       Position : Axial_Coordinate)
       return Hex_Tile
    is
-      Index : constant Positive := Get_Tile_Index (Grid, Position);
    begin
-      return Grid.Tiles.Element (Index);
+      return Get_Tile (Grid, To_Cube (Position));
    end Get_Tile;
-
-   --------------------
-   -- Get_Tile_Index --
-   --------------------
-
-   function Get_Tile_Index
-     (Grid  : Hex_Grid;
-      Axial : Axial_Coordinate)
-      return Positive
-   is
-      X, Y : Natural;
-   begin
-      Get_XY (Grid, Axial, X, Y);
-      return Y * Natural (Grid.Width) + X + 1;
-   end Get_Tile_Index;
-
-   -------------------------------
-   -- Get_Tile_Index_Coordinate --
-   -------------------------------
-
-   function Get_Tile_Index_Coordinate
-     (Grid  : Hex_Grid;
-      Index : Positive)
-      return Axial_Coordinate
-   is
-      X : constant Natural := (Index - 1) mod Positive (Grid.Width);
-      Y : constant Natural := (Index - 1) / Positive (Grid.Width);
-   begin
-      if Grid.Has_Vertical_Axis then
-         return (Coordinate_Type (X), Coordinate_Type (Y - X / 2));
-      else
-         return (Coordinate_Type (X - Y / 2), Coordinate_Type (Y));
-      end if;
-   end Get_Tile_Index_Coordinate;
-
-   ------------
-   -- Get_XY --
-   ------------
-
-   procedure Get_XY
-     (Grid  : Hex_Grid;
-      Axial : Axial_Coordinate;
-      X, Y  : out Natural)
-   is
-   begin
-      if Grid.Has_Vertical_Axis then
-         X := Natural (Axial.Q);
-         Y := Natural (Axial.R + Axial.Q / 2);
-      else
-         X := Natural (Axial.Q + Axial.R / 2);
-         Y := Natural (Axial.R);
-      end if;
-   end Get_XY;
 
    ----------------
    -- Neighbours --
@@ -260,21 +212,19 @@ package body Hexes.Grids is
       if Grid.Horizontal_Wrap and then Grid.Has_Vertical_Axis then
          for I in Result'Range loop
             declare
-               Item : Cube_Coordinate := Result (I);
+               Offset : Offset_Coordinate :=
+                          Grid.To_Offset_Coordinate (Result (I));
             begin
-               if Item.X < 0 then
-                  Item :=
-                    To_Cube ((Item.X + Grid.Width, Item.Y - Grid.Width / 2));
-               elsif Item.X >= Grid.Width then
-                  Item :=
-                    To_Cube ((Item.X - Grid.Width, Item.Y + Grid.Width / 2));
+               if Offset.X < 0 then
+                  Offset.X := Offset.X + Grid.Width;
+               elsif Offset.X >= Grid.Width then
+                  Offset.X := Offset.X - Grid.Width;
                end if;
-               if Item.X + 2 * Item.Y < 0
-                 or else Item.X / 2 + Item.Y >= Grid.Height
-               then
+
+               if Offset.Y not in 0 .. Grid.Height - 1 then
                   Back := Back + 1;
                else
-                  Result (I - Back) := Item;
+                  Result (I - Back) := To_Cube (Offset);
                end if;
             end;
          end loop;
@@ -306,7 +256,7 @@ package body Hexes.Grids is
          return;
       end if;
 
-      Visited (Grid.Get_Tile_Index (Start)) := True;
+      Visited (Grid.Square_Tile_Index (Start)) := True;
       Frontier.Append (Start);
 
       while not Frontier.Is_Empty loop
@@ -319,7 +269,7 @@ package body Hexes.Grids is
             for N of Grid.Neighbours (Current) loop
                declare
                   Index : constant Positive :=
-                            Grid.Get_Tile_Index (N);
+                            Grid.Square_Tile_Index (N);
                begin
                   if not Visited (Index)
                     and then Test (Grid.Get_Tile (N))
@@ -392,14 +342,11 @@ package body Hexes.Grids is
 
    procedure Set_Tile
      (Grid     : in out Hex_Grid;
-      Position : Axial_Coordinate;
+      Position : Cube_Coordinate;
       Tile     : Hex_Tile)
    is
-      Index : constant Positive := Get_Tile_Index (Grid, Position);
+      Index : constant Positive := Grid.Square_Tile_Index (Position);
    begin
---        Ada.Text_IO.Put_Line
---          ("index:" & Index'Img & "; position:" & Image (Position));
-
       Grid.Tiles.Replace_Element (Index, Tile);
    end Set_Tile;
 
@@ -409,11 +356,69 @@ package body Hexes.Grids is
 
    procedure Set_Tile
      (Grid     : in out Hex_Grid;
-      Position : Cube_Coordinate;
+      Position : Axial_Coordinate;
       Tile     : Hex_Tile)
    is
    begin
-      Set_Tile (Grid, To_Axial (Position), Tile);
+      Set_Tile (Grid, To_Cube (Position), Tile);
    end Set_Tile;
+
+   ----------------------------
+   -- Square_Tile_Coordinate --
+   ----------------------------
+
+   function Square_Tile_Coordinate
+     (Grid  : Hex_Grid;
+      Index : Positive)
+      return Cube_Coordinate
+   is
+      Offset : constant Offset_Coordinate :=
+                 Offset_Coordinate'
+                   (X           => Distance_Type (Index - 1) mod Grid.Width,
+                    Y           => Distance_Type (Index - 1) / Grid.Width,
+                    Offset_Rows => not Grid.Has_Vertical_Axis,
+                    Offset_Odd  => Grid.Offset_Odd);
+   begin
+      return To_Cube (Offset);
+   end Square_Tile_Coordinate;
+
+   -----------------------
+   -- Square_Tile_Index --
+   -----------------------
+
+   function Square_Tile_Index
+     (Grid : Hex_Grid;
+      Cube : Cube_Coordinate)
+      return Positive
+   is
+      Offset : constant Offset_Coordinate :=
+                 Grid.To_Offset_Coordinate (Cube);
+   begin
+      return Index : constant Positive :=
+        Natural (Offset.Y * Grid.Width + Offset.X) + 1
+      do
+         pragma Assert
+           (Index in 1 .. Positive (Grid.Width) * Positive (Grid.Height));
+      end return;
+   end Square_Tile_Index;
+
+   ------------------------
+   -- To_Cube_Coordinate --
+   ------------------------
+
+   function To_Cube_Coordinate
+     (Grid          : Hex_Grid;
+      Across_Offset : Distance_Type;
+      Down_Offset   : Distance_Type)
+      return Cube_Coordinate
+   is
+   begin
+      return To_Cube
+        (Offset_Coordinate'
+           (X           => Across_Offset,
+            Y           => Down_Offset,
+            Offset_Rows => not Grid.Has_Vertical_Axis,
+            Offset_Odd  => Grid.Offset_Odd));
+   end To_Cube_Coordinate;
 
 end Hexes.Grids;

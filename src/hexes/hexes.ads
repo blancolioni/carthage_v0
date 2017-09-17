@@ -9,6 +9,10 @@ package Hexes is
    function "+" (Left, Right : Cube_Coordinate) return Cube_Coordinate;
    function "-" (Left, Right : Cube_Coordinate) return Cube_Coordinate;
 
+   function Cube_X (Cube : Cube_Coordinate) return Coordinate_Type;
+   function Cube_Y (Cube : Cube_Coordinate) return Coordinate_Type;
+   function Cube_Z (Cube : Cube_Coordinate) return Coordinate_Type;
+
    type Cube_Coordinate_Array is array (Positive range <>) of Cube_Coordinate;
 
    function Distance (From, To : Cube_Coordinate) return Distance_Type;
@@ -40,12 +44,32 @@ package Hexes is
 
    function Image (Hex : Axial_Coordinate) return String;
 
+   type Offset_Coordinate is private;
+
+   function Offset (X, Y        : Distance_Type;
+                    Offset_Rows : Boolean;
+                    Offset_Odd  : Boolean)
+                    return Offset_Coordinate;
+
+   function Offset_X (Hex : Offset_Coordinate) return Distance_Type;
+   function Offset_Y (Hex : Offset_Coordinate) return Distance_Type;
+
    function To_Axial
      (Cube : Cube_Coordinate)
       return Axial_Coordinate;
 
+   function To_Offset
+     (Cube        : Cube_Coordinate;
+      Offset_Rows : Boolean;
+      Offset_Odd  : Boolean)
+      return Offset_Coordinate;
+
    function To_Cube
      (Axial : Axial_Coordinate)
+      return Cube_Coordinate;
+
+   function To_Cube
+     (Offset : Offset_Coordinate)
       return Cube_Coordinate;
 
 private
@@ -62,20 +86,48 @@ private
    function "-" (Left, Right : Cube_Coordinate) return Cube_Coordinate
    is (Left.X - Right.X, Left.Y - Right.Y, Left.Z - Right.Z);
 
+   function Cube_X (Cube : Cube_Coordinate) return Coordinate_Type
+   is (Cube.X);
+
+   function Cube_Y (Cube : Cube_Coordinate) return Coordinate_Type
+   is (Cube.Y);
+
+   function Cube_Z (Cube : Cube_Coordinate) return Coordinate_Type
+   is (Cube.Z);
+
    type Axial_Coordinate is
       record
          Q, R : Coordinate_Type := 0;
       end record;
 
+   type Offset_Coordinate is
+      record
+         X, Y        : Coordinate_Type := 0;
+         Offset_Rows : Boolean;
+         Offset_Odd  : Boolean;
+      end record;
+
+   function Offset (X, Y        : Distance_Type;
+                    Offset_Rows : Boolean;
+                    Offset_Odd  : Boolean)
+                    return Offset_Coordinate
+   is (X, Y, Offset_Rows, Offset_Odd);
+
+   function Offset_X (Hex : Offset_Coordinate) return Distance_Type
+   is (Hex.X);
+
+   function Offset_Y (Hex : Offset_Coordinate) return Distance_Type
+   is (Hex.Y);
+
    function To_Axial
      (Cube : Cube_Coordinate)
       return Axial_Coordinate
-   is (Cube.X, Cube.Y);
+   is (Cube.X, Cube.Z);
 
    function To_Cube
      (Axial : Axial_Coordinate)
       return Cube_Coordinate
-   is (Axial.Q, Axial.R, -Axial.Q - Axial.R);
+   is (Axial.Q, -Axial.Q - Axial.R, Axial.R);
 
    function To_Axial_Array
      (Cubes : Cube_Coordinate_Array)

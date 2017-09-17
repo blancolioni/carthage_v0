@@ -269,7 +269,8 @@ package body Carthage.Planets.Configure is
             Height            => Planet_Height,
             Horizontal_Wrap   => True,
             Vertical_Wrap     => False,
-            Has_Vertical_Axis => True);
+            Has_Vertical_Axis => True,
+            Offset_Odd        => False);
 
          Planet.Category :=
            Carthage.Worlds.Get

@@ -3,10 +3,14 @@ with Ada.Text_IO;
 
 with Lui.Rendering;
 
+with Hexes;
+
 with Carthage.Stacks;
 with Carthage.Tiles;
 
 with Carthage.UI.Maps;
+
+with Carthage.Options;
 
 package body Carthage.UI.Models.Planets is
 
@@ -40,12 +44,14 @@ package body Carthage.UI.Models.Planets is
    type Root_Planet_Model is
      new Root_Carthage_Model with
       record
-         Planet          : Carthage.Planets.Planet_Type;
-         Centre          : Tile_Position;
-         Selected_Stack  : Carthage.Stacks.Stack_Type;
-         Rendered_Stacks : Rendered_Stack_Lists.List;
-         Needs_Render    : Boolean := False;
-         Current_Zoom    : Zoom_Level := 0;
+         Planet            : Carthage.Planets.Planet_Type;
+         Centre            : Tile_Position;
+         Selected_Stack    : Carthage.Stacks.Stack_Type;
+         Rendered_Stacks   : Rendered_Stack_Lists.List;
+         Needs_Render      : Boolean := False;
+         Current_Zoom      : Zoom_Level := 0;
+         Show_Hex_Coords   : Boolean;
+         Show_Cubic_Coords : Boolean;
       end record;
 
    overriding function Handle_Update
@@ -143,7 +149,7 @@ package body Carthage.UI.Models.Planets is
                      Integer (Position.X) - Integer (Model.Centre.X);
       Screen_Y   : constant Integer :=
                      Model.Height / 2 + Relative_Y * Model.Row_Height
-                       - (if Position.X mod 2 = 0
+                       + (if Position.X mod 2 = 1
                           then Model.Row_Height / 2 else 0);
       Screen_X   : constant Integer :=
                      Model.Width / 2 +
@@ -178,6 +184,9 @@ package body Carthage.UI.Models.Planets is
             Model.Planet := Planet;
             Model.Centre := (Planet_Width / 2, Planet_Height / 2);
             Set_Model (House, Planet.Identifier, Model);
+            Model.Show_Hex_Coords := Carthage.Options.Show_Hex_Coordinates;
+            Model.Show_Cubic_Coords :=
+              Carthage.Options.Show_Cubic_Coordinates;
          end;
       end if;
       return Get_Model (House, Planet.Identifier);
@@ -271,6 +280,42 @@ package body Carthage.UI.Models.Planets is
            (Model.Planet, Model.House, Tile.Position, Layers);
 
          Layers.Scan_Layers (Draw'Access);
+
+         if Model.Show_Hex_Coords then
+            Renderer.Draw_String
+              (X      => Screen_X - Tile_Width / 2,
+               Y      => Screen_Y,
+               Size   => 8,
+               Colour => Lui.Colours.Black,
+               Text   => Carthage.Tiles.Position_Image (Tile.Position));
+         end if;
+
+         if Model.Show_Cubic_Coords then
+            declare
+               use Hexes;
+               Cubic : constant Cube_Coordinate :=
+                         Model.Planet.To_Cubic (Tile.Position);
+            begin
+               Renderer.Draw_String
+                 (X      => Screen_X + Tile_Width / 4 - 6,
+                  Y      => Screen_Y,
+                  Size   => 12,
+                  Colour => Lui.Colours.Black,
+                  Text   => Coordinate_Type'Image (Cube_X (Cubic)));
+               Renderer.Draw_String
+                 (X      => Screen_X - Tile_Width / 4 - 6,
+                  Y      => Screen_Y - Tile_Height / 2 + 4,
+                  Size   => 12,
+                  Colour => Lui.Colours.Black,
+                  Text   => Coordinate_Type'Image (Cube_Y (Cubic)));
+               Renderer.Draw_String
+                 (X      => Screen_X - Tile_Width / 4 - 6,
+                  Y      => Screen_Y + Tile_Height / 2 - 16,
+                  Size   => 12,
+                  Colour => Lui.Colours.Black,
+                  Text   => Coordinate_Type'Image (Cube_Z (Cubic)));
+            end;
+         end if;
 
       end Draw_Base_Layer_Tile;
 
@@ -429,7 +474,27 @@ package body Carthage.UI.Models.Planets is
                        Integer'Min
                          (Top + Tiles_Down - 1, 2 * Planet_Height);
 
+      procedure Draw (Tile : Carthage.Tiles.Tile_Type);
+
+      ----------
+      -- Draw --
+      ----------
+
+      procedure Draw (Tile : Carthage.Tiles.Tile_Type) is
+         Position : constant Tile_Position := Tile.Position;
+         Screen_X : Integer;
+         Screen_Y : Integer;
+      begin
+         Model.Get_Screen_Tile_Centre (Position, Screen_X, Screen_Y);
+         Process (Tile, Screen_X, Screen_Y);
+      end Draw;
+
    begin
+
+      if False then
+         Model.Planet.Scan_Tiles (Draw'Access);
+      end if;
+
       for Y in Top .. Bottom loop
          if Y in 1 .. Planet_Height then
             for Extended_X in Left .. Right loop

@@ -104,6 +104,34 @@ package body Hexes is
       end return;
    end To_Axial_Array;
 
+   -------------
+   -- To_Cube --
+   -------------
+
+   function To_Cube
+     (Offset : Offset_Coordinate)
+      return Cube_Coordinate
+   is
+      X, Z : Coordinate_Type;
+   begin
+      if Offset.Offset_Rows then
+         Z := Offset.Y;
+         if Offset.Offset_Odd then
+            X := Offset.X - (Offset.Y - (Offset.Y mod 2)) / 2;
+         else
+            X := Offset.X - (Offset.Y + (Offset.Y mod 2)) / 2;
+         end if;
+      else
+         X := Offset.X;
+         if Offset.Offset_Odd then
+            Z := Offset.Y - (Offset.X - (Offset.X mod 2)) / 2;
+         else
+            Z := Offset.Y - (Offset.X + (Offset.X mod 2)) / 2;
+         end if;
+      end if;
+      return (X, -X - Z, Z);
+   end To_Cube;
+
    -------------------
    -- To_Cube_Array --
    -------------------
@@ -119,5 +147,34 @@ package body Hexes is
          end loop;
       end return;
    end To_Cube_Array;
+
+   ---------------
+   -- To_Offset --
+   ---------------
+
+   function To_Offset
+     (Cube        : Cube_Coordinate;
+      Offset_Rows : Boolean;
+      Offset_Odd  : Boolean)
+      return Offset_Coordinate
+   is
+      X : Coordinate_Type := Cube.X;
+      Y : Coordinate_Type := Cube.Z;
+   begin
+      if Offset_Rows then
+         if Offset_Odd then
+            X := X + (Y - Y mod 2) / 2;
+         else
+            X := X + (Y + Y mod 2) / 2;
+         end if;
+      else
+         if Offset_Odd then
+            Y := Y + (X - X mod 2) / 2;
+         else
+            Y := Y + (X + X mod 2) / 2;
+         end if;
+      end if;
+      return (X, Y, Offset_Rows, Offset_Odd);
+   end To_Offset;
 
 end Hexes;
