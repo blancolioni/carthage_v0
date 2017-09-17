@@ -384,6 +384,11 @@ package body Carthage.Houses.Configure is
          Tile  : constant Carthage.Tiles.Tile_Type :=
                    Best_Available_Harvester_Tile (Structure);
 
+         function Passable
+           (Tile : Carthage.Tiles.Tile_Type)
+            return Boolean
+         is (not Tile.Is_Water);
+
          function Road_Cost
            (Tile : Carthage.Tiles.Tile_Type)
             return Float
@@ -396,7 +401,7 @@ package body Carthage.Houses.Configure is
          Road : constant Array_Of_Positions :=
                   Planet.Find_Path
                     (Shield_Position, Tile.Position,
-                     Road_Cost'Access);
+                     Passable'Access, Road_Cost'Access);
 
       begin
          Carthage.Cities.Create.New_City

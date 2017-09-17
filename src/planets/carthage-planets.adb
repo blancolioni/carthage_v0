@@ -48,20 +48,20 @@ package body Carthage.Planets is
      (Planet : Planet_Record;
       Start  : Tile_Position;
       Finish : Tile_Position;
+      Passable : not null access
+        function (Tile : Carthage.Tiles.Tile_Type)
+      return Boolean;
       Cost   : not null access
         function (Tile : Carthage.Tiles.Tile_Type)
       return Float)
       return Array_Of_Positions
    is
 
-      function Passable (Tile : Carthage.Tiles.Tile_Type) return Boolean
-      is (Cost (Tile) /= 0.0);
-
       Path : constant Hexes.Cube_Coordinate_Array :=
                Planet.Grid.Find_Path
                  (Start    => Planet.To_Cubic (Start),
                   Finish   => Planet.To_Cubic (Finish),
-                  Passable => Passable'Access,
+                  Passable => Passable,
                   Cost     => Cost);
    begin
       return Result : Array_Of_Positions (Path'Range) do

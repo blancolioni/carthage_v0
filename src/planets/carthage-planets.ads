@@ -76,6 +76,9 @@ package Carthage.Planets is
      (Planet : Planet_Record;
       Start  : Tile_Position;
       Finish : Tile_Position;
+      Passable : not null access
+        function (Tile : Carthage.Tiles.Tile_Type)
+      return Boolean;
       Cost   : not null access
         function (Tile : Carthage.Tiles.Tile_Type)
       return Float)

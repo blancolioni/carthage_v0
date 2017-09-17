@@ -27,27 +27,22 @@ package body Carthage.Stacks is
       Tile    : Carthage.Tiles.Tile_Type)
       return Array_Of_Positions
    is
-      function Move_Cost (Tile : Carthage.Tiles.Tile_Type) return Float;
+      function Passable
+        (Tile : Carthage.Tiles.Tile_Type)
+                  return Boolean
+      is (Stack.Movement_Cost (Tile) > 0);
 
-      ---------------
-      -- Move_Cost --
-      ---------------
-
-      function Move_Cost (Tile : Carthage.Tiles.Tile_Type) return Float is
-         Cost : constant Natural := Stack.Movement_Cost (Tile);
-      begin
-         if Cost = 0 then
-            return Float'Last;
-         else
-            return Float (Cost);
-         end if;
-      end Move_Cost;
+      function Move_Cost
+        (Tile : Carthage.Tiles.Tile_Type)
+                  return Float
+      is (Float (Stack.Movement_Cost (Tile)));
 
    begin
       return Stack.Planet.Find_Path
-        (Start  => Stack.Tile.Position,
-         Finish => Tile.Position,
-         Cost   => Move_Cost'Access);
+        (Start    => Stack.Tile.Position,
+         Finish   => Tile.Position,
+         Passable => Passable'Access,
+         Cost     => Move_Cost'Access);
    end Find_Path;
 
    ------------------

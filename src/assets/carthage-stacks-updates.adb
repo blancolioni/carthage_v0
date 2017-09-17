@@ -176,26 +176,15 @@ package body Carthage.Stacks.Updates is
                Order : constant Stack_Order_Record :=
                          Stack.Orders.First_Element;
 
-               function Move_Cost
+               function Passable
                  (Tile : Carthage.Tiles.Tile_Type)
-                  return Float;
-
-               ---------------
-               -- Move_Cost --
-               ---------------
+                  return Boolean
+               is (Stack.Movement_Cost (Tile) > 0);
 
                function Move_Cost
                  (Tile : Carthage.Tiles.Tile_Type)
                   return Float
-               is
-                  Cost : constant Natural := Stack.Movement_Cost (Tile);
-               begin
-                  if Cost = 0 then
-                     return Float'Last;
-                  else
-                     return Float (Cost);
-                  end if;
-               end Move_Cost;
+               is (Float (Stack.Movement_Cost (Tile)));
 
             begin
                case Order.Order_Type is
@@ -205,6 +194,7 @@ package body Carthage.Stacks.Updates is
                         Path : constant Array_Of_Positions :=
                                  Stack.Planet.Find_Path
                                    (Stack.Tile.Position, Order.Destination,
+                                    Passable'Access,
                                     Move_Cost'Access);
                      begin
                         Stack.Log ("moving to "
