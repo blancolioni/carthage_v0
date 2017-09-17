@@ -52,6 +52,18 @@ package body Carthage.Options is
                ("wizard-mode", ' ');
    end Wizard_Mode;
 
+   function Show_Hex_Coordinates return Boolean is
+   begin
+      return WL.Command_Line.Find_Option
+               ("show-hex-coordinates", ' ');
+   end Show_Hex_Coordinates;
+
+   function Show_Cubic_Coordinates return Boolean is
+   begin
+      return WL.Command_Line.Find_Option
+               ("show-cubic-coordinates", ' ');
+   end Show_Cubic_Coordinates;
+
    function Combat_Test return Boolean is
    begin
       return WL.Command_Line.Find_Option

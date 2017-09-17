@@ -8,6 +8,8 @@ package Carthage.Options is
    function Update return Boolean;
    function Update_Count return Natural;
    function Wizard_Mode return Boolean;
+   function Show_Hex_Coordinates return Boolean;
+   function Show_Cubic_Coordinates return Boolean;
    function Combat_Test return Boolean;
 
 end Carthage.Options;

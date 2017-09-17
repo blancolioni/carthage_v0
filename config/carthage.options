@@ -1,14 +1,15 @@
 package Carthage.Options is
 
-   Clear_Import_Cache  : Boolean;
-   Gtk_UI              : Boolean;
-   House               : String;
-   Trace_Planet_Import : Boolean;
-   Trace_Unit_Import   : Boolean;
-   Update              : Boolean;
-   Update_Count        : Natural := 1;
-   Wizard_Mode         : Boolean;
-   
-   Combat_Test         : Boolean;
+   Clear_Import_Cache     : Boolean;
+   Gtk_UI                 : Boolean;
+   House                  : String;
+   Trace_Planet_Import    : Boolean;
+   Trace_Unit_Import      : Boolean;
+   Update                 : Boolean;
+   Update_Count           : Natural := 1;
+   Wizard_Mode            : Boolean;
+   Show_Hex_Coordinates   : Boolean;
+   Show_Cubic_Coordinates : Boolean;
+   Combat_Test            : Boolean;
    
 end Carthage.Options;
