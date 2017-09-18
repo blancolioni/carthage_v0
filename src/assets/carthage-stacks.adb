@@ -99,7 +99,8 @@ package body Carthage.Stacks is
       World  : constant Carthage.Worlds.World_Type :=
                  Stack.Planet.Category;
       Terrain : constant Carthage.Tiles.Terrain_Layer_Array := Tile.Terrain;
-      Lowest : Float := Float'Last;
+      Lowest  : Float := Float'Last;
+      Road    : constant Boolean := Tile.Has_Road;
    begin
       if Stack.Count = 0 then
          return 0;
@@ -114,6 +115,10 @@ package body Carthage.Stacks is
             for T of Terrain loop
                Cost := Cost * World.Movement_Multiplier (T, Category);
             end loop;
+            if Road then
+               Cost := Cost * World.Road_Movement_Multiplier (Category);
+            end if;
+
             Lowest := Float'Min (Lowest, Cost);
             exit when Lowest = 0.0;
          end;
