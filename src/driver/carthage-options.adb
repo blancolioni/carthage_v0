@@ -64,6 +64,12 @@ package body Carthage.Options is
                ("show-cubic-coordinates", ' ');
    end Show_Cubic_Coordinates;
 
+   function Show_Move_Cost return Boolean is
+   begin
+      return WL.Command_Line.Find_Option
+               ("show-move-cost", ' ');
+   end Show_Move_Cost;
+
    function Combat_Test return Boolean is
    begin
       return WL.Command_Line.Find_Option

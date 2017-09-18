@@ -52,6 +52,7 @@ package body Carthage.UI.Models.Planets is
          Current_Zoom      : Zoom_Level := 0;
          Show_Hex_Coords   : Boolean;
          Show_Cubic_Coords : Boolean;
+         Show_Move_Cost    : Boolean;
       end record;
 
    overriding function Handle_Update
@@ -187,6 +188,8 @@ package body Carthage.UI.Models.Planets is
             Model.Show_Hex_Coords := Carthage.Options.Show_Hex_Coordinates;
             Model.Show_Cubic_Coords :=
               Carthage.Options.Show_Cubic_Coordinates;
+            Model.Show_Move_Cost :=
+              Carthage.Options.Show_Move_Cost;
          end;
       end if;
       return Get_Model (House, Planet.Identifier);
@@ -315,6 +318,19 @@ package body Carthage.UI.Models.Planets is
                   Colour => Lui.Colours.Black,
                   Text   => Coordinate_Type'Image (Cube_Z (Cubic)));
             end;
+         end if;
+
+         if Model.Selected_Stack /= null
+           and then Model.Show_Move_Cost
+         then
+            Renderer.Draw_String
+              (X      => Screen_X,
+               Y      => Screen_Y,
+               Size   => 12,
+               Colour => Lui.Colours.Black,
+               Text   =>
+                 Natural'Image
+                   (Model.Selected_Stack.Movement_Cost (Tile)));
          end if;
 
       end Draw_Base_Layer_Tile;

@@ -10,6 +10,7 @@ package Carthage.Options is
    Wizard_Mode            : Boolean;
    Show_Hex_Coordinates   : Boolean;
    Show_Cubic_Coordinates : Boolean;
+   Show_Move_Cost         : Boolean;
    Combat_Test            : Boolean;
    
 end Carthage.Options;
