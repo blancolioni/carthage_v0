@@ -26,8 +26,9 @@ package body Carthage.UI.Models.Planets is
    Unit_Layer      : constant Lui.Rendering.Render_Layer := 2;
    Path_Layer      : constant Lui.Rendering.Render_Layer := 3;
    Selection_Layer : constant Lui.Rendering.Render_Layer := 4;
-
-   Last_Layer      : constant Lui.Rendering.Render_Layer := Selection_Layer;
+   Minimap_Layer   : constant Lui.Rendering.Render_Layer := 5;
+   UI_Layer        : constant Lui.Rendering.Render_Layer := 6;
+   Last_Layer      : constant Lui.Rendering.Render_Layer := UI_Layer;
 
    subtype Planet_Model_Layer is
      Lui.Rendering.Render_Layer range 1 .. Last_Layer;
@@ -50,6 +51,7 @@ package body Carthage.UI.Models.Planets is
          Rendered_Stacks   : Rendered_Stack_Lists.List;
          Needs_Render      : Boolean := False;
          Current_Zoom      : Zoom_Level := 0;
+         Left_Panel_Width  : Natural := 300;
          Show_Hex_Coords   : Boolean;
          Show_Cubic_Coords : Boolean;
          Show_Move_Cost    : Boolean;
@@ -133,6 +135,42 @@ package body Carthage.UI.Models.Planets is
       return Natural
    is (Zoomed_Tile_Size (Model.Current_Zoom));
 
+   function Map_Pixel_Width
+     (Model : Root_Planet_Model'Class)
+      return Natural
+   is (Integer'Max (Model.Width - Model.Left_Panel_Width, 0));
+
+   function Map_Pixel_Height
+     (Model : Root_Planet_Model'Class)
+      return Natural
+   is (Model.Height);
+
+   function Map_Hex_Left
+     (Model : Root_Planet_Model'Class)
+      return Tile_X;
+
+   function Map_Hex_Top
+     (Model : Root_Planet_Model'Class)
+      return Tile_Y;
+
+   function Map_Hex_Width
+     (Model : Root_Planet_Model'Class)
+      return Tile_X_Count;
+
+   function Map_Hex_Height
+     (Model : Root_Planet_Model'Class)
+      return Tile_Y_Count;
+
+--     function Map_Hex_Right
+--       (Model : Root_Planet_Model'Class)
+--        return Tile_X
+--     is (Model.Map_Hex_Left + Model.Map_Hex_Width);
+--
+--     function Map_Hex_Bottom
+--       (Model : Root_Planet_Model'Class)
+--        return Tile_Y
+--     is (Model.Map_Hex_Top + Model.Map_Hex_Height);
+--
    type Planet_Model_Type is access all Root_Planet_Model'Class;
 
    ----------------------------
@@ -153,8 +191,9 @@ package body Carthage.UI.Models.Planets is
                        + (if Position.X mod 2 = 1
                           then Model.Row_Height / 2 else 0);
       Screen_X   : constant Integer :=
-                     Model.Width / 2 +
-                       (if abs Relative_X <= Planet_Width / 2
+                     Model.Left_Panel_Width
+                     + Model.Map_Pixel_Width / 2
+                     + (if abs Relative_X <= Planet_Width / 2
                         then Relative_X * Model.Column_Width
                         elsif Relative_X < 0
                         then (Relative_X + Planet_Width) * Model.Column_Width
@@ -163,6 +202,74 @@ package body Carthage.UI.Models.Planets is
       X := Screen_X;
       Y := Screen_Y;
    end Get_Screen_Tile_Centre;
+
+   --------------------
+   -- Map_Hex_Height --
+   --------------------
+
+   function Map_Hex_Height
+     (Model : Root_Planet_Model'Class)
+      return Tile_Y_Count
+   is
+      Available : constant Natural :=
+                    Model.Map_Pixel_Height / Model.Row_Height;
+   begin
+      if Available >= Planet_Height then
+         return Tile_Y_Count'Last;
+      else
+         return Tile_Y_Count (Available);
+      end if;
+   end Map_Hex_Height;
+
+   ------------------
+   -- Map_Hex_Left --
+   ------------------
+
+   function Map_Hex_Left
+     (Model : Root_Planet_Model'Class)
+      return Tile_X
+   is
+   begin
+      if Model.Centre.X <= Model.Map_Hex_Width / 2 then
+         return Tile_X'First;
+      else
+         return Model.Centre.X - Model.Map_Hex_Width / 2;
+      end if;
+   end Map_Hex_Left;
+
+   -----------------
+   -- Map_Hex_Top --
+   -----------------
+
+   function Map_Hex_Top
+     (Model : Root_Planet_Model'Class)
+      return Tile_Y
+   is
+   begin
+      if Model.Centre.Y <= Model.Map_Hex_Height / 2 then
+         return Tile_Y'First;
+      else
+         return Model.Centre.Y - Model.Map_Hex_Height / 2;
+      end if;
+   end Map_Hex_Top;
+
+   -------------------
+   -- Map_Hex_Width --
+   -------------------
+
+   function Map_Hex_Width
+     (Model : Root_Planet_Model'Class)
+      return Tile_X_Count
+   is
+      Available : constant Natural :=
+                    Model.Map_Pixel_Width / Model.Column_Width;
+   begin
+      if Available >= Planet_Width then
+         return Tile_X_Count'Last;
+      else
+         return Tile_X_Count (Available);
+      end if;
+   end Map_Hex_Width;
 
    ------------------
    -- Planet_Model --
@@ -452,7 +559,52 @@ package body Carthage.UI.Models.Planets is
                      Filled => False);
                end if;
             end;
+         when Minimap_Layer =>
+            declare
+               Scale : constant Positive :=
+                         Integer'Max (Model.Left_Panel_Width / Planet_Width,
+                                      1);
 
+               procedure Draw_Minimap_Tile
+                 (Tile               : Carthage.Tiles.Tile_Type);
+
+               -----------------------
+               -- Draw_Minimap_Tile --
+               -----------------------
+
+               procedure Draw_Minimap_Tile
+                 (Tile               : Carthage.Tiles.Tile_Type)
+               is
+                  X     : constant Natural :=
+                            Natural (Tile.Position.X) * Scale;
+                  Y     : constant Natural :=
+                            Natural (Tile.Position.Y) * Scale;
+                  Color : constant Carthage.Colours.Colour_Type :=
+                            Tile.Base_Terrain.Colour
+                              (Model.Planet.Category_Name);
+               begin
+                  Renderer.Draw_Rectangle
+                    (X      => X,
+                     Y      => Y,
+                     W      => Scale,
+                     H      => Scale,
+                     Colour => To_Lui_Colour (Color),
+                     Filled => True);
+               end Draw_Minimap_Tile;
+
+            begin
+               Model.Planet.Scan_Tiles (Draw_Minimap_Tile'Access);
+               Renderer.Draw_Rectangle
+                 (X      => Natural (Model.Map_Hex_Left) * Scale,
+                  Y      => Natural (Model.Map_Hex_Top) * Scale,
+                  W      => Natural (Model.Map_Hex_Width) * Scale,
+                  H      => Natural (Model.Map_Hex_Height) * Scale,
+                  Colour => Lui.Colours.White,
+                  Filled => False);
+            end;
+
+         when UI_Layer =>
+            null;
       end case;
       Model.Needs_Render := False;
    end Render;
@@ -472,8 +624,10 @@ package body Carthage.UI.Models.Planets is
       Tile_Height  : constant Natural := Zoomed_Size;
       Column_Width : constant Natural := Zoomed_Size;
 
-      Tiles_Across : constant Positive := Model.Width / Column_Width + 1;
-      Tiles_Down   : constant Positive := Model.Height / Tile_Height + 1;
+      Tiles_Across : constant Positive :=
+                       Model.Map_Pixel_Width / Column_Width + 1;
+      Tiles_Down   : constant Positive :=
+                       Model.Map_Pixel_Height / Tile_Height + 1;
 
       Left         : constant Integer :=
                        Integer'Max

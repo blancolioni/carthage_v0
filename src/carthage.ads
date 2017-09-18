@@ -3,8 +3,11 @@ package Carthage is
    Planet_Width  : constant := 44;
    Planet_Height : constant := 32;
 
-   type Tile_X is range 1 .. Planet_Width;
-   type Tile_Y is range 1 .. Planet_Height;
+   type Tile_X_Count is range 0 .. Planet_Width;
+   type Tile_Y_Count is range 0 .. Planet_Height;
+
+   subtype Tile_X is Tile_X_Count range 1 .. Planet_Width;
+   subtype Tile_Y is Tile_Y_Count range 1 .. Planet_Height;
 
    type Tile_Position is
       record
