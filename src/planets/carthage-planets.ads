@@ -217,6 +217,10 @@ package Carthage.Planets is
         procedure (City : not null access constant
                      Carthage.Cities.City_Record'Class));
 
+   function Palace
+     (Planet : Planet_Record)
+      return access constant Carthage.Cities.City_Record'Class;
+
    procedure Scan_Stacks
      (Planet  : Planet_Record;
       Process : not null access
@@ -293,6 +297,7 @@ private
          Owner    : Carthage.Houses.House_Type;
          Stacks   : Orbital_Stack_Vectors.Vector;
          Cities   : Planet_City_Lists.List;
+         Palace   : access constant Carthage.Cities.City_Record'Class;
       end record;
 
    overriding function Object_Database
@@ -408,6 +413,11 @@ private
       Cubic  : Hexes.Cube_Coordinate)
       return Tile_Position
    is (Planet.Grid.Get_Tile (Cubic).Position);
+
+   function Palace
+     (Planet : Planet_Record)
+      return access constant Carthage.Cities.City_Record'Class
+   is (Planet.Palace);
 
    type Updateable_Reference (Item : not null access Planet_Record'Class) is
       record

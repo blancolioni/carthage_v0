@@ -1,3 +1,4 @@
+with Carthage.Cities;
 with Carthage.Stacks;
 with Carthage.Terrain;
 
@@ -13,6 +14,9 @@ package body Carthage.Planets is
    is
    begin
       Planet.Cities.Append (Planet_City_Access (City));
+      if City.Structure.Is_Palace then
+         Planet.Palace := City;
+      end if;
    end Add_City;
 
    ----------------------

@@ -5,6 +5,7 @@ with Lui.Rendering;
 
 with Hexes;
 
+with Carthage.Cities;
 with Carthage.Stacks;
 with Carthage.Tiles;
 
@@ -171,6 +172,11 @@ package body Carthage.UI.Models.Planets is
 --        return Tile_Y
 --     is (Model.Map_Hex_Top + Model.Map_Hex_Height);
 --
+
+   procedure Set_Centre
+     (Model : in out Root_Planet_Model'Class;
+      Centre : Tile_Position);
+
    type Planet_Model_Type is access all Root_Planet_Model'Class;
 
    ----------------------------
@@ -280,6 +286,7 @@ package body Carthage.UI.Models.Planets is
       Planet : Carthage.Planets.Planet_Type)
       return Carthage_Model
    is
+      use Carthage.Houses;
    begin
       if not Have_Model (House, Planet.Identifier) then
          declare
@@ -288,15 +295,20 @@ package body Carthage.UI.Models.Planets is
          begin
             Model.Initialise (Planet.Name, Last_Render_Layer => Last_Layer);
             Model.Set_Background
-              (Lui.Colours.To_Colour (200, 200, 200));
+              (Lui.Colours.To_Colour (100, 100, 100));
             Model.Planet := Planet;
-            Model.Centre := (Planet_Width / 2, Planet_Height / 2);
             Set_Model (House, Planet.Identifier, Model);
             Model.Show_Hex_Coords := Carthage.Options.Show_Hex_Coordinates;
             Model.Show_Cubic_Coords :=
               Carthage.Options.Show_Cubic_Coordinates;
             Model.Show_Move_Cost :=
               Carthage.Options.Show_Move_Cost;
+
+            if Model.House = Model.Planet.Owner then
+               Model.Set_Centre (Model.Planet.Palace.Tile.Position);
+            else
+               Model.Set_Centre ((Planet_Width / 2, Planet_Height / 2));
+            end if;
          end;
       end if;
       return Get_Model (House, Planet.Identifier);
@@ -724,6 +736,18 @@ package body Carthage.UI.Models.Planets is
          end if;
       end loop;
    end Select_XY;
+
+   ----------------
+   -- Set_Centre --
+   ----------------
+
+   procedure Set_Centre
+     (Model  : in out Root_Planet_Model'Class;
+      Centre : Tile_Position)
+   is
+   begin
+      Model.Centre := Centre;
+   end Set_Centre;
 
    -------------
    -- Tooltip --
