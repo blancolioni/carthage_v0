@@ -302,20 +302,13 @@ package body Carthage.Updates is
         ("Update: "
          & Carthage.Calendar.Day_Identifier (Carthage.Calendar.Today));
       Carthage.Logging.Log ("starting update");
-      Ada.Text_IO.Put_Line ("  - start manager turns");
       Carthage.Managers.Start_Manager_Turns;
-      Ada.Text_IO.Put_Line ("  - execute manager turns");
       Carthage.Managers.Execute_Manager_Turns;
-      Ada.Text_IO.Put_Line ("  - execute city orders");
       Carthage.Cities.Updates.Execute_Orders;
-      Ada.Text_IO.Put_Line ("  - execute production");
       Carthage.Cities.Updates.Execute_Production;
-      Ada.Text_IO.Put_Line ("  - execute stack orders");
       Carthage.Stacks.Updates.Execute_Orders;
       Carthage.Houses.Scan (Carthage.Houses.Log_Status'Access);
-      Ada.Text_IO.Put_Line ("  - battles");
       Carthage.Combat.Scan_Battles (Execute_Round'Access);
-      Ada.Text_IO.Put_Line ("  - cleanup");
       Carthage.Stacks.Remove_Empty_Ground_Stacks;
       Carthage.Logging.Log ("update complete");
       Carthage.Calendar.Next_Day;
