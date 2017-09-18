@@ -12,7 +12,6 @@ source_dir = src/houses
 source_dir = src/logging
 source_dir = src/managers
 source_dir = src/planets
-source_dir = src/players
 source_dir = src/resources
 source_dir = src/technology
 source_dir = src/ui
