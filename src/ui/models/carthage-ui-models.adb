@@ -1,5 +1,7 @@
 with WL.String_Maps;
 
+with Carthage.Updates;
+
 with Carthage.UI.Models.Galaxy;
 
 package body Carthage.UI.Models is
@@ -7,6 +9,32 @@ package body Carthage.UI.Models is
    package Model_Maps is new WL.String_Maps (Carthage_Model);
 
    Model_Map : Model_Maps.Map;
+
+   ------------------
+   -- After_Render --
+   ------------------
+
+   overriding procedure After_Render
+     (Model    : in out Root_Carthage_Model;
+      Renderer : in out Lui.Rendering.Root_Renderer'Class)
+   is
+      pragma Unreferenced (Model, Renderer);
+   begin
+      Carthage.Updates.Render_Finished;
+   end After_Render;
+
+   -------------------
+   -- Before_Render --
+   -------------------
+
+   overriding procedure Before_Render
+     (Model    : in out Root_Carthage_Model;
+      Renderer : in out Lui.Rendering.Root_Renderer'Class)
+   is
+      pragma Unreferenced (Model, Renderer);
+   begin
+      Carthage.Updates.Render_Started;
+   end Before_Render;
 
    ---------------
    -- Get_Model --

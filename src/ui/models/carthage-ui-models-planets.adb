@@ -430,7 +430,9 @@ package body Carthage.UI.Models.Planets is
             Model.Show_Move_Cost :=
               Carthage.Options.Show_Move_Cost;
 
-            if Model.House = Model.Planet.Owner then
+            if Model.Planet.Has_Owner
+              and then Model.House = Model.Planet.Owner
+            then
                Model.Set_Centre (Model.Planet.Palace.Tile.Position);
             else
                Model.Set_Centre ((Planet_Width / 2, Planet_Height / 2));

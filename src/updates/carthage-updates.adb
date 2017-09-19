@@ -1,3 +1,4 @@
+with Ada.Calendar;
 with Ada.Text_IO;
 
 with Carthage.Calendar;
@@ -17,11 +18,19 @@ with Carthage.Logging;
 
 package body Carthage.Updates is
 
-   -----------------------
-   -- Before_First_Turn --
-   -----------------------
+   task Update_Task is
+      entry Start;
+      entry Stop;
+      entry Set_Speed (Speed : Update_Speed);
+      entry Render_Started;
+      entry Render_Finished;
+   end Update_Task;
 
-   procedure Before_First_Turn is
+   -------------------------
+   -- Before_First_Update --
+   -------------------------
+
+   procedure Before_First_Update is
 
       procedure Reset_Planet_State
         (Planet : Carthage.Planets.Planet_Type);
@@ -264,7 +273,52 @@ package body Carthage.Updates is
 
       Carthage.Managers.Start_Managers;
 
-   end Before_First_Turn;
+   end Before_First_Update;
+
+   ---------------------
+   -- Render_Finished --
+   ---------------------
+
+   procedure Render_Finished is
+   begin
+      Update_Task.Render_Finished;
+   end Render_Finished;
+
+   --------------------
+   -- Render_Started --
+   --------------------
+
+   procedure Render_Started is
+   begin
+      Update_Task.Render_Started;
+   end Render_Started;
+
+   ---------------
+   -- Set_Speed --
+   ---------------
+
+   procedure Set_Speed (Speed : Update_Speed) is
+   begin
+      Update_Task.Set_Speed (Speed);
+   end Set_Speed;
+
+   -------------------
+   -- Start_Updates --
+   -------------------
+
+   procedure Start_Updates is
+   begin
+      Update_Task.Start;
+   end Start_Updates;
+
+   ------------------
+   -- Stop_Updates --
+   ------------------
+
+   procedure Stop_Updates is
+   begin
+      Update_Task.Stop;
+   end Stop_Updates;
 
    ------------
    -- Update --
@@ -313,5 +367,56 @@ package body Carthage.Updates is
       Carthage.Logging.Log ("update complete");
       Carthage.Calendar.Next_Day;
    end Update;
+
+   -----------------
+   -- Update_Task --
+   -----------------
+
+   task body Update_Task is
+      Current_Speed : Update_Speed := 0;
+      Update_Delay  : constant array (Update_Speed) of Duration :=
+                        (0 => 100.0,
+                         1 => 1.0,
+                         2 => 0.5,
+                         3 => 0.1);
+      Next_Update   : Ada.Calendar.Time;
+
+      procedure Schedule_Next_Update;
+
+      --------------------------
+      -- Schedule_Next_Update --
+      --------------------------
+
+      procedure Schedule_Next_Update is
+         use Ada.Calendar;
+      begin
+         Next_Update := Clock + Update_Delay (Current_Speed);
+      end Schedule_Next_Update;
+
+   begin
+      accept Start;
+      Schedule_Next_Update;
+
+      loop
+         select
+            accept Stop;
+            exit;
+         or
+            accept Set_Speed (Speed : in Update_Speed) do
+               Current_Speed := Speed;
+            end Set_Speed;
+            Schedule_Next_Update;
+         or
+            accept Render_Started;
+            accept Render_Finished;
+         or
+            delay until Next_Update;
+            if Current_Speed > 0 then
+               Update;
+               Schedule_Next_Update;
+            end if;
+         end select;
+      end loop;
+   end Update_Task;
 
 end Carthage.Updates;

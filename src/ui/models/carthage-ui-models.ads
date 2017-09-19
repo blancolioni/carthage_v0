@@ -1,4 +1,6 @@
 private with Lui.Colours;
+private with Lui.Rendering;
+
 private with Carthage.Colours;
 
 with Lui.Models;
@@ -28,6 +30,14 @@ private
          House  : Carthage.Houses.House_Type;
          Wizard : Boolean := False;
       end record;
+
+   overriding procedure Before_Render
+     (Model    : in out Root_Carthage_Model;
+      Renderer : in out Lui.Rendering.Root_Renderer'Class);
+
+   overriding procedure After_Render
+     (Model    : in out Root_Carthage_Model;
+      Renderer : in out Lui.Rendering.Root_Renderer'Class);
 
    function To_Lui_Colour
      (Colour : Carthage.Colours.Colour_Type)

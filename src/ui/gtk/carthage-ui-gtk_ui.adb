@@ -28,6 +28,7 @@ with Lui.Gtk_UI;
 with Carthage.Paths;
 with Carthage.UI.Models;
 
+with Carthage.Calendar;
 with Carthage.Updates;
 
 package body Carthage.UI.Gtk_UI is
@@ -41,6 +42,8 @@ package body Carthage.UI.Gtk_UI is
          Info_Boxes     : Gtk.Box.Gtk_Box;
          Property_List  : Gtk.Tree_View.Gtk_Tree_View;
          Date_Label     : Gtk.Label.Gtk_Label;
+         Current_Speed  : Natural := 0;
+         Date           : Carthage.Calendar.Date;
          Status_Bar     : Gtk.Status_Bar.Gtk_Status_Bar;
          Status_Context : Gtk.Status_Bar.Context_Id;
          Current_Status : Ada.Strings.Unbounded.Unbounded_String;
@@ -70,8 +73,7 @@ package body Carthage.UI.Gtk_UI is
       Message : String);
 
    overriding procedure On_Idle
-     (State : in out Carthage_UI)
-     is null;
+     (State : in out Carthage_UI);
 
    procedure Create_Property_List
      (Tree_View : Gtk.Tree_View.Gtk_Tree_View);
@@ -83,7 +85,7 @@ package body Carthage.UI.Gtk_UI is
    procedure Destroy_Handler (W : access Gtk.Widget.Gtk_Widget_Record'Class);
 
    procedure On_Step_Button_Clicked
-     (Slot   : access Glib.Object.GObject_Record'Class);
+     (Button : access Gtk.Button.Gtk_Button_Record'Class);
 
    procedure On_Switch_Page
      (Self     : access Glib.Object.GObject_Record'Class;
@@ -198,22 +200,41 @@ package body Carthage.UI.Gtk_UI is
       Gtk.Main.Main_Quit;
    end Destroy_Handler;
 
+   -------------
+   -- On_Idle --
+   -------------
+
+   overriding procedure On_Idle
+     (State : in out Carthage_UI)
+   is
+      use type Carthage.Calendar.Date;
+      New_Date : constant Carthage.Calendar.Date :=
+                   Carthage.Calendar.Today;
+   begin
+      if New_Date /= State.Date then
+         State.Date := New_Date;
+         State.Date_Label.Set_Label
+           (Carthage.Calendar.Day_Identifier (State.Date));
+         for I in 1 .. State.Models.Count loop
+            Carthage.UI.Models.Carthage_Model (State.Models.Model (I)).Reload;
+            State.Models.Model (I).Queue_Render;
+         end loop;
+      end if;
+   end On_Idle;
+
    ----------------------------
    -- On_Step_Button_Clicked --
    ----------------------------
 
    procedure On_Step_Button_Clicked
-     (Slot   : access Glib.Object.GObject_Record'Class)
+     (Button : access Gtk.Button.Gtk_Button_Record'Class)
    is
-      UI : constant Carthage_UI_Access := Carthage_UI_Access (Slot);
+      use Carthage.Updates;
+      Name      : constant String := Button.Get_Name;
+      New_Speed : constant Update_Speed :=
+                    Character'Pos (Name (Name'Last)) - 48;
    begin
-      Carthage.Updates.Update;
-
-      for I in 1 .. UI.Models.Count loop
-         Carthage.UI.Models.Carthage_Model (UI.Models.Model (I)).Reload;
-         UI.Models.Model (I).Queue_Render;
-      end loop;
-
+      Set_Speed (New_Speed);
    end On_Step_Button_Clicked;
 
    --------------------
@@ -339,6 +360,8 @@ package body Carthage.UI.Gtk_UI is
                            Info_Boxes     => Info_Boxes,
                            Property_List  => Property_List,
                            Date_Label     => Date_Label,
+                           Current_Speed  => 0,
+                           Date           => Carthage.Calendar.Today,
                            Status_Bar     => Status_Bar,
                            Status_Context =>
                              Status_Bar.Get_Context_Id ("star mouseover"),
@@ -358,14 +381,17 @@ package body Carthage.UI.Gtk_UI is
          Main_Tab.On_Switch_Page
            (On_Switch_Page'Access, UI);
 
-         declare
-            Step  : constant Gtk.Button.Gtk_Button :=
-                      Gtk.Button.Gtk_Button
-                        (Builder.Get_Object ("Update"));
-         begin
-            Step.On_Clicked (On_Step_Button_Clicked'Access, UI);
-         end;
-
+         for I in 0 .. 3 loop
+            declare
+               Id : constant String :=
+                      "Speed_" & Character'Val (I + 48);
+               Step  : constant Gtk.Button.Gtk_Button :=
+                         Gtk.Button.Gtk_Button
+                           (Builder.Get_Object (Id));
+            begin
+               Step.On_Clicked (On_Step_Button_Clicked'Access);
+            end;
+         end loop;
       end;
 
       Gtk.Main.Main;

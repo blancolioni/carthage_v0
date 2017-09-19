@@ -23,7 +23,7 @@ package Carthage.Units is
 
    function Index
      (Unit : Unit_Record)
-      return Positive;
+      return Natural;
 
    function Category
      (Unit : Unit_Record)
@@ -139,7 +139,7 @@ private
 
    function Index
      (Unit : Unit_Record)
-      return Positive
+      return Natural
    is (Unit.Index);
 
    function Category

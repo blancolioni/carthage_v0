@@ -37,8 +37,8 @@ begin
 
    Carthage.Game.New_Game;
 
-   Ada.Text_IO.Put_Line ("setting up first turn");
-   Carthage.Updates.Before_First_Turn;
+   Ada.Text_IO.Put_Line ("setting up first update");
+   Carthage.Updates.Before_First_Update;
    Ada.Text_IO.Put_Line ("done");
 
    Ada.Text_IO.Put_Line ("setting up house managers");
@@ -74,8 +74,10 @@ begin
    end if;
 
    if Carthage.Options.Gtk_UI then
+      Carthage.Updates.Start_Updates;
       Carthage.UI.Gtk_UI.Start
         (Carthage.Houses.Get (Carthage.Options.House));
+      Carthage.Updates.Stop_Updates;
    end if;
 
    Carthage.Logging.Stop_Logging;
