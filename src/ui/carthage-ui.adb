@@ -62,7 +62,7 @@ package body Carthage.UI is
         (From_Bin_File    : String;
          Width, Height    : Natural;
          Resource_Name_Fn : not null access
-           function (Index      : Positive)
+           function (Index      : Natural)
          return String);
 
       ----------------
@@ -132,7 +132,7 @@ package body Carthage.UI is
         (From_Bin_File    : String;
          Width, Height    : Natural;
          Resource_Name_Fn : not null access
-           function (Index      : Positive)
+           function (Index      : Natural)
          return String)
       is
 
@@ -149,10 +149,10 @@ package body Carthage.UI is
            (Image : WL.Images.Image_Type'Class)
          is
          begin
-            Index := Index + 1;
             Save_Image_Resource
               (Resource_Name_Fn (Index),
                Image);
+            Index := Index + 1;
          end Save_Resource;
 
       begin
@@ -202,7 +202,7 @@ package body Carthage.UI is
       ------------------
 
       function Unit_Name_Fn
-        (Index      : Positive)
+        (Index      : Natural)
          return String
       is ("unit" & Integer'Image (-Index));
 
