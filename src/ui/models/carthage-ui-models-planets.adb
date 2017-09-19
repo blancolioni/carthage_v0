@@ -1,5 +1,4 @@
 with Ada.Containers.Doubly_Linked_Lists;
-with Ada.Text_IO;
 
 with Tropos.Reader;
 
@@ -41,6 +40,13 @@ package body Carthage.UI.Models.Planets is
       record
          X, Y, Width, Height : Integer;
       end record;
+
+   function Contains
+     (Rectangle : Layout_Rectangle;
+      X, Y      : Integer)
+      return Boolean
+   is (X in Rectangle.X .. Rectangle.X + Rectangle.Width - 1
+       and then Y in Rectangle.Y .. Rectangle.Y + Rectangle.Height - 1);
 
    procedure Draw
      (Rectangle : Layout_Rectangle;
@@ -699,9 +705,11 @@ package body Carthage.UI.Models.Planets is
                  (Tile               : Carthage.Tiles.Tile_Type)
                is
                   X     : constant Natural :=
-                            Natural (Tile.Position.X) * Scale;
+                            Model.Mini_Map_Layout.X
+                            + Natural (Tile.Position.X) * Scale;
                   Y     : constant Natural :=
-                            Natural (Tile.Position.Y) * Scale;
+                            Model.Mini_Map_Layout.Y
+                              + Natural (Tile.Position.Y) * Scale;
                   Color : constant Carthage.Colours.Colour_Type :=
                             Tile.Base_Terrain.Colour
                               (Model.Planet.Category_Name);
@@ -722,8 +730,12 @@ package body Carthage.UI.Models.Planets is
                Model.Planet.Scan_Tiles (Draw_Minimap_Tile'Access);
 
                Renderer.Draw_Rectangle
-                 (X      => Natural (Model.Map_Hex_Left) * Scale,
-                  Y      => Natural (Model.Map_Hex_Top) * Scale,
+                 (X      =>
+                    Model.Mini_Map_Layout.X
+                      + Natural (Model.Map_Hex_Left) * Scale,
+                  Y      =>
+                    Model.Mini_Map_Layout.Y
+                      + Natural (Model.Map_Hex_Top) * Scale,
                   W      => Natural (Model.Map_Hex_Width) * Scale,
                   H      => Natural (Model.Map_Hex_Height) * Scale,
                   Colour => Lui.Colours.White,
@@ -851,19 +863,48 @@ package body Carthage.UI.Models.Planets is
       X, Y  : Natural)
    is
    begin
-      Ada.Text_IO.Put_Line ("select:" & X'Img & Y'Img);
-      for Rendered_Stack of Model.Rendered_Stacks loop
-         if X in Rendered_Stack.Left .. Rendered_Stack.Right
-           and then Y in Rendered_Stack.Top .. Rendered_Stack.Bottom
-         then
-            Ada.Text_IO.Put_Line ("selecting: "
-                                  & Rendered_Stack.Stack.Identifier
-                                  & ": " & Rendered_Stack.Stack.Description);
-            Model.Selected_Stack := Rendered_Stack.Stack;
+      if Contains (Model.Main_Map_Layout, X, Y) then
+         for Rendered_Stack of Model.Rendered_Stacks loop
+            if X in Rendered_Stack.Left .. Rendered_Stack.Right
+              and then Y in Rendered_Stack.Top .. Rendered_Stack.Bottom
+            then
+               Model.Selected_Stack := Rendered_Stack.Stack;
+               Model.Queue_Render;
+               exit;
+            end if;
+         end loop;
+      elsif Contains (Model.Mini_Map_Layout, X, Y) then
+         declare
+            Zoomed_Size  : constant Natural :=
+                             Zoomed_Tile_Size (Model.Current_Zoom);
+            Tile_Height  : constant Natural := Zoomed_Size;
+            Column_Width : constant Natural := Zoomed_Size;
+
+            Tiles_Across : constant Positive :=
+                             Model.Map_Pixel_Width / Column_Width + 1;
+            Tiles_Down   : constant Positive :=
+                             Model.Map_Pixel_Height / Tile_Height + 1;
+            Scale        : constant Positive :=
+                         Integer'Max (Model.Left_Toolbar_Layout.Width
+                                      / Planet_Width,
+                                      1);
+            Centre_X : Integer := (X - Model.Mini_Map_Layout.X) / Scale + 1;
+            Centre_Y : Integer := (Y - Model.Mini_Map_Layout.Y) / Scale + 1;
+         begin
+            Centre_X := Integer'Max (Centre_X, Tiles_Across / 2);
+            Centre_Y := Integer'Max (Centre_Y, Tiles_Down / 2);
+            Centre_X := Integer'Min
+              (Centre_X, Planet_Width - Tiles_Across / 2 + 1);
+            Centre_Y := Integer'Min
+              (Centre_Y, Planet_Height - Tiles_Down / 2 + 1);
+            Centre_X := Integer'Max (Centre_X, 1);
+            Centre_Y := Integer'Max (Centre_Y, 1);
+            Centre_X := Integer'Min (Centre_X, Planet_Width);
+            Centre_Y := Integer'Min (Centre_Y, Planet_Height);
+            Model.Set_Centre ((Tile_X (Centre_X), Tile_Y (Centre_Y)));
             Model.Queue_Render;
-            exit;
-         end if;
-      end loop;
+         end;
+      end if;
    end Select_XY;
 
    ----------------
