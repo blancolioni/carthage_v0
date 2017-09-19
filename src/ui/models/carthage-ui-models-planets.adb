@@ -6,6 +6,7 @@ with Lui.Rendering;
 
 with Hexes;
 
+with Carthage.Assets;
 with Carthage.Cities;
 with Carthage.Stacks;
 with Carthage.Tiles;
@@ -25,13 +26,13 @@ package body Carthage.UI.Models.Planets is
    Zoomed_Icon_Size : constant array (Zoom_Level) of Positive :=
                         (64, 48, 32, 32, 24, 16, 8);
 
-   Base_Layer      : constant Lui.Rendering.Render_Layer := 1;
-   Unit_Layer      : constant Lui.Rendering.Render_Layer := 2;
-   Path_Layer      : constant Lui.Rendering.Render_Layer := 3;
-   Selection_Layer : constant Lui.Rendering.Render_Layer := 4;
-   Minimap_Layer   : constant Lui.Rendering.Render_Layer := 5;
-   UI_Layer        : constant Lui.Rendering.Render_Layer := 6;
-   Last_Layer      : constant Lui.Rendering.Render_Layer := UI_Layer;
+   Base_Layer        : constant Lui.Rendering.Render_Layer := 1;
+   Unit_Layer        : constant Lui.Rendering.Render_Layer := 2;
+   Path_Layer        : constant Lui.Rendering.Render_Layer := 3;
+   Selection_Layer   : constant Lui.Rendering.Render_Layer := 4;
+   Minimap_Layer     : constant Lui.Rendering.Render_Layer := 5;
+   UI_Layer          : constant Lui.Rendering.Render_Layer := 6;
+   Last_Layer        : constant Lui.Rendering.Render_Layer := UI_Layer;
 
    Layout_Config : Tropos.Configuration;
    Have_Layout   : Boolean := False;
@@ -82,6 +83,7 @@ package body Carthage.UI.Models.Planets is
          Main_Map_Layout       : Layout_Rectangle;
          Mini_Map_Layout       : Layout_Rectangle;
          Selected_Stack_Layout : Layout_Rectangle;
+         Sidebar_Icon_Size     : Positive;
          Show_Hex_Coords       : Boolean;
          Show_Cubic_Coords     : Boolean;
          Show_Move_Cost        : Boolean;
@@ -311,6 +313,8 @@ package body Carthage.UI.Models.Planets is
       Model.Bottom_Toolbar_Layout := Rectangle ("bottom-toolbar");
       Model.Mini_Map_Layout := Rectangle ("mini-map");
       Model.Main_Map_Layout := Rectangle ("main-map");
+      Model.Selected_Stack_Layout := Rectangle ("selected-stack-layout");
+      Model.Sidebar_Icon_Size := Layout_Config.Get ("sidebar-icon-size", 64);
       Model.Layout_Loaded := True;
    end Load_Layout;
 
@@ -453,6 +457,9 @@ package body Carthage.UI.Models.Planets is
         (Tile               : Carthage.Tiles.Tile_Type;
          Screen_X, Screen_Y : Integer);
 
+      procedure Draw_Stack_Icons
+        (Stack : Carthage.Stacks.Stack_Type);
+
       --------------------------
       -- Draw_Base_Layer_Tile --
       --------------------------
@@ -565,6 +572,46 @@ package body Carthage.UI.Models.Planets is
          end if;
 
       end Draw_Base_Layer_Tile;
+
+      ----------------------
+      -- Draw_Stack_Icons --
+      ----------------------
+
+      procedure Draw_Stack_Icons
+        (Stack : Carthage.Stacks.Stack_Type)
+      is
+         X : Natural := Model.Selected_Stack_Layout.X;
+         Y : Natural := Model.Selected_Stack_Layout.Y;
+         Limit_X : constant Natural :=
+                     X + Model.Selected_Stack_Layout.Width;
+         Background : constant Carthage.Colours.Colour_Type :=
+                        Stack.Owner.Colour;
+         Icon_Size  : constant Positive := Model.Sidebar_Icon_Size;
+      begin
+         for I in 1 .. Stack.Count loop
+            declare
+               Asset      : constant Carthage.Assets.Asset_Type :=
+                              Stack.Asset (I);
+               Resource   : constant String :=
+                              "unit"
+                              & Integer'Image (-(Asset.Unit.Index));
+            begin
+               Renderer.Draw_Rectangle
+                 (X, Y, Icon_Size, Icon_Size,
+                  To_Lui_Colour (Background), True);
+               Renderer.Draw_Image
+                 (X, Y,
+                  Icon_Size, Icon_Size,
+                  Resource);
+            end;
+
+            X := X + Icon_Size + 2;
+            if X + Icon_Size > Limit_X then
+               X := Model.Selected_Stack_Layout.X;
+               Y := Y + Icon_Size + 2;
+            end if;
+         end loop;
+      end Draw_Stack_Icons;
 
       --------------------------
       -- Draw_Unit_Layer_Tile --
@@ -740,6 +787,10 @@ package body Carthage.UI.Models.Planets is
                   H      => Natural (Model.Map_Hex_Height) * Scale,
                   Colour => Lui.Colours.White,
                   Filled => False);
+
+               if Model.Selected_Stack /= null then
+                  Draw_Stack_Icons (Model.Selected_Stack);
+               end if;
 
             end;
 

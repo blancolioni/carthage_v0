@@ -3,3 +3,5 @@ top-toolbar = { 16 0 -16 96 }
 bottom-toolbar = { 200 -64 1032 0 }
 mini-map = { 0 64 172 192 }
 main-map = { 196 64 -16 -96 }
+selected-stack-layout = { 0 400 172 600 }
+sidebar-icon-size = 32
