@@ -67,6 +67,15 @@ package body Carthage.UI.Models.Planets is
    package Rendered_Stack_Lists is
      new Ada.Containers.Doubly_Linked_Lists (Rendered_Stack_Icon);
 
+   type Rendered_Asset_Icon is
+      record
+         Asset : Carthage.Assets.Asset_Type;
+         Rec   : Layout_Rectangle;
+      end record;
+
+   package Rendered_Asset_Lists is
+     new Ada.Containers.Doubly_Linked_Lists (Rendered_Asset_Icon);
+
    type Root_Planet_Model is
      new Root_Carthage_Model with
       record
@@ -74,6 +83,7 @@ package body Carthage.UI.Models.Planets is
          Centre                : Tile_Position;
          Selected_Stack        : Carthage.Stacks.Stack_Type;
          Rendered_Stacks       : Rendered_Stack_Lists.List;
+         Rendered_Assets       : Rendered_Asset_Lists.List;
          Needs_Render          : Boolean := False;
          Layout_Loaded         : Boolean := False;
          Current_Zoom          : Zoom_Level := 0;
@@ -588,6 +598,8 @@ package body Carthage.UI.Models.Planets is
                         Stack.Owner.Colour;
          Icon_Size  : constant Positive := Model.Sidebar_Icon_Size;
       begin
+         Model.Rendered_Assets.Clear;
+
          for I in 1 .. Stack.Count loop
             declare
                Asset      : constant Carthage.Assets.Asset_Type :=
@@ -603,6 +615,10 @@ package body Carthage.UI.Models.Planets is
                  (X, Y,
                   Icon_Size, Icon_Size,
                   Resource);
+               Model.Rendered_Assets.Append
+                 (Rendered_Asset_Icon'
+                    (Asset => Asset,
+                     Rec   => (X, Y, Icon_Size, Icon_Size)));
             end;
 
             X := X + Icon_Size + 2;
@@ -979,32 +995,47 @@ package body Carthage.UI.Models.Planets is
       X, Y  : Natural)
       return String
    is
-      Zoomed_Size  : constant Natural :=
-                       Zoomed_Tile_Size (Model.Current_Zoom);
-      Tile_Height  : constant Natural := Zoomed_Size;
-      Column_Width : constant Natural := Zoomed_Size;
-      Row_Height   : constant Natural := Tile_Height + 1;
-
-      Map_X        : Integer :=
-                       Integer (Model.Centre.X)
-                       + (X - Model.Width / 2) / Column_Width;
-      Map_Y        : constant Integer :=
-                       Integer (Model.Centre.Y)
-                       + (Y - Model.Height / 2) / Row_Height;
    begin
-      while Map_X < 1 loop
-         Map_X := Map_X + Planet_Width;
-      end loop;
-      while Map_X > Planet_Width loop
-         Map_X := Map_X - Planet_Width;
-      end loop;
-      if Map_Y in 1 .. Planet_Height then
-         return X'Img & Y'Img & " "
-           & Model.Planet.Tile ((Tile_X (Map_X), Tile_Y (Map_Y)))
-           .Description;
+      if Contains (Model.Main_Map_Layout, X, Y) then
+         declare
+            Zoomed_Size  : constant Natural :=
+                             Zoomed_Tile_Size (Model.Current_Zoom);
+            Tile_Height  : constant Natural := Zoomed_Size;
+            Column_Width : constant Natural := Zoomed_Size;
+            Row_Height   : constant Natural := Tile_Height + 1;
+
+            Map_X        : Integer :=
+                             Integer (Model.Centre.X)
+                             + (X - Model.Width / 2) / Column_Width;
+            Map_Y        : constant Integer :=
+                             Integer (Model.Centre.Y)
+                             + (Y - Model.Height / 2) / Row_Height;
+         begin
+            while Map_X < 1 loop
+               Map_X := Map_X + Planet_Width;
+            end loop;
+            while Map_X > Planet_Width loop
+               Map_X := Map_X - Planet_Width;
+            end loop;
+            if Map_Y in 1 .. Planet_Height then
+               return X'Img & Y'Img & " "
+                 & Model.Planet.Tile ((Tile_X (Map_X), Tile_Y (Map_Y)))
+                 .Description;
+            else
+               return "";
+            end if;
+         end;
+      elsif Contains (Model.Selected_Stack_Layout, X, Y) then
+         for Info of Model.Rendered_Assets loop
+            if Contains (Info.Rec, X, Y) then
+               return Info.Asset.Unit.Name;
+            end if;
+         end loop;
+         return "";
       else
          return "";
       end if;
+
    end Tooltip;
 
    ----------
