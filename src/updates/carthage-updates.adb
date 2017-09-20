@@ -394,7 +394,12 @@ package body Carthage.Updates is
       end Schedule_Next_Update;
 
    begin
-      accept Start;
+      select
+         accept Start;
+      or
+         terminate;
+      end select;
+
       Schedule_Next_Update;
 
       loop
