@@ -82,6 +82,11 @@ package Carthage.Stacks is
      (Stack : Stack_Record)
       return Boolean;
 
+   function Next_Tile
+     (Stack : Stack_Record)
+      return Tile_Position
+     with Pre => Stack.Has_Movement;
+
    function Current_Movement
      (Stack : Stack_Record)
       return Array_Of_Positions
@@ -95,6 +100,10 @@ package Carthage.Stacks is
      (Stack : Stack_Record;
       Tile  : Carthage.Tiles.Tile_Type)
       return Natural;
+
+   function Movement_Progress
+     (Stack : Stack_Record)
+      return Float;
 
    function Find_Path
      (Stack   : Stack_Record'Class;
@@ -201,6 +210,8 @@ private
          Orders             : Stack_Order_Lists.List;
          Current_Path       : Stack_Path_Holders.Holder;
          Current_Path_Index : Natural := 0;
+         Next_Tile_Cost     : Positive := 1;
+         Next_Tile_Progress : Natural := 0;
          Manager            : access Stack_Manager_Interface'Class;
       end record;
 
@@ -262,6 +273,16 @@ private
      (Stack : Stack_Record)
       return Array_Of_Positions
    is (Stack.Current_Path.Element);
+
+   function Next_Tile
+     (Stack : Stack_Record)
+      return Tile_Position
+   is (Stack.Current_Movement (Stack.Current_Path_Index));
+
+   function Movement_Progress
+     (Stack : Stack_Record)
+      return Float
+   is (Float (Stack.Next_Tile_Progress) / Float (Stack.Next_Tile_Cost));
 
    function Count (Stack : Stack_Record) return Asset_Count
    is (Stack.Count);

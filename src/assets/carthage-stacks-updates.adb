@@ -197,13 +197,19 @@ package body Carthage.Stacks.Updates is
                                     Passable'Access,
                                     Move_Cost'Access);
                      begin
-                        Stack.Log ("moving to "
-                                   & Carthage.Tiles.Position_Image
-                                     (Order.Destination)
-                                   & ": path length ="
-                                   & Natural'Image (Path'Length));
-                        Stack.Current_Path.Replace_Element (Path);
-                        Stack.Current_Path_Index := 2;
+                        if Path'Length = 0 then
+                           Stack.Current_Path_Index := 0;
+                           Stack.Current_Path.Clear;
+                        else
+                           Stack.Log
+                             ("moving to "
+                              & Carthage.Tiles.Position_Image
+                                (Order.Destination)
+                              & ": path length ="
+                              & Natural'Image (Path'Length));
+                           Stack.Current_Path.Replace_Element (Path);
+                           Stack.Current_Path_Index := 1;
+                        end if;
                      end;
                   when Move_To_Asset =>
                      null;
@@ -220,22 +226,28 @@ package body Carthage.Stacks.Updates is
                Path_Index : Positive := Stack.Current_Path_Index;
                Stop : Boolean := False;
             begin
-               while not Stop and then Remaining_Movement > 0
-                 and then Path_Index <= Path'Last
-               loop
+               if Stack.Next_Tile_Progress < Stack.Next_Tile_Cost then
+                  Stack.Next_Tile_Progress :=
+                    Stack.Next_Tile_Progress + 1;
+               else
                   Move (Path (Path_Index), Stop);
                   Path_Index := Path_Index + 1;
-               end loop;
 
-               if Stop
-                 or else Path_Index > Path'Last
-               then
-                  Stack.Log ("stopping at " & Stack.Tile.Description);
-                  Stack.Current_Path_Index := 0;
-                  Stack.Current_Path.Clear;
-               else
-                  Stack.Log ("waypoint at " & Stack.Tile.Description);
-                  Stack.Current_Path_Index := Path_Index;
+                  if Stop
+                    or else Path_Index >= Path'Last
+                  then
+                     Stack.Log ("stopping at " & Stack.Tile.Description);
+                     Stack.Current_Path_Index := 0;
+                     Stack.Current_Path.Clear;
+                  else
+                     Stack.Log ("waypoint at " & Stack.Tile.Description);
+                     Stack.Current_Path_Index := Path_Index;
+                     Stack.Next_Tile_Progress := 0;
+                     Stack.Next_Tile_Cost :=
+                       Stack.Movement_Cost
+                         (Stack.Planet.Tile
+                            (Path (Path_Index)));
+                  end if;
                end if;
             end;
          end if;

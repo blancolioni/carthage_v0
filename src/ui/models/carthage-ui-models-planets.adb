@@ -644,10 +644,10 @@ package body Carthage.UI.Models.Planets is
            and then Tile.Has_Stacks
          then
             declare
-               Left       : constant Integer :=
+               Left       : Integer :=
                               Screen_X - Icon_Size / 2;
                Right      : constant Integer := Left + Icon_Size;
-               Top        : constant Integer :=
+               Top        : Integer :=
                               Screen_Y + Tile_Height / 2
                                 - Icon_Size;
                Bottom     : constant Integer := Top + Icon_Size;
@@ -659,6 +659,21 @@ package body Carthage.UI.Models.Planets is
                               "unit"
                               & Integer'Image (-(Stack.Asset (1).Unit.Index));
             begin
+               if Stack.Has_Movement then
+                  declare
+                     Next_Position  : constant Tile_Position :=
+                                        Stack.Next_Tile;
+                     Progress       : constant Float :=
+                                        Stack.Movement_Progress;
+                     Next_X, Next_Y : Integer;
+                  begin
+                     Model.Get_Screen_Tile_Centre
+                       (Next_Position, Next_X, Next_Y);
+                     Left := Left + Integer (Float (Next_X - Left) * Progress);
+                     Top := Top + Integer (Float (Next_Y - Top) * Progress);
+                  end;
+               end if;
+
                Model.Rendered_Stacks.Append
                  (Rendered_Stack_Icon'
                     (Stack, Left, Top, Right, Bottom));
