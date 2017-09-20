@@ -49,6 +49,7 @@ private
       record
          City      : Carthage.Cities.City_Type;
          Available : Carthage.Resources.Stock_Record;
+         Ordered   : Carthage.Resources.Stock_Record;
          Sources   : City_Resource_Lists.List;
          Sinks     : City_Resource_Lists.List;
       end record;
@@ -75,6 +76,12 @@ private
       Goal    : Carthage.Goals.Goal_Record'Class)
       return Boolean
    is (True);
+
+   overriding procedure On_Resource_Arrival
+     (Manager  : in out City_Manager_Record;
+      City     : not null access constant Carthage.Cities.City_Record'Class;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Positive);
 
    procedure Create_Resource_Network
      (Manager : in out City_Manager_Record'Class);

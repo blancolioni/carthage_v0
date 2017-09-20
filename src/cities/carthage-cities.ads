@@ -32,6 +32,19 @@ package Carthage.Cities is
      (City : City_Record)
       return String;
 
+   type City_Manager_Interface is interface;
+
+   procedure On_Resource_Arrival
+     (Manager  : in out City_Manager_Interface;
+      City     : not null access constant City_Record'Class;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Positive)
+   is null;
+
+   procedure Set_Manager
+     (City : in out City_Record;
+      Manager : not null access City_Manager_Interface'Class);
+
    function Planet
      (City : City_Record)
       return Carthage.Planets.Planet_Type;
@@ -140,6 +153,7 @@ private
      new Carthage.Objects.Root_Named_Object
      and Carthage.Resources.Stock_Interface with
       record
+         Manager   : access City_Manager_Interface'Class;
          Owner     : Carthage.Houses.House_Type;
          Planet    : Carthage.Planets.Planet_Type;
          Tile      : Carthage.Tiles.Tile_Type;

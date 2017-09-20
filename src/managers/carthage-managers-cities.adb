@@ -145,7 +145,6 @@ package body Carthage.Managers.Cities is
                      Wanted    : Natural := 0;
                      Available : constant Natural :=
                                    City.Quantity (Item.Resource);
-
                   begin
                      for Request of Requests.Element (City.Identifier) loop
                         if Request.Resource = Item.Resource then
@@ -213,6 +212,7 @@ package body Carthage.Managers.Cities is
                Info.City.Log
                  ("order" & Quantity'Img & " " & Resource.Identifier);
                Info.City.Update.Buy_Resource (Resource, Quantity);
+               Info.Ordered.Add (Resource, Quantity);
             end Buy;
 
             ----------
@@ -259,13 +259,18 @@ package body Carthage.Managers.Cities is
                               Info.City.Structure.Production_Outputs;
                begin
                   for Item of Inputs loop
-                     if Info.Available.Quantity (Item.Resource)
-                       < 2 * Item.Quantity
-                     then
-                        Buy (Item.Resource,
-                             2 * Item.Quantity
-                             - Info.Available.Quantity (Item.Resource));
-                     end if;
+                     declare
+                        Available : constant Natural :=
+                                      Info.Available.Quantity (Item.Resource);
+                        Ordered   : constant Natural :=
+                                      Info.Ordered.Quantity (Item.Resource);
+                        Pipeline  : constant Natural := Available + Ordered;
+                        Required  : constant Natural := 2 * Item.Quantity;
+                     begin
+                        if Pipeline < Required then
+                           Buy (Item.Resource, Required - Pipeline);
+                        end if;
+                     end;
                   end loop;
 
                   for Item of Outputs loop
@@ -311,6 +316,7 @@ package body Carthage.Managers.Cities is
                  (City        =>
                       Carthage.Cities.City_Type (City),
                   Available   => <>,
+                  Ordered     => <>,
                   Sources     => City_Resource_Lists.Empty_List,
                   Sinks       => City_Resource_Lists.Empty_List));
             if City.Structure.Is_Palace then
@@ -326,6 +332,26 @@ package body Carthage.Managers.Cities is
       Manager.Planet.Scan_Cities (Add_City_Info'Access);
       Manager.Create_Resource_Network;
    end Load_Initial_State;
+
+   -------------------------
+   -- On_Resource_Arrival --
+   -------------------------
+
+   overriding procedure On_Resource_Arrival
+     (Manager  : in out City_Manager_Record;
+      City     : not null access constant Carthage.Cities.City_Record'Class;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Positive)
+   is
+      use type Carthage.Cities.City_Type;
+   begin
+      for Info of Manager.Cities loop
+         if Info.City = Carthage.Cities.City_Type (City) then
+            Info.Ordered.Remove (Resource, Quantity);
+            exit;
+         end if;
+      end loop;
+   end On_Resource_Arrival;
 
    -------------------------------
    -- Set_Resource_Requirements --

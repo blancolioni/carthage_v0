@@ -132,6 +132,18 @@ package body Carthage.Cities is
       City.Agora := City_Type (Agora);
    end Set_Agora;
 
+   -----------------
+   -- Set_Manager --
+   -----------------
+
+   procedure Set_Manager
+     (City    : in out City_Record;
+      Manager : not null access City_Manager_Interface'Class)
+   is
+   begin
+      City.Manager := Manager;
+   end Set_Manager;
+
    ------------------
    -- Set_Quantity --
    ------------------
