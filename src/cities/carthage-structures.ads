@@ -56,14 +56,14 @@ package Carthage.Structures is
      (Structure : Structure_Record)
       return Boolean;
 
-   type Resouce_Quantity_Record is
+   type Resource_Quantity_Record is
       record
          Resource : Carthage.Resources.Resource_Type;
          Quantity : Natural;
       end record;
 
    type Production_Array is
-     array (Positive range <>) of Resouce_Quantity_Record;
+     array (Positive range <>) of Resource_Quantity_Record;
 
    function Production_Inputs
      (Structure : Structure_Record)
