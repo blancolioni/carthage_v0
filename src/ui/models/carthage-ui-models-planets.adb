@@ -124,6 +124,7 @@ package body Carthage.UI.Models.Planets is
    overriding procedure Zoom
      (Model   : in out Root_Planet_Model;
       Z       : in     Integer;
+      X, Y    : in     Integer;
       Control : in     Boolean);
 
    overriding function Tooltip
@@ -1062,6 +1063,7 @@ package body Carthage.UI.Models.Planets is
    overriding procedure Zoom
      (Model   : in out Root_Planet_Model;
       Z       : in     Integer;
+      X, Y    : in     Integer;
       Control : in     Boolean)
    is
       pragma Unreferenced (Control);
@@ -1069,7 +1071,55 @@ package body Carthage.UI.Models.Planets is
    begin
       if New_Zoom in Zoom_Level then
          Model.Current_Zoom := New_Zoom;
+
+         if Contains (Model.Main_Map_Layout, X, Y)
+           and then Z > 0
+         then
+            declare
+               Zoomed_Size  : constant Natural :=
+                                Zoomed_Tile_Size (Model.Current_Zoom);
+               Tile_Height  : constant Natural := Zoomed_Size;
+               Column_Width : constant Natural := Zoomed_Size;
+               Row_Height   : constant Natural := Tile_Height + 1;
+
+               Map_X        : Integer :=
+                                Integer (Model.Centre.X)
+                                + (X - Model.Width / 2) / Column_Width;
+               Map_Y        : constant Integer :=
+                                Integer (Model.Centre.Y)
+                                + (Y - Model.Height / 2) / Row_Height;
+            begin
+               while Map_X < 1 loop
+                  Map_X := Map_X + Planet_Width;
+               end loop;
+               while Map_X > Planet_Width loop
+                  Map_X := Map_X - Planet_Width;
+               end loop;
+               if Map_Y in 1 .. Planet_Height then
+                  declare
+                     Current_X : constant Integer := Integer (Model.Centre.X);
+                     Current_Y : constant Integer := Integer (Model.Centre.Y);
+                     DX        : constant Integer := Map_X - Current_X;
+                     DY        : constant Integer := Map_Y - Current_Y;
+                     New_X     : constant Integer :=
+                                   Map_X
+                                     + (New_Zoom - Zoom_Level'First)
+                                   * DX
+                                     / (Zoom_Level'Last
+                                        - Zoom_Level'First + 1);
+                     New_Y     : constant Integer :=
+                                   Map_Y
+                                     + (New_Zoom - Zoom_Level'First)
+                                   * DY
+                                     / (Zoom_Level'Last
+                                        - Zoom_Level'First + 1);
+                  begin
+                     Model.Set_Centre ((Tile_X (New_X), Tile_Y (New_Y)));
+                  end;
+               end if;
+            end;
          Model.Needs_Render := True;
+      end if;
       end if;
    end Zoom;
 

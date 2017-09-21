@@ -78,6 +78,7 @@ package body Carthage.UI.Models.Galaxy is
    overriding procedure Zoom
      (Model   : in out Root_Galaxy_Model;
       Z       : in     Integer;
+      X, Y    : in     Integer;
       Control : in     Boolean);
 
    overriding function Tooltip
@@ -613,10 +614,11 @@ package body Carthage.UI.Models.Galaxy is
    overriding procedure Zoom
      (Model   : in out Root_Galaxy_Model;
       Z       : in     Integer;
+      X, Y    : in     Integer;
       Control : in     Boolean)
    is
    begin
-      Lui.Models.Root_Object_Model (Model).Zoom (Z, Control);
+      Lui.Models.Root_Object_Model (Model).Zoom (Z, X, Y, Control);
       if Model.Eye_Z > Zoom_Limit then
          Model.Set_Eye_Position (Model.Eye_X, Model.Eye_Y, Zoom_Limit);
       end if;
