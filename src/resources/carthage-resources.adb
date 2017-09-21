@@ -21,7 +21,7 @@ package body Carthage.Resources is
    procedure Add
      (Stock          : in out Stock_Interface'Class;
       Resource       : not null access constant Resource_Class;
-      Added_Quantity : Positive)
+      Added_Quantity : Natural)
    is
    begin
       Stock.Add (Resource, Resource_Quantity (Added_Quantity));
@@ -72,7 +72,7 @@ package body Carthage.Resources is
    procedure Remove
      (Stock            : in out Stock_Interface'Class;
       Resource         : not null access constant Resource_Class;
-      Removed_Quantity : Positive)
+      Removed_Quantity : Natural)
    is
    begin
       Stock.Remove (Resource, Resource_Quantity (Removed_Quantity));
@@ -88,6 +88,10 @@ package body Carthage.Resources is
    begin
       Db.Scan (Process);
    end Scan;
+
+   ----------------
+   -- Scan_Stock --
+   ----------------
 
    procedure Scan_Stock
      (Stock   : Stock_Interface'Class;
@@ -105,6 +109,34 @@ package body Carthage.Resources is
       begin
          if Stock.Quantity (Resource) > 0.0 then
             Process (Resource, Stock.Quantity (Resource));
+         end if;
+      end Check;
+
+   begin
+      Db.Scan (Check'Access);
+   end Scan_Stock;
+
+   ----------------
+   -- Scan_Stock --
+   ----------------
+
+   procedure Scan_Stock
+     (Stock   : Stock_Interface'Class;
+      Process : not null access
+        procedure (Resource : Resource_Type;
+                   Quantity : Positive))
+   is
+      procedure Check (Resource : Resource_Type);
+
+      -----------
+      -- Check --
+      -----------
+
+      procedure Check (Resource : Resource_Type) is
+         Quantity : constant Natural := Stock.Whole_Quantity (Resource);
+      begin
+         if Quantity > 0 then
+            Process (Resource, Quantity);
          end if;
       end Check;
 

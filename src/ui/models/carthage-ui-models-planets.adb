@@ -1118,8 +1118,8 @@ package body Carthage.UI.Models.Planets is
                   end;
                end if;
             end;
+         end if;
          Model.Needs_Render := True;
-      end if;
       end if;
    end Zoom;
 

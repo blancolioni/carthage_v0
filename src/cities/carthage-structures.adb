@@ -46,8 +46,7 @@ package body Carthage.Structures is
      (Structure : Structure_Record;
       Stock     : in out Carthage.Resources.Stock_Interface'Class)
    is
-      Size      : Resource_Quantity := 0.0;
-      Have_Size : Boolean := False;
+      Size      : Resource_Quantity := 1.0 / 30.0;
    begin
       for Item of Structure.Inputs loop
          declare
@@ -55,8 +54,7 @@ package body Carthage.Structures is
                           Stock.Quantity (Item.Resource)
                           / Item.Quantity;
          begin
-            if not Have_Size or else This_Size < Size then
-               Have_Size := True;
+            if This_Size < Size then
                Size := This_Size;
             end if;
          end;
@@ -67,6 +65,13 @@ package body Carthage.Structures is
             Stock.Remove (Item.Resource, Item.Quantity * Size);
          end loop;
          for Item of Structure.Production loop
+            Structure.Log ("producing at"
+                           & Natural'Image (Natural (100.0 * Size))
+                           & "%:"
+                           & Natural'Image
+                             (Natural (Item.Quantity * Size * 1000.0))
+                           & " milli-" & Item.Resource.Name);
+
             Stock.Add (Item.Resource, Item.Quantity * Size);
          end loop;
       end if;

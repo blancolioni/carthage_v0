@@ -46,10 +46,10 @@ package Carthage.Resources is
      (Stock : in out Stock_Interface'Class);
 
    procedure Scan_Stock
-     (Stock : Stock_Interface'Class;
+     (Stock   : Stock_Interface'Class;
       Process : not null access
         procedure (Resource : Resource_Type;
-                   Quantity : Resource_Quantity));
+                   Quantity : Positive));
 
    procedure Add
      (Stock          : in out Stock_Interface'Class;
@@ -65,12 +65,12 @@ package Carthage.Resources is
    procedure Add
      (Stock          : in out Stock_Interface'Class;
       Resource       : not null access constant Resource_Class;
-      Added_Quantity : Positive);
+      Added_Quantity : Natural);
 
    procedure Remove
      (Stock            : in out Stock_Interface'Class;
       Resource         : not null access constant Resource_Class;
-      Removed_Quantity : Positive)
+      Removed_Quantity : Natural)
      with Pre => Removed_Quantity <= Stock.Whole_Quantity (Resource);
 
    type Stock_Record is new Stock_Interface with private;
@@ -139,5 +139,11 @@ private
       Resource : not null access constant Resource_Class)
       return Natural
    is (Natural (Resource_Quantity'Truncation (Stock.Quantity (Resource))));
+
+   procedure Scan_Stock
+     (Stock   : Stock_Interface'Class;
+      Process : not null access
+        procedure (Resource : Resource_Type;
+                   Quantity : Resource_Quantity));
 
 end Carthage.Resources;

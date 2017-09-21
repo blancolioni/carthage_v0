@@ -315,8 +315,12 @@ package body Carthage.Managers.Assets is
          & "; desired food =" & Desired_Food'Img);
       Manager.Minimum_Food := Min_Food;
       Manager.Desired_Food := Desired_Food;
-      Minimum.Add (Food_Resource, Min_Food);
-      Desired.Add (Food_Resource, Desired_Food);
+      if Min_Food > 0 then
+         Minimum.Add (Food_Resource, Min_Food);
+      end if;
+      if Desired_Food > 0 then
+         Desired.Add (Food_Resource, Desired_Food);
+      end if;
    end Get_Resource_Requirements;
 
    -----------------------------
