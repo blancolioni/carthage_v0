@@ -59,7 +59,7 @@ package Carthage.Structures is
    type Resource_Quantity_Record is
       record
          Resource : Carthage.Resources.Resource_Type;
-         Quantity : Natural;
+         Quantity : Resource_Quantity;
       end record;
 
    type Production_Array is
@@ -113,7 +113,7 @@ private
          City     : Boolean;
          Terrain  : Carthage.Terrain.Terrain_Type;
          Resource : Carthage.Resources.Resource_Type;
-         Quantity : Natural;
+         Quantity : Resource_Quantity;
       end record;
 
    package Production_Lists is

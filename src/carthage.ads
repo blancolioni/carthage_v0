@@ -22,4 +22,6 @@ package Carthage is
       return Positive
    is (Natural (Position.Y - 1) * Planet_Width + Positive (Position.X));
 
+   type Resource_Quantity is new Float range 0.0 .. Float'Last;
+
 end Carthage;

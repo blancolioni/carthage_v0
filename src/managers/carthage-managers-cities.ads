@@ -36,7 +36,7 @@ private
       record
          City     : Carthage.Cities.City_Type;
          Resource : Carthage.Resources.Resource_Type;
-         Quantity : Natural;
+         Quantity : Resource_Quantity;
       end record;
 
    package City_Resource_Lists is

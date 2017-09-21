@@ -7,11 +7,24 @@ package body Carthage.Resources is
    procedure Add
      (Stock          : in out Stock_Interface'Class;
       Resource       : not null access constant Resource_Class;
-      Added_Quantity : Natural)
+      Added_Quantity : Resource_Quantity)
    is
    begin
       Stock.Set_Quantity
         (Resource, Stock.Quantity (Resource) + Added_Quantity);
+   end Add;
+
+   ---------
+   -- Add --
+   ---------
+
+   procedure Add
+     (Stock          : in out Stock_Interface'Class;
+      Resource       : not null access constant Resource_Class;
+      Added_Quantity : Positive)
+   is
+   begin
+      Stock.Add (Resource, Resource_Quantity (Added_Quantity));
    end Add;
 
    -----------------
@@ -29,8 +42,8 @@ package body Carthage.Resources is
 
       procedure Clear (Resource : Carthage.Resources.Resource_Type) is
       begin
-         if Stock.Quantity (Resource) > 0 then
-            Stock.Set_Quantity (Resource, 0);
+         if Stock.Quantity (Resource) > 0.0 then
+            Stock.Set_Quantity (Resource, 0.0);
          end if;
       end Clear;
 
@@ -45,11 +58,24 @@ package body Carthage.Resources is
    procedure Remove
      (Stock            : in out Stock_Interface'Class;
       Resource         : not null access constant Resource_Class;
-      Removed_Quantity : Natural)
+      Removed_Quantity : Resource_Quantity)
    is
    begin
       Stock.Set_Quantity
         (Resource, Stock.Quantity (Resource) - Removed_Quantity);
+   end Remove;
+
+   ------------
+   -- Remove --
+   ------------
+
+   procedure Remove
+     (Stock            : in out Stock_Interface'Class;
+      Resource         : not null access constant Resource_Class;
+      Removed_Quantity : Positive)
+   is
+   begin
+      Stock.Remove (Resource, Resource_Quantity (Removed_Quantity));
    end Remove;
 
    ----------
@@ -67,7 +93,7 @@ package body Carthage.Resources is
      (Stock   : Stock_Interface'Class;
       Process : not null access
         procedure (Resource : Resource_Type;
-                   Quantity : Natural))
+                   Quantity : Resource_Quantity))
    is
       procedure Check (Resource : Resource_Type);
 
@@ -77,7 +103,7 @@ package body Carthage.Resources is
 
       procedure Check (Resource : Resource_Type) is
       begin
-         if Stock.Quantity (Resource) > 0 then
+         if Stock.Quantity (Resource) > 0.0 then
             Process (Resource, Stock.Quantity (Resource));
          end if;
       end Check;
@@ -93,7 +119,7 @@ package body Carthage.Resources is
    overriding procedure Set_Quantity
      (Stock        : in out Stock_Record;
       Resource     : not null access constant Resource_Class;
-      New_Quantity : Natural)
+      New_Quantity : Resource_Quantity)
    is
    begin
       Stock.Vector.Replace_Element (Resource, New_Quantity);

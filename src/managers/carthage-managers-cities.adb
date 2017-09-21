@@ -78,7 +78,7 @@ package body Carthage.Managers.Cities is
 
             procedure Save_Quantity
               (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Natural);
+               Quantity : Resource_Quantity);
 
             -------------------
             -- Save_Quantity --
@@ -86,7 +86,7 @@ package body Carthage.Managers.Cities is
 
             procedure Save_Quantity
               (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Natural)
+               Quantity : Resource_Quantity)
             is
             begin
                Info.Available.Set_Quantity (Resource, Quantity);
@@ -109,7 +109,9 @@ package body Carthage.Managers.Cities is
                              Structure.Production_Inputs;
                begin
                   for Item of Inputs loop
-                     if City.Quantity (Item.Resource) < 2 * Item.Quantity then
+                     if City.Quantity (Item.Resource)
+                       < 2.0 * Item.Quantity
+                     then
                         for Source of Info.Sources loop
                            if Source.Resource = Item.Resource then
                               if not Requests.Contains
@@ -122,7 +124,7 @@ package body Carthage.Managers.Cities is
 
                               Requests (Source.City.Identifier).Append
                                 ((City, Item.Resource,
-                                 2 * Item.Quantity
+                                 2.0 * Item.Quantity
                                  - City.Quantity (Item.Resource)));
                            end if;
                         end loop;
@@ -144,11 +146,11 @@ package body Carthage.Managers.Cities is
                   declare
                      Wanted    : Natural := 0;
                      Available : constant Natural :=
-                                   City.Quantity (Item.Resource);
+                                   City.Whole_Quantity (Item.Resource);
                   begin
                      for Request of Requests.Element (City.Identifier) loop
                         if Request.Resource = Item.Resource then
-                           Wanted := Wanted + Request.Quantity;
+                           Wanted := Wanted + Natural (Request.Quantity);
                         end if;
                      end loop;
 
@@ -164,7 +166,7 @@ package body Carthage.Managers.Cities is
                            if Request.Resource = Item.Resource then
                               declare
                                  Quantity : constant Natural :=
-                                              Request.Quantity
+                                              Natural (Request.Quantity)
                                                 * Available / Wanted;
                               begin
                                  if Quantity > 0 then
@@ -190,15 +192,15 @@ package body Carthage.Managers.Cities is
          declare
             procedure Buy
               (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Natural);
+               Quantity : Resource_Quantity);
 
             procedure Sell
               (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Natural);
+               Quantity : Resource_Quantity);
 
             procedure Store
               (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Natural);
+               Quantity : Resource_Quantity);
 
             ---------
             -- Buy --
@@ -206,12 +208,12 @@ package body Carthage.Managers.Cities is
 
             procedure Buy
               (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Natural)
+               Quantity : Resource_Quantity)
             is
             begin
                Info.City.Log
                  ("order" & Quantity'Img & " " & Resource.Identifier);
-               Info.City.Update.Buy_Resource (Resource, Quantity);
+               Info.City.Update.Buy_Resource (Resource, Positive (Quantity));
                Info.Ordered.Add (Resource, Quantity);
             end Buy;
 
@@ -221,12 +223,12 @@ package body Carthage.Managers.Cities is
 
             procedure Sell
               (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Natural)
+               Quantity : Resource_Quantity)
             is
             begin
                Info.City.Log
                  ("sell" & Quantity'Img & " " & Resource.Identifier);
-               Info.City.Update.Sell_Resource (Resource, Quantity);
+               Info.City.Update.Sell_Resource (Resource, Positive (Quantity));
             end Sell;
 
             -----------
@@ -235,13 +237,13 @@ package body Carthage.Managers.Cities is
 
             procedure Store
               (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Natural)
+               Quantity : Resource_Quantity)
             is
             begin
                Info.City.Log
                  ("store" & Quantity'Img & " " & Resource.Identifier);
                Info.City.Update.Transfer_Resource
-                 (Resource, Quantity, Manager.Palace);
+                 (Resource, Positive (Quantity), Manager.Palace);
             end Store;
 
          begin
@@ -260,12 +262,14 @@ package body Carthage.Managers.Cities is
                begin
                   for Item of Inputs loop
                      declare
-                        Available : constant Natural :=
+                        Available : constant Resource_Quantity :=
                                       Info.Available.Quantity (Item.Resource);
-                        Ordered   : constant Natural :=
+                        Ordered   : constant Resource_Quantity :=
                                       Info.Ordered.Quantity (Item.Resource);
-                        Pipeline  : constant Natural := Available + Ordered;
-                        Required  : constant Natural := 2 * Item.Quantity;
+                        Pipeline  : constant Resource_Quantity :=
+                                      Available + Ordered;
+                        Required  : constant Resource_Quantity :=
+                                      2.0 * Item.Quantity;
                      begin
                         if Pipeline < Required then
                            Buy (Item.Resource, Required - Pipeline);
@@ -274,7 +278,7 @@ package body Carthage.Managers.Cities is
                   end loop;
 
                   for Item of Outputs loop
-                     if Info.Available.Quantity (Item.Resource) > 0 then
+                     if Info.Available.Quantity (Item.Resource) > 0.0 then
                         if Manager.Palace /= null then
                            Store (Item.Resource,
                                   Info.Available.Quantity (Item.Resource));
@@ -368,7 +372,7 @@ package body Carthage.Managers.Cities is
 
       procedure Update_Result
         (Resource : Carthage.Resources.Resource_Type;
-         Quantity : Natural);
+         Quantity : Resource_Quantity);
 
       -------------------
       -- Update_Result --
@@ -376,15 +380,16 @@ package body Carthage.Managers.Cities is
 
       procedure Update_Result
         (Resource : Carthage.Resources.Resource_Type;
-         Quantity : Natural)
+         Quantity : Resource_Quantity)
       is
-         Have           : constant Natural :=
+         Have           : constant Resource_Quantity :=
                             Manager.Palace.Quantity (Resource);
-         Desire         : constant Natural := Desired.Quantity (Resource);
-         Final_Quantity : Natural;
+         Desire         : constant Resource_Quantity :=
+                            Desired.Quantity (Resource);
+         Final_Quantity : Resource_Quantity;
       begin
-         if Have = 0 then
-            Final_Quantity := 0;
+         if Have = 0.0 then
+            Final_Quantity := 0.0;
          elsif Quantity >= Have then
             Final_Quantity := Have;
          elsif Desire + Quantity < Have then
@@ -393,7 +398,7 @@ package body Carthage.Managers.Cities is
             Final_Quantity := Quantity;
          end if;
 
-         if Final_Quantity > 0 then
+         if Final_Quantity > 0.0 then
             Manager.Palace.Log
               (Resource.Name
                & ": have" & Have'Img
@@ -404,12 +409,12 @@ package body Carthage.Managers.Cities is
             Result.Add (Resource, Final_Quantity);
             Manager.Palace.Update.Remove (Resource, Final_Quantity);
 
-            if Desire * 2 < Have then
+            if Desire * 2.0 < Have then
                Manager.Palace.Update.Sell_Resource
-                 (Resource, Have - Desire * 2);
-            elsif Quantity * 2 > Have then
+                 (Resource, Natural (Have - Desire * 2.0));
+            elsif Quantity * 2.0 > Have then
                Manager.Palace.Update.Buy_Resource
-                 (Resource, Quantity * 2);
+                 (Resource, Natural (Quantity * 2.0));
             end if;
 
          end if;

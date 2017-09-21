@@ -20,13 +20,13 @@ package Carthage.Cities is
      (City     : City_Record;
       Resource : not null access constant
         Carthage.Resources.Resource_Class)
-      return Natural;
+      return Resource_Quantity;
 
    overriding procedure Set_Quantity
      (City         : in out City_Record;
       Resource     : not null access constant
         Carthage.Resources.Resource_Class;
-      New_Quantity : Natural);
+      New_Quantity : Resource_Quantity);
 
    overriding function Log_Identifier
      (City : City_Record)
@@ -89,8 +89,6 @@ package Carthage.Cities is
    procedure Set_Agora
      (City  : in out City_Record;
       Agora : not null access constant City_Record'Class);
-
-   type City_Manager_Interface is interface;
 
    subtype City_Class is City_Record'Class;
 
@@ -162,6 +160,7 @@ private
          Stock     : Carthage.Resources.Stock_Record;
          Orders    : City_Order_Lists.List;
          Agora     : City_Type;
+         Progress  : Float := 0.0;
       end record;
 
    overriding function Object_Database
@@ -183,7 +182,7 @@ private
      (City     : City_Record;
       Resource : not null access constant
         Carthage.Resources.Resource_Class)
-      return Natural
+      return Resource_Quantity
    is (City.Stock.Quantity (Resource));
 
    function Planet

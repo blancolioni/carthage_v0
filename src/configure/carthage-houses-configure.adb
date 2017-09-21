@@ -187,7 +187,8 @@ package body Carthage.Houses.Configure is
                            for Item of
                              Structure.Harvest_Production (Local_Tile)
                            loop
-                              This_Score := This_Score + Item.Quantity;
+                              This_Score := This_Score
+                                + Natural (Item.Quantity);
                            end loop;
 
                            if Local_Tile.Has_City

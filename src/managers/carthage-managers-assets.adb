@@ -295,8 +295,9 @@ package body Carthage.Managers.Assets is
                   Asset : constant Carthage.Assets.Asset_Type :=
                             Stack.Stack.Asset (I);
                begin
-                  Have_Food := Have_Food + Asset.Quantity (Food_Resource);
-                  Eat_Food  := Eat_Food + Asset.Unit.Eat;
+                  Have_Food := Have_Food +
+                    Asset.Whole_Quantity (Food_Resource);
+                  Eat_Food  := Eat_Food + Natural (Asset.Unit.Eat);
                end;
             end loop;
 

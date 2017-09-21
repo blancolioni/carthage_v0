@@ -24,7 +24,7 @@ package body Carthage.Assets is
      (Asset        : in out Asset_Record;
       Resource     : not null access constant
         Carthage.Resources.Resource_Class;
-      New_Quantity : Natural)
+      New_Quantity : Resource_Quantity)
    is
    begin
       Asset.Stock.Set_Quantity (Resource, New_Quantity);

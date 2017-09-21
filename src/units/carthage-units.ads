@@ -51,7 +51,7 @@ package Carthage.Units is
 
    function Eat
      (Unit : Unit_Record)
-      return Natural;
+      return Resource_Quantity;
 
    function Image_Resource
      (Unit : Unit_Record)
@@ -124,7 +124,7 @@ private
          Combat         : Boolean := False;
          Maintenance    : Natural := 0;
          Credit_Cost    : Natural := 0;
-         Eat            : Natural := 0;
+         Eat            : Resource_Quantity := 0.0;
          Rank           : Natural := 0;
          Resource_Cost  : Resource_Cost_Vectors.Vector;
          Build_Unit     : Unit_Type := null;
@@ -174,7 +174,7 @@ private
 
    function Eat
      (Unit : Unit_Record)
-      return Natural
+      return Resource_Quantity
    is (Unit.Eat);
 
    function Rank

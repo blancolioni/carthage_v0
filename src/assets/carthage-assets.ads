@@ -23,13 +23,13 @@ package Carthage.Assets is
      (Asset    : Asset_Record;
       Resource : not null access constant
         Carthage.Resources.Resource_Class)
-      return Natural;
+      return Resource_Quantity;
 
    overriding procedure Set_Quantity
      (Asset        : in out Asset_Record;
       Resource     : not null access constant
         Carthage.Resources.Resource_Class;
-      New_Quantity : Natural);
+      New_Quantity : Resource_Quantity);
 
    function Owner
      (Asset : Asset_Record)
@@ -93,7 +93,7 @@ private
      (Asset    : Asset_Record;
       Resource : not null access constant
         Carthage.Resources.Resource_Class)
-      return Natural
+      return Resource_Quantity
    is (Asset.Stock.Quantity (Resource));
 
    package Db is

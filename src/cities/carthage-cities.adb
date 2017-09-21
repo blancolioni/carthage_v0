@@ -152,7 +152,7 @@ package body Carthage.Cities is
      (City         : in out City_Record;
       Resource     : not null access constant
         Carthage.Resources.Resource_Class;
-      New_Quantity : Natural)
+      New_Quantity : Resource_Quantity)
    is
    begin
 --        City.Log ("changing " & Resource.Identifier

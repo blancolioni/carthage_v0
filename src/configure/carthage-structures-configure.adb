@@ -93,7 +93,7 @@ package body Carthage.Structures.Configure is
             World    : Carthage.Worlds.World_Type;
             City     : Boolean := False;
             Resource : Carthage.Resources.Resource_Type;
-            Count    : Natural;
+            Count    : Resource_Quantity;
          begin
             for Field_Config of Item_Config loop
                declare
@@ -133,7 +133,7 @@ package body Carthage.Structures.Configure is
                            State := Count_State;
                         end if;
                      when Count_State =>
-                        Count := Natural'Value (Field);
+                        Count := Resource_Quantity'Value (Field);
                         State := Resource_State;
                         Production.Append
                           (Production_Record'
@@ -161,23 +161,37 @@ package body Carthage.Structures.Configure is
       Outputs       : in out Production_Lists.List;
       Config        : Tropos.Configuration)
    is
+      procedure Add
+        (List : in out Production_Lists.List;
+         Config : Tropos.Configuration);
+
+      ---------
+      -- Add --
+      ---------
+
+      procedure Add
+        (List   : in out Production_Lists.List;
+         Config : Tropos.Configuration)
+      is
+         Value : constant Float := Config.Value;
+      begin
+         List.Append
+           (Production_Record'
+              (Resource => Carthage.Resources.Get (Config.Config_Name),
+               Quantity => Resource_Quantity (Value),
+               others   => <>));
+      end Add;
+
    begin
       Inputs.Clear;
       Outputs.Clear;
       for Item of Config.Child ("input") loop
-         Inputs.Append
-           (Production_Record'
-              (Resource => Carthage.Resources.Get (Item.Config_Name),
-               Quantity => Item.Value,
-               others   => <>));
+         Add (Inputs, Item);
       end loop;
       for Item of Config.Child ("output") loop
-         Outputs.Append
-           (Production_Record'
-              (Resource => Carthage.Resources.Get (Item.Config_Name),
-               Quantity => Item.Value,
-               others   => <>));
+         Add (Outputs, Item);
       end loop;
+
       if Inputs.Is_Empty and then Outputs.Is_Empty then
          raise Constraint_Error with
            "while configuring production for "

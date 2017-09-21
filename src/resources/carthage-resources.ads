@@ -28,14 +28,19 @@ package Carthage.Resources is
 
    function Quantity (Stock    : Stock_Interface;
                       Resource : not null access constant Resource_Class)
-                      return Natural
+                      return Resource_Quantity
                       is abstract;
 
    procedure Set_Quantity
      (Stock        : in out Stock_Interface;
       Resource     : not null access constant Resource_Class;
-      New_Quantity : Natural)
+      New_Quantity : Resource_Quantity)
    is abstract;
+
+   function Whole_Quantity
+     (Stock    : Stock_Interface'Class;
+      Resource : not null access constant Resource_Class)
+      return Natural;
 
    procedure Clear_Stock
      (Stock : in out Stock_Interface'Class);
@@ -44,30 +49,41 @@ package Carthage.Resources is
      (Stock : Stock_Interface'Class;
       Process : not null access
         procedure (Resource : Resource_Type;
-                   Quantity : Natural));
+                   Quantity : Resource_Quantity));
 
    procedure Add
      (Stock          : in out Stock_Interface'Class;
       Resource       : not null access constant Resource_Class;
-      Added_Quantity : Natural);
+      Added_Quantity : Resource_Quantity);
 
    procedure Remove
      (Stock            : in out Stock_Interface'Class;
       Resource         : not null access constant Resource_Class;
-      Removed_Quantity : Natural)
+      Removed_Quantity : Resource_Quantity)
      with Pre => Removed_Quantity <= Stock.Quantity (Resource);
+
+   procedure Add
+     (Stock          : in out Stock_Interface'Class;
+      Resource       : not null access constant Resource_Class;
+      Added_Quantity : Positive);
+
+   procedure Remove
+     (Stock            : in out Stock_Interface'Class;
+      Resource         : not null access constant Resource_Class;
+      Removed_Quantity : Positive)
+     with Pre => Removed_Quantity <= Stock.Whole_Quantity (Resource);
 
    type Stock_Record is new Stock_Interface with private;
 
    overriding function Quantity
      (Stock    : Stock_Record;
       Resource : not null access constant Resource_Class)
-      return Natural;
+      return Resource_Quantity;
 
    overriding procedure Set_Quantity
      (Stock        : in out Stock_Record;
       Resource     : not null access constant Resource_Class;
-      New_Quantity : Natural);
+      New_Quantity : Resource_Quantity);
 
 private
 
@@ -102,7 +118,7 @@ private
    is (Db.Get (Id));
 
    package Stock_Vectors is
-     new Memor.Element_Vectors (Resource_Record, Natural, 0);
+     new Memor.Element_Vectors (Resource_Record, Resource_Quantity, 0.0);
 
    type Stock_Record is new Stock_Interface with
       record
@@ -112,10 +128,16 @@ private
    overriding function Quantity
      (Stock    : Stock_Record;
       Resource : not null access constant Resource_Class)
-      return Natural
+      return Resource_Quantity
    is (Stock.Vector.Element (Resource));
 
    function Food return Resource_Type
    is (Get ("food"));
+
+   function Whole_Quantity
+     (Stock    : Stock_Interface'Class;
+      Resource : not null access constant Resource_Class)
+      return Natural
+   is (Natural (Resource_Quantity'Truncation (Stock.Quantity (Resource))));
 
 end Carthage.Resources;

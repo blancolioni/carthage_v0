@@ -46,27 +46,28 @@ package body Carthage.Structures is
      (Structure : Structure_Record;
       Stock     : in out Carthage.Resources.Stock_Interface'Class)
    is
-      Ready : Boolean := True;
+      Size      : Resource_Quantity := 0.0;
+      Have_Size : Boolean := False;
    begin
       for Item of Structure.Inputs loop
-         if Stock.Quantity (Item.Resource) < Item.Quantity then
-            Structure.Log ("insufficient " & Item.Resource.Identifier
-                           & "; needed" & Natural'Image (Item.Quantity)
-                           & " but have"
-                           & Natural'Image (Stock.Quantity (Item.Resource)));
-            Ready := False;
-            exit;
-         end if;
+         declare
+            This_Size : constant Resource_Quantity :=
+                          Stock.Quantity (Item.Resource)
+                          / Item.Quantity;
+         begin
+            if not Have_Size or else This_Size < Size then
+               Have_Size := True;
+               Size := This_Size;
+            end if;
+         end;
       end loop;
 
-      if Ready then
+      if Size > 0.0 then
          for Item of Structure.Inputs loop
-            Stock.Remove (Item.Resource, Item.Quantity);
+            Stock.Remove (Item.Resource, Item.Quantity * Size);
          end loop;
          for Item of Structure.Production loop
-            Structure.Log ("creating" & Natural'Image (Item.Quantity)
-                           & " " & Item.Resource.Identifier);
-            Stock.Add (Item.Resource, Item.Quantity);
+            Stock.Add (Item.Resource, Item.Quantity * Size);
          end loop;
       end if;
 
@@ -100,7 +101,7 @@ package body Carthage.Structures is
                if Index = 0 then
                   Count := Count + 1;
                   Index := Count;
-                  Result (Index) := (Item.Resource, 0);
+                  Result (Index) := (Item.Resource, 0.0);
                end if;
 
                Result (Index).Quantity :=
@@ -165,7 +166,7 @@ package body Carthage.Structures is
                end loop;
                if not Found then
                   Count := Count + 1;
-                  Result (Count) := (Output.Resource, 1);
+                  Result (Count) := (Output.Resource, 1.0);
                end if;
             end;
          end loop;

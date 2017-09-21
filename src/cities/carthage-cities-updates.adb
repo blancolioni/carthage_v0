@@ -29,7 +29,7 @@ package body Carthage.Cities.Updates is
                   Quantity : constant Natural :=
                                Natural'Min
                                  (Order.Quantity,
-                                  Agora.Quantity (Order.Resource));
+                                  Agora.Whole_Quantity (Order.Resource));
                   Cost     : constant Natural :=
                                Quantity * Order.Resource.Base_Price
                                  * 11 / 10;
@@ -44,6 +44,11 @@ package body Carthage.Cities.Updates is
                      Agora.Owner.Update.Earn (Cost);
                      Agora.Update.Remove (Order.Resource, Quantity);
                      City.Add (Order.Resource, Quantity);
+                     if City.Manager /= null then
+                        City.Manager.On_Resource_Arrival
+                          (Db.Reference (City.Reference),
+                           Order.Resource, Quantity);
+                     end if;
                   end if;
                end;
             when Sell =>
@@ -96,7 +101,7 @@ package body Carthage.Cities.Updates is
       procedure Report_Stock
         (Resource : Carthage.Resources.Resource_Type)
       is
-         Quantity : constant Natural := City.Quantity (Resource);
+         Quantity : constant Natural := City.Whole_Quantity (Resource);
       begin
          if Quantity > 0 then
             City.Log
@@ -124,7 +129,7 @@ package body Carthage.Cities.Updates is
       Tiles  : Surface_Tiles;
       package Output_Vectors is
         new Memor.Element_Vectors
-          (Carthage.Resources.Resource_Record, Natural, 0);
+          (Carthage.Resources.Resource_Record, Resource_Quantity, 0.0);
       Output : Output_Vectors.Vector;
    begin
       Get_Tiles
@@ -140,7 +145,8 @@ package body Carthage.Cities.Updates is
             for Rec of Prod loop
                Output.Replace_Element
                  (Rec.Resource,
-                  Output.Element (Rec.Resource) + Rec.Quantity);
+                  Output.Element (Rec.Resource)
+                  + Rec.Quantity / 30.0);
             end loop;
          end;
       end loop;
@@ -149,7 +155,7 @@ package body Carthage.Cities.Updates is
          procedure Add_Harvested_Resources
            (Resource : not null access constant
               Carthage.Resources.Resource_Class;
-            Quantity : Natural);
+            Quantity : Resource_Quantity);
 
          -----------------------------
          -- Add_Harvested_Resources --
@@ -158,7 +164,7 @@ package body Carthage.Cities.Updates is
          procedure Add_Harvested_Resources
            (Resource : not null access constant
               Carthage.Resources.Resource_Class;
-            Quantity : Natural)
+            Quantity : Resource_Quantity)
          is
          begin
             City.Add (Resource, Quantity);

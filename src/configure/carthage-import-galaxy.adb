@@ -303,9 +303,13 @@ package body Carthage.Import.Galaxy is
                     Initial_Stock_Config.Child
                       (Structure.Identifier)
                   loop
-                     Rec.Add
-                       (Carthage.Resources.Get (Item.Config_Name),
-                        Item.Value);
+                     declare
+                        Value : constant Float := Item.Value;
+                     begin
+                        Rec.Add
+                          (Carthage.Resources.Get (Item.Config_Name),
+                           Resource_Quantity (Value));
+                     end;
                   end loop;
                end Update;
 
