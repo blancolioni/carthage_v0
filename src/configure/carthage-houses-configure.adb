@@ -409,7 +409,9 @@ package body Carthage.Houses.Configure is
            (Planet    => Planet,
             Tile      => Tile,
             Structure => Structure,
-            Owner     => House);
+            Owner     => House,
+            Health    => 75,
+            Loyalty   => 75);
 
          for Position of Road loop
             Planet.Tile (Position).Update.Set_Road (True);

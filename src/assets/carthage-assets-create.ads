@@ -4,8 +4,8 @@ package Carthage.Assets.Create is
      (Unit      : Carthage.Units.Unit_Type;
       Owner     : Carthage.Houses.House_Type;
       XP        : Asset_Experience := Green;
-      Loyalty   : Asset_Loyalty := Asset_Loyalty'Last;
-      Health    : Asset_Health := Asset_Health'Last)
+      Loyalty   : Loyalty_Type := Loyalty_Type'Last;
+      Health    : Health_Type := Health_Type'Last)
       return Asset_Type;
 
 end Carthage.Assets.Create;

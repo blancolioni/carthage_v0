@@ -11,9 +11,6 @@ package Carthage.Assets is
    type Asset_Experience is
      (Green, Expert, Elite);
 
-   type Asset_Health is range 0 .. 100;
-   type Asset_Loyalty is range 0 .. 100;
-
    type Asset_Record is
      new Carthage.Objects.Root_Named_Object
      and Carthage.Resources.Stock_Interface
@@ -49,7 +46,7 @@ package Carthage.Assets is
 
    function Health
      (Asset : Asset_Record)
-      return Asset_Health;
+      return Health_Type;
 
    function Alive
      (Asset : Asset_Record)
@@ -78,8 +75,8 @@ private
       record
          Owner       : Carthage.Houses.House_Type;
          Unit        : Carthage.Units.Unit_Type;
-         Health      : Asset_Health := Asset_Health'Last;
-         Loyalty     : Asset_Loyalty := Asset_Loyalty'Last;
+         Health      : Health_Type := Health_Type'Last;
+         Loyalty     : Loyalty_Type := Loyalty_Type'Last;
          Experience  : Asset_Experience := Asset_Experience'First;
          Movement    : Natural := 0;
          Stock       : Carthage.Resources.Stock_Record;
@@ -129,7 +126,7 @@ private
 
    function Health
      (Asset : Asset_Record)
-      return Asset_Health
+      return Health_Type
    is (Asset.Health);
 
    function Alive

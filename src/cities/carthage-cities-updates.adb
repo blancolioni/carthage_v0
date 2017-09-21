@@ -113,7 +113,10 @@ package body Carthage.Cities.Updates is
       if City.Structure.Is_Harvester then
          Execute_Harvester_Production (City);
       else
-         City.Structure.Execute_Production (City);
+         City.Structure.Execute_Production
+           (City,
+            Float (City.Loyalty) / 100.0
+            * Float (City.Health) / 100.0);
       end if;
       Carthage.Resources.Scan (Report_Stock'Access);
    end Execute_City_Production;
@@ -146,7 +149,10 @@ package body Carthage.Cities.Updates is
                Output.Replace_Element
                  (Rec.Resource,
                   Output.Element (Rec.Resource)
-                  + Rec.Quantity / 30.0);
+                  + Rec.Quantity
+                  * Resource_Quantity (City.Health) / 100.0
+                  * Resource_Quantity (City.Loyalty) / 100.0
+                  / 30.0);
             end loop;
          end;
       end loop;

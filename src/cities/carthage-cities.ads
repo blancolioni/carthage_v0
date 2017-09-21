@@ -157,6 +157,8 @@ private
          Tile      : Carthage.Tiles.Tile_Type;
          Structure : Carthage.Structures.Structure_Type;
          Seen      : Carthage.Houses.House_Set;
+         Health    : Health_Type;
+         Loyalty   : Loyalty_Type;
          Stock     : Carthage.Resources.Stock_Record;
          Orders    : City_Order_Lists.List;
          Agora     : City_Type;

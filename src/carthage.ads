@@ -24,4 +24,7 @@ package Carthage is
 
    type Resource_Quantity is new Float range 0.0 .. Float'Last;
 
+   type Health_Type is range 0 .. 100;
+   type Loyalty_Type is range 0 .. 100;
+
 end Carthage;

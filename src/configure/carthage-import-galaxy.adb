@@ -284,7 +284,9 @@ package body Carthage.Import.Galaxy is
                          (Planet    => Planet,
                           Tile      => Tile,
                           Structure => Structure,
-                          Owner     => House_Map (Word_8 (City.Owner)));
+                          Owner     => House_Map (Word_8 (City.Owner)),
+                          Health    => Health_Type (City.Health),
+                          Loyalty   => Loyalty_Type (City.Loyalty));
       begin
 
          Planet.Update.Add_City (New_City);
@@ -673,11 +675,8 @@ package body Carthage.Import.Galaxy is
                       XP      =>
                         Carthage.Assets.Asset_Experience'Val
                           (Unit.Experience),
-                      Loyalty =>
-                        Carthage.Assets.Asset_Loyalty (Unit.Loyalty),
-                      Health  =>
-                        Carthage.Assets.Asset_Health
-                          (Unit.Health));
+                      Loyalty => Loyalty_Type (Unit.Loyalty),
+                      Health  => Health_Type (Unit.Health));
          In_Space : constant Boolean :=
                       (Unit.Flags and Unit_On_Ground_Mask) = 0;
          Sentry   : constant Boolean :=

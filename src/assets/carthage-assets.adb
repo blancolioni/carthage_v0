@@ -12,7 +12,7 @@ package body Carthage.Assets is
       if Points >= Natural (Asset.Health) then
          Asset.Health := 0;
       else
-         Asset.Health := Asset.Health - Asset_Health (Points);
+         Asset.Health := Asset.Health - Health_Type (Points);
       end if;
    end Damage;
 

@@ -141,7 +141,6 @@ package body Carthage.Combat is
         (Targets : Asset_Vectors.Vector)
          return Carthage.Assets.Asset_Type
       is
-         use type Carthage.Assets.Asset_Health;
          Lowest : Natural := Natural'Last;
          Target : Carthage.Assets.Asset_Type := null;
       begin

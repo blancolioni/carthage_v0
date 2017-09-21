@@ -44,7 +44,8 @@ package body Carthage.Structures is
 
    procedure Execute_Production
      (Structure : Structure_Record;
-      Stock     : in out Carthage.Resources.Stock_Interface'Class)
+      Stock     : in out Carthage.Resources.Stock_Interface'Class;
+      Factor    : Float)
    is
       Size      : Resource_Quantity := 1.0 / 30.0;
    begin
@@ -65,6 +66,7 @@ package body Carthage.Structures is
             Stock.Remove (Item.Resource, Item.Quantity * Size);
          end loop;
          for Item of Structure.Production loop
+            Size := Size * Resource_Quantity (Factor);
             Structure.Log ("producing at"
                            & Natural'Image (Natural (100.0 * Size))
                            & "%:"

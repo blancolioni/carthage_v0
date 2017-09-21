@@ -129,7 +129,9 @@ package body Carthage.Planets.Configure is
                              (Planet    => Db.Reference (Planet.Reference),
                               Tile      => Tile,
                               Structure => Structure,
-                              Owner     => null));
+                              Owner     => null,
+                              Health    => 100,
+                              Loyalty   => 100));
                         Planet.Add_City (Tile.City);
                         Count := Count + 1;
                      end if;

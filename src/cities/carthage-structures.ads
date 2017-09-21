@@ -86,7 +86,8 @@ package Carthage.Structures is
 
    procedure Execute_Production
      (Structure : Structure_Record;
-      Stock     : in out Carthage.Resources.Stock_Interface'Class);
+      Stock     : in out Carthage.Resources.Stock_Interface'Class;
+      Factor    : Float);
 
    subtype Structure_Class is Structure_Record'Class;
 
