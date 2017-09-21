@@ -1,3 +1,4 @@
+with Ada.Directories;
 with Ada.Text_IO;
 
 with WL.Command_Line;
@@ -25,8 +26,13 @@ begin
    Carthage.Tests.Run_Tests;
 
    Carthage.Logging.Start_Logging ("carthage.log");
-   WL.Command_Line.Load_Defaults
-     (Carthage.Paths.Config_File ("default-options.txt"));
+
+   if Ada.Directories.Exists ("options.txt") then
+      WL.Command_Line.Load_Defaults ("options.txt");
+   else
+      WL.Command_Line.Load_Defaults
+        (Carthage.Paths.Config_File ("default-options.txt"));
+   end if;
 
    Carthage.Configure.Load_Configuration;
    if Fading_Suns_Scenario then
