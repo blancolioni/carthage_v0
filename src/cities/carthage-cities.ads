@@ -90,8 +90,6 @@ package Carthage.Cities is
      (City  : in out City_Record;
       Agora : not null access constant City_Record'Class);
 
-   type City_Manager_Interface is interface;
-
    subtype City_Class is City_Record'Class;
 
    type City_Type is access constant City_Record'Class;
