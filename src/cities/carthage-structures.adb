@@ -47,13 +47,13 @@ package body Carthage.Structures is
       Stock     : in out Carthage.Resources.Stock_Interface'Class;
       Factor    : Float)
    is
-      Size      : Resource_Quantity := 1.0 / 30.0;
+      Size      : Float := 1.0 / 30.0;
    begin
       for Item of Structure.Inputs loop
          declare
-            This_Size : constant Resource_Quantity :=
-                          Stock.Quantity (Item.Resource)
-                          / Item.Quantity;
+            This_Size : constant Float :=
+                          Float (Stock.Quantity (Item.Resource))
+                          / Float (Item.Quantity);
          begin
             if This_Size < Size then
                Size := This_Size;
@@ -63,18 +63,22 @@ package body Carthage.Structures is
 
       if Size > 0.0 then
          for Item of Structure.Inputs loop
-            Stock.Remove (Item.Resource, Item.Quantity * Size);
+            Stock.Remove
+              (Item.Resource,
+               Resource_Quantity (Float (Item.Quantity) * Size));
          end loop;
          for Item of Structure.Production loop
-            Size := Size * Resource_Quantity (Factor);
+            Size := Size * Factor;
             Structure.Log ("producing at"
                            & Natural'Image (Natural (100.0 * Size))
                            & "%:"
                            & Natural'Image
-                             (Natural (Item.Quantity * Size * 1000.0))
+                             (Natural (Float (Item.Quantity) * Size * 1000.0))
                            & " milli-" & Item.Resource.Name);
 
-            Stock.Add (Item.Resource, Item.Quantity * Size);
+            Stock.Add
+              (Item.Resource,
+               Resource_Quantity (Float (Item.Quantity) * Size));
          end loop;
       end if;
 

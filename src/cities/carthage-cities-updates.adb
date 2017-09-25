@@ -146,13 +146,16 @@ package body Carthage.Cities.Updates is
                        (Tile => Get_Tile (Tiles, I));
          begin
             for Rec of Prod loop
-               Output.Replace_Element
-                 (Rec.Resource,
-                  Output.Element (Rec.Resource)
-                  + Rec.Quantity
-                  * Resource_Quantity (City.Health) / 100.0
-                  * Resource_Quantity (City.Loyalty) / 100.0
-                  / 30.0);
+               declare
+                  Quantity : Resource_Quantity := Rec.Quantity;
+               begin
+                  Quantity :=
+                    Resource_Quantity (Float (Quantity)
+                                       * Float (City.Health) / 100.0
+                                       * Float (City.Loyalty) / 100.0);
+                  Quantity := Quantity + Output.Element (Rec.Resource);
+                  Output.Replace_Element (Rec.Resource, Quantity);
+               end;
             end loop;
          end;
       end loop;

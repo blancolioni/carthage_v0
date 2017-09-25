@@ -138,7 +138,7 @@ private
      (Stock    : Stock_Interface'Class;
       Resource : not null access constant Resource_Class)
       return Natural
-   is (Natural (Resource_Quantity'Truncation (Stock.Quantity (Resource))));
+   is (Natural (Float'Truncation (Float (Stock.Quantity (Resource)))));
 
    procedure Scan_Stock
      (Stock   : Stock_Interface'Class;

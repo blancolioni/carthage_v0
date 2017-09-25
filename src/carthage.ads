@@ -22,7 +22,7 @@ package Carthage is
       return Positive
    is (Natural (Position.Y - 1) * Planet_Width + Positive (Position.X));
 
-   type Resource_Quantity is new Float range 0.0 .. Float'Last;
+   type Resource_Quantity is delta 0.001 range 0.0 .. 999_999.0;
 
    type Health_Type is range 0 .. 100;
    type Loyalty_Type is range 0 .. 100;
