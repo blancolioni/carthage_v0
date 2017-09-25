@@ -152,7 +152,8 @@ package body Carthage.Cities.Updates is
                   Quantity :=
                     Resource_Quantity (Float (Quantity)
                                        * Float (City.Health) / 100.0
-                                       * Float (City.Loyalty) / 100.0);
+                                       * Float (City.Loyalty) / 100.0
+                                       / 30.0);
                   Quantity := Quantity + Output.Element (Rec.Resource);
                   Output.Replace_Element (Rec.Resource, Quantity);
                end;
