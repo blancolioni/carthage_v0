@@ -8,3 +8,4 @@ config/cities
 config/technology
 config/units
 config/terrain/
+*.orig
