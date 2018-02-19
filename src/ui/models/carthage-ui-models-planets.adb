@@ -265,13 +265,13 @@ package body Carthage.UI.Models.Planets is
                      Integer (Position.X) - Integer (Model.Centre.X);
       Screen_Y   : constant Integer :=
                      Model.Main_Map_Layout.Y
-                       + Model.Height / 2
+                       + Model.Main_Map_Layout.Height / 2
                        + Relative_Y * Model.Row_Height
                        + (if Position.X mod 2 = 1
                           then Model.Row_Height / 2 else 0);
       Screen_X   : constant Integer :=
                      Model.Main_Map_Layout.X
-                     + Model.Map_Pixel_Width / 2
+                     + Model.Main_Map_Layout.Width / 2
                      + (if abs Relative_X <= Planet_Width / 2
                         then Relative_X * Model.Column_Width
                         elsif Relative_X < 0
