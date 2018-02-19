@@ -8,6 +8,7 @@ with Hexes;
 
 with Carthage.Assets;
 with Carthage.Cities;
+with Carthage.Resources;
 with Carthage.Stacks;
 with Carthage.Tiles;
 
@@ -26,16 +27,20 @@ package body Carthage.UI.Models.Planets is
    Zoomed_Icon_Size : constant array (Zoom_Level) of Positive :=
                         (64, 48, 32, 32, 24, 16, 8);
 
-   Base_Layer        : constant Lui.Rendering.Render_Layer := 1;
-   Unit_Layer        : constant Lui.Rendering.Render_Layer := 2;
-   Path_Layer        : constant Lui.Rendering.Render_Layer := 3;
-   Selection_Layer   : constant Lui.Rendering.Render_Layer := 4;
-   Minimap_Layer     : constant Lui.Rendering.Render_Layer := 5;
-   UI_Layer          : constant Lui.Rendering.Render_Layer := 6;
+   Static_UI_Layer   : constant Lui.Rendering.Render_Layer := 1;
+   Base_Layer        : constant Lui.Rendering.Render_Layer := 2;
+   Unit_Layer        : constant Lui.Rendering.Render_Layer := 3;
+   Path_Layer        : constant Lui.Rendering.Render_Layer := 4;
+   Selection_Layer   : constant Lui.Rendering.Render_Layer := 5;
+   Minimap_Layer     : constant Lui.Rendering.Render_Layer := 6;
+   UI_Layer          : constant Lui.Rendering.Render_Layer := 7;
    Last_Layer        : constant Lui.Rendering.Render_Layer := UI_Layer;
 
    Layout_Config : Tropos.Configuration;
    Have_Layout   : Boolean := False;
+
+   Resource_Image_Width  : constant := 34;
+   Resource_Image_Height : constant := 29;
 
    type Layout_Rectangle is
       record
@@ -78,6 +83,15 @@ package body Carthage.UI.Models.Planets is
    package Rendered_Asset_Lists is
      new Ada.Containers.Doubly_Linked_Lists (Rendered_Asset_Icon);
 
+   type Resource_Layout_Record is
+      record
+         Rectangle : Layout_Rectangle;
+      end record;
+
+   type Resource_Layout_Array is
+     array (Carthage.Resources.Resource_Index range <>)
+     of Resource_Layout_Record;
+
    type Root_Planet_Model is
      new Root_Carthage_Model with
       record
@@ -95,6 +109,7 @@ package body Carthage.UI.Models.Planets is
          Main_Map_Layout       : Layout_Rectangle;
          Mini_Map_Layout       : Layout_Rectangle;
          Selected_Stack_Layout : Layout_Rectangle;
+         Resource_Layout       : access Resource_Layout_Array;
          Sidebar_Icon_Size     : Positive;
          Show_Hex_Coords       : Boolean;
          Show_Cubic_Coords     : Boolean;
@@ -328,6 +343,41 @@ package body Carthage.UI.Models.Planets is
       Model.Main_Map_Layout := Rectangle ("main-map");
       Model.Selected_Stack_Layout := Rectangle ("selected-stack-layout");
       Model.Sidebar_Icon_Size := Layout_Config.Get ("sidebar-icon-size", 64);
+
+      declare
+         use Carthage.Resources;
+         Next_Index : Resource_Index := 1;
+         Current_X  : Integer := Model.Bottom_Toolbar_Layout.X + 2;
+         Current_Y  : constant Integer := Model.Bottom_Toolbar_Layout.Y + 2;
+
+         procedure Next_Rectangle
+           (Resource : Carthage.Resources.Resource_Type);
+
+         --------------------
+         -- Next_Rectangle --
+         --------------------
+
+         procedure Next_Rectangle
+           (Resource : Carthage.Resources.Resource_Type)
+         is
+         begin
+            Model.Resource_Layout (Resource.Index) :=
+              (Rectangle => (Current_X, Current_Y, 36, 48));
+            Next_Index := Next_Index + 1;
+            Current_X := Current_X + 40;
+         end Next_Rectangle;
+
+      begin
+
+         if Model.Resource_Layout = null then
+            Model.Resource_Layout :=
+              new Resource_Layout_Array
+                (1 .. Carthage.Resources.Last_Index);
+         end if;
+
+         Carthage.Resources.Scan (Next_Rectangle'Access);
+      end;
+
       Model.Layout_Loaded := True;
    end Load_Layout;
 
@@ -423,8 +473,7 @@ package body Carthage.UI.Models.Planets is
             Model : constant Planet_Model_Type := new Root_Planet_Model;
          begin
             Model.Initialise (Planet.Name, Last_Render_Layer => Last_Layer);
-            Model.Set_Background
-              (Lui.Colours.To_Colour (100, 100, 100));
+            Model.Set_Background (Lui.Colours.Black);
             Model.Planet := Planet;
             Set_Model (House, Planet.Identifier, Model);
             Model.Show_Hex_Coords := Carthage.Options.Show_Hex_Coordinates;
@@ -703,6 +752,22 @@ package body Carthage.UI.Models.Planets is
       end if;
 
       case Planet_Model_Layer (Renderer.Current_Render_Layer) is
+         when Static_UI_Layer =>
+            for Index in Model.Resource_Layout'Range loop
+               declare
+                  Rec : Layout_Rectangle renames
+                          Model.Resource_Layout (Index).Rectangle;
+               begin
+                  Renderer.Draw_Image
+                    (X        => Rec.X + 1,
+                     Y        => Rec.Y + 1,
+                     W        => Resource_Image_Width,
+                     H        => Resource_Image_Height,
+                     Resource =>
+                       "resource" & Integer'Image (-Integer (Index)));
+               end;
+            end loop;
+
          when Base_Layer =>
 
             Model.Scan_Screen_Tiles (Draw_Base_Layer_Tile'Access);
@@ -835,7 +900,24 @@ package body Carthage.UI.Models.Planets is
             end;
 
          when UI_Layer =>
-            null;
+            for Index in Model.Resource_Layout'Range loop
+               declare
+                  Rec : Layout_Rectangle renames
+                          Model.Resource_Layout (Index).Rectangle;
+                  Q   : constant Natural :=
+                          (if Model.Planet.Has_Palace
+                           then Model.Planet.Palace.Whole_Quantity
+                             (Carthage.Resources.Get (Index))
+                           else 0);
+               begin
+                  Renderer.Draw_String
+                    (X      => Rec.X + 1,
+                     Y      => Rec.Y + Resource_Image_Height + 4,
+                     Size   => 12,
+                     Colour => Lui.Colours.To_Colour (98, 207, 62),
+                     Text   => Natural'Image (Q));
+               end;
+            end loop;
       end case;
       Model.Needs_Render := (others => False);
    end Render;

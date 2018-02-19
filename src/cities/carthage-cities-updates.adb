@@ -111,9 +111,11 @@ package body Carthage.Cities.Updates is
          Execute_Harvester_Production (City);
       else
          City.Structure.Execute_Production
-           (City,
-            Float (City.Loyalty) / 100.0
-            * Float (City.Health) / 100.0);
+           (Stock      => City,
+            Efficiency =>
+              Float (City.Loyalty) / 100.0
+            * Float (City.Health) / 100.0,
+            Factor     => 0.1);
       end if;
       Carthage.Resources.Scan (Report_Stock'Access);
    end Execute_City_Production;

@@ -3,6 +3,7 @@
 with Ada.Text_IO;
 
 --  with WL.Images.FLC;
+with WL.Images.Bitmaps;
 
 with Carthage.Structures;
 
@@ -63,7 +64,8 @@ package body Carthage.UI is
          Width, Height    : Natural;
          Resource_Name_Fn : not null access
            function (Index      : Natural)
-         return String);
+         return String;
+         Save_Images      : Boolean := False);
 
       ----------------
       -- Load_Hexes --
@@ -133,7 +135,8 @@ package body Carthage.UI is
          Width, Height    : Natural;
          Resource_Name_Fn : not null access
            function (Index      : Natural)
-         return String)
+         return String;
+         Save_Images      : Boolean := False)
       is
 
          Index : Natural := 0;
@@ -148,10 +151,17 @@ package body Carthage.UI is
          procedure Save_Resource
            (Image : WL.Images.Image_Type'Class)
          is
+            Writer : WL.Images.Bitmaps.Bitmap_Image_Writer;
          begin
             Save_Image_Resource
               (Resource_Name_Fn (Index),
                Image);
+            if Save_Images then
+               Writer.Write
+                 ("images/" & Resource_Name_Fn (Index) & ".bmp",
+                  Image);
+            end if;
+
             Index := Index + 1;
          end Save_Resource;
 
@@ -174,6 +184,11 @@ package body Carthage.UI is
             On_Load       => Save_Resource'Access);
 
       end Load_Icons;
+
+      function Resource_Name_Fn
+        (Index      : Natural)
+         return String
+      is ("resource" & Integer'Image ((-Index) - 1));
 
       -----------------------
       -- Structure_Name_Fn --
@@ -223,6 +238,7 @@ package body Carthage.UI is
 
       Ada.Text_IO.Put_Line ("loading counters ...");
       Load_Icons ("efsunit", 32, 32, Unit_Name_Fn'Access);
+      Load_Icons ("cargo", 34, 29, Resource_Name_Fn'Access);
 
    end Load_Resources;
 

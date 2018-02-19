@@ -140,6 +140,12 @@ package Carthage.Planets is
      (Planet : in out Planet_Record;
       New_Owner : Carthage.Houses.House_Type);
 
+   function Has_Palace (Planet : Planet_Record) return Boolean;
+
+   function Palace (Planet : Planet_Record)
+                    return access constant Carthage.Cities.City_Record'Class
+     with Pre => Planet.Has_Palace;
+
    function Seen_By
      (Planet : Planet_Record;
       House  : Carthage.Houses.House_Type)
@@ -223,10 +229,6 @@ package Carthage.Planets is
       Process : not null access
         procedure (City : not null access constant
                      Carthage.Cities.City_Record'Class));
-
-   function Palace
-     (Planet : Planet_Record)
-      return access constant Carthage.Cities.City_Record'Class;
 
    procedure Scan_Stacks
      (Planet  : Planet_Record;
@@ -420,6 +422,9 @@ private
       Cubic  : Hexes.Cube_Coordinate)
       return Tile_Position
    is (Planet.Grid.Get_Tile (Cubic).Position);
+
+   function Has_Palace (Planet : Planet_Record) return Boolean
+   is (Planet.Palace /= null);
 
    function Palace
      (Planet : Planet_Record)

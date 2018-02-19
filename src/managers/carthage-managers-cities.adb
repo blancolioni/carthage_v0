@@ -78,7 +78,7 @@ package body Carthage.Managers.Cities is
    overriding function Average_Update_Frequency
      (Manager : City_Manager_Record)
       return Duration
-   is (Carthage.Calendar.Days (10));
+   is (Carthage.Calendar.Days (1));
 
    overriding procedure Initialize
      (Manager : in out City_Manager_Record);
@@ -321,7 +321,7 @@ package body Carthage.Managers.Cities is
                                Get_Total_Requests (Manager.Group,
                                                    Item.Resource);
             Available      : constant Resource_Quantity :=
-                               City.Quantity (Item.Resource);
+                               Manager.Available.Quantity (Item.Resource);
             Factor         : constant Float :=
                                (if Available >= Total_Requests
                                 then 1.0
@@ -361,6 +361,7 @@ package body Carthage.Managers.Cities is
                        (Resource => Item.Resource,
                         Quantity => Whole_Quantity,
                         To_City  => To_City);
+                     Manager.Available.Remove (Item.Resource, Whole_Quantity);
                   end if;
                end;
             end Process_Request;
@@ -505,7 +506,7 @@ package body Carthage.Managers.Cities is
             Carthage.Cities.Updates.Execute_City_Production'Access);
       end if;
 
-      return Carthage.Calendar.Days (10);
+      return Manager.Average_Update_Frequency;
    end Update;
 
 end Carthage.Managers.Cities;

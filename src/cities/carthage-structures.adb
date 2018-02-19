@@ -43,41 +43,41 @@ package body Carthage.Structures is
    ------------------------
 
    procedure Execute_Production
-     (Structure : Structure_Record;
-      Stock     : in out Carthage.Resources.Stock_Interface'Class;
-      Factor    : Float)
+     (Structure  : Structure_Record;
+      Stock      : in out Carthage.Resources.Stock_Interface'Class;
+      Efficiency : Float;
+      Factor     : Float)
    is
       OK : Boolean := True;
+
+      function Need (Rec : Production_Record) return Resource_Quantity
+      is (Resource_Quantity (Float (Rec.Quantity) * Factor));
+
    begin
       for Item of Structure.Inputs loop
-         if Stock.Quantity (Item.Resource) < Item.Quantity then
-            Structure.Log
-              ("insufficient " & Item.Resource.Name
-               & "; need"
-               & Natural'Image (Natural (Item.Quantity))
-                           & " but have"
-               & Natural'Image (Natural (Stock.Quantity (Item.Resource))));
+         if Stock.Quantity (Item.Resource) < Need (Item) then
+            Structure.Log ("insufficient " & Item.Resource.Name);
             OK := False;
          end if;
       end loop;
 
       if OK then
          for Item of Structure.Inputs loop
-            Stock.Remove (Item.Resource, Item.Quantity);
+            Stock.Remove (Item.Resource, Need (Item));
          end loop;
 
          for Item of Structure.Production loop
             declare
-               Quantity : constant Natural :=
-                            Natural
-                              (Float'Truncation (Float (Item.Quantity)
-                               * Factor));
+               Quantity : constant Resource_Quantity :=
+                            Resource_Quantity
+                              (Float (Item.Quantity)
+                               * Efficiency * Factor);
             begin
                Structure.Log ("producing" & Quantity'Img & " "
                               & Item.Resource.Name);
 
                Stock.Add
-                 (Item.Resource, Resource_Quantity (Quantity));
+                 (Item.Resource, Quantity);
             end;
          end loop;
 

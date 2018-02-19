@@ -9,3 +9,4 @@ config/technology
 config/units
 config/terrain/
 *.orig
+./images/*.bmp

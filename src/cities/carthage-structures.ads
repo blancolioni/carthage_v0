@@ -94,9 +94,10 @@ package Carthage.Structures is
      with Pre => Structure.Is_Harvester;
 
    procedure Execute_Production
-     (Structure : Structure_Record;
-      Stock     : in out Carthage.Resources.Stock_Interface'Class;
-      Factor    : Float);
+     (Structure  : Structure_Record;
+      Stock      : in out Carthage.Resources.Stock_Interface'Class;
+      Efficiency : Float;
+      Factor     : Float);
 
    subtype Structure_Class is Structure_Record'Class;
 

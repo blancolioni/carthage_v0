@@ -196,10 +196,12 @@ package body Carthage.Cities is
       To_City  : not null access constant City_Record'Class)
    is
    begin
-      City.Orders.Append
-        (City_Order_Record'
-           (Transfer, City_Type (To_City),
-            Resource, Quantity));
+      City.Remove (Resource, Quantity);
+      To_City.Update.Add (Resource, Quantity);
+--        City.Orders.Append
+--          (City_Order_Record'
+--             (Transfer, City_Type (To_City),
+--              Resource, Quantity));
    end Transfer_Resource;
 
    ------------
