@@ -47,39 +47,40 @@ package body Carthage.Structures is
       Stock     : in out Carthage.Resources.Stock_Interface'Class;
       Factor    : Float)
    is
-      Size      : Float := 1.0 / 30.0;
+      OK : Boolean := True;
    begin
       for Item of Structure.Inputs loop
-         declare
-            This_Size : constant Float :=
-                          Float (Stock.Quantity (Item.Resource))
-                          / Float (Item.Quantity);
-         begin
-            if This_Size < Size then
-               Size := This_Size;
-            end if;
-         end;
+         if Stock.Quantity (Item.Resource) < Item.Quantity then
+            Structure.Log
+              ("insufficient " & Item.Resource.Name
+               & "; need"
+               & Natural'Image (Natural (Item.Quantity))
+                           & " but have"
+               & Natural'Image (Natural (Stock.Quantity (Item.Resource))));
+            OK := False;
+         end if;
       end loop;
 
-      if Size > 0.0 then
+      if OK then
          for Item of Structure.Inputs loop
-            Stock.Remove
-              (Item.Resource,
-               Resource_Quantity (Float (Item.Quantity) * Size));
+            Stock.Remove (Item.Resource, Item.Quantity);
          end loop;
-         for Item of Structure.Production loop
-            Size := Size * Factor;
-            Structure.Log ("producing at"
-                           & Natural'Image (Natural (100.0 * Size))
-                           & "%:"
-                           & Natural'Image
-                             (Natural (Float (Item.Quantity) * Size * 1000.0))
-                           & " milli-" & Item.Resource.Name);
 
-            Stock.Add
-              (Item.Resource,
-               Resource_Quantity (Float (Item.Quantity) * Size));
+         for Item of Structure.Production loop
+            declare
+               Quantity : constant Natural :=
+                            Natural
+                              (Float'Truncation (Float (Item.Quantity)
+                               * Factor));
+            begin
+               Structure.Log ("producing" & Quantity'Img & " "
+                              & Item.Resource.Name);
+
+               Stock.Add
+                 (Item.Resource, Resource_Quantity (Quantity));
+            end;
          end loop;
+
       end if;
 
    end Execute_Production;

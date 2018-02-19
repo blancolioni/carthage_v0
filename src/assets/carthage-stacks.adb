@@ -134,6 +134,36 @@ package body Carthage.Stacks is
 
    end Movement_Cost;
 
+   -----------------------
+   -- Movement_Duration --
+   -----------------------
+
+   function Movement_Duration
+     (Stack : Stack_Record;
+      Tile  : Carthage.Tiles.Tile_Type)
+      return Duration
+   is
+   begin
+      return Duration (3600.0
+                       * Float (Stack.Movement)
+                       / Float (Stack.Movement_Cost (Tile)));
+   end Movement_Duration;
+
+   -----------------------
+   -- Movement_Progress --
+   -----------------------
+
+   function Movement_Progress
+     (Stack : Stack_Record)
+      return Float
+   is
+      use Carthage.Calendar;
+      D : constant Duration :=
+            Clock - Stack.Next_Tile_Start;
+   begin
+      return Float (D) / Float (Stack.Next_Tile_Duration);
+   end Movement_Progress;
+
    ------------------
    -- Remove_Asset --
    ------------------

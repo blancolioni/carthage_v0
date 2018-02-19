@@ -1,7 +1,5 @@
 with WL.String_Maps;
 
-with Carthage.Updates;
-
 with Carthage.UI.Models.Galaxy;
 
 package body Carthage.UI.Models is
@@ -17,11 +15,7 @@ package body Carthage.UI.Models is
    overriding procedure After_Render
      (Model    : in out Root_Carthage_Model;
       Renderer : in out Lui.Rendering.Root_Renderer'Class)
-   is
-      pragma Unreferenced (Model, Renderer);
-   begin
-      Carthage.Updates.Render_Finished;
-   end After_Render;
+   is null;
 
    -------------------
    -- Before_Render --
@@ -30,11 +24,7 @@ package body Carthage.UI.Models is
    overriding procedure Before_Render
      (Model    : in out Root_Carthage_Model;
       Renderer : in out Lui.Rendering.Root_Renderer'Class)
-   is
-      pragma Unreferenced (Model, Renderer);
-   begin
-      Carthage.Updates.Render_Started;
-   end Before_Render;
+   is null;
 
    ---------------
    -- Get_Model --

@@ -14,6 +14,9 @@ package Carthage.Units is
    type Unit_Category is
      (Jump, Space, Lander, Naval, Hover, Air, Foot, Tread, Wheel, Crawler);
 
+   subtype Space_Category is Unit_Category range Jump .. Lander;
+   subtype Ground_Category is Unit_Category range Naval .. Crawler;
+
    type Weapon_Category is
      (Water, Indirect, Air, Direct, Close, Psy,
       Ranged_Space, Direct_Space, Close_Space);
@@ -28,6 +31,16 @@ package Carthage.Units is
    function Category
      (Unit : Unit_Record)
       return Unit_Category;
+
+   function Space_Unit
+     (Unit : Unit_Record'Class)
+      return Boolean
+   is (Unit.Category in Space_Category);
+
+   function Ground_Unit
+     (Unit : Unit_Record'Class)
+      return Boolean
+   is (Unit.Category in Ground_Category);
 
    function Movement
      (Unit : Unit_Record)

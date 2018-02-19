@@ -2,8 +2,9 @@ private with Ada.Containers.Indefinite_Hashed_Maps;
 private with Ada.Strings.Fixed.Equal_Case_Insensitive;
 private with Ada.Strings.Fixed.Hash_Case_Insensitive;
 
-limited with Carthage.Managers.Planets;
+with Carthage.Calendar;
 
+with Carthage.Goals;
 with Carthage.Houses;
 with Carthage.Planets;
 with Carthage.Stacks;
@@ -12,21 +13,21 @@ with Carthage.Tiles;
 package Carthage.Managers.Houses is
 
    type House_Manager_Record is
-     abstract new Manager_Record
+     abstract new Root_Manager_Type
      and Carthage.Houses.House_Manager_Interface
    with private;
 
-   procedure Add_Surface_Exploration_Goal
-     (Manager : in out House_Manager_Record;
-      Planet  : Carthage.Planets.Planet_Type);
-
-   procedure Add_Planet_Scan_Goal
-     (Manager : in out House_Manager_Record;
-      Planet  : Carthage.Planets.Planet_Type);
-
-   procedure Add_Planet_Capture_Goal
-     (Manager : in out House_Manager_Record;
-      Planet  : Carthage.Planets.Planet_Type);
+--     procedure Add_Surface_Exploration_Goal
+--       (Manager : in out House_Manager_Record;
+--        Planet  : Carthage.Planets.Planet_Type);
+--
+--     procedure Add_Planet_Scan_Goal
+--       (Manager : in out House_Manager_Record;
+--        Planet  : Carthage.Planets.Planet_Type);
+--
+--     procedure Add_Planet_Capture_Goal
+--       (Manager : in out House_Manager_Record;
+--        Planet  : Carthage.Planets.Planet_Type);
 
    subtype House_Manager_Class is House_Manager_Record'Class;
 
@@ -39,9 +40,8 @@ private
 
    type Managed_Planet_Record is
       record
-         Planet        : Carthage.Planets.Planet_Type;
-         Planet_Manager : access
-           Carthage.Managers.Planets.Planet_Manager_Record'Class;
+         Planet         : Carthage.Planets.Planet_Type;
+         Planet_Manager : Manager_Type;
       end record;
 
    package Managed_Planet_Maps is
@@ -69,25 +69,37 @@ private
          Planet : Carthage.Planets.Planet_Type;
       end record;
 
+   overriding function Show
+     (Goal : House_Manager_Goal)
+      return String
+   is (Goal.Planet.Name & ": " & Goal.Class'Img);
+
    type House_Manager_Record is
-     abstract new Manager_Record
+     abstract new Root_Manager_Type
      and Carthage.Houses.House_Manager_Interface with
       record
+         House   : Carthage.Houses.House_Type;
          Planets : Managed_Planet_Maps.Map;
       end record;
 
-   overriding procedure Load_Initial_State
-     (Manager : not null access House_Manager_Record);
-
-   overriding procedure Check_Goals
+   overriding procedure Initialize
      (Manager : in out House_Manager_Record);
 
-   overriding procedure Execute_Turn
-     (Manager : in out House_Manager_Record);
+   overriding function Update
+     (Manager : not null access House_Manager_Record)
+      return Duration;
 
-   overriding function Check_Goal
-     (Manager : House_Manager_Record;
-      Goal    : Carthage.Goals.Goal_Record'Class)
-      return Boolean;
+   overriding function Average_Update_Frequency
+     (Manager : House_Manager_Record)
+      return Duration
+   is (Carthage.Calendar.Days (10));
+
+--     overriding procedure Check_Goals
+--       (Manager : in out House_Manager_Record);
+--
+--     overriding function Check_Goal
+--       (Manager : House_Manager_Record;
+--        Goal    : Carthage.Goals.Goal_Record'Class)
+--        return Boolean;
 
 end Carthage.Managers.Houses;

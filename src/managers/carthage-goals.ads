@@ -9,6 +9,8 @@ package Carthage.Goals is
    type Goal_Record (Priority : Goal_Priority) is
      abstract tagged private;
 
+   function Show (Goal : Goal_Record) return String is abstract;
+
 private
 
    type Goal_Record (Priority : Goal_Priority) is

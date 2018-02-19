@@ -123,6 +123,10 @@ package Carthage.Cities is
      (Test    : not null access function (City : City_Type) return Boolean;
       Process : not null access procedure (City : City_Type));
 
+   function Exists (Id : String) return Boolean;
+   function Get (Id : String) return City_Type
+     with Pre => Exists (Id);
+
    type Updateable_Reference (City : not null access City_Record'Class)
    is private with Implicit_Dereference => City;
 
@@ -217,6 +221,12 @@ private
      (City : City_Record)
       return Boolean
    is (City.Structure.Is_Agora);
+
+   function Exists (Id : String) return Boolean
+   is (Db.Exists (Id));
+
+   function Get (Id : String) return City_Type
+   is (Db.Get (Id));
 
    type Updateable_Reference (City : not null access City_Record'Class) is
       record

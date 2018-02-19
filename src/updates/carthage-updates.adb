@@ -1,30 +1,30 @@
 with Ada.Calendar;
-with Ada.Text_IO;
+with Ada.Containers.Indefinite_Holders;
 
-with Carthage.Calendar;
+with WL.Heaps;
 
-with Carthage.Cities.Updates;
+with Carthage.Cities;
 with Carthage.Houses;
 with Carthage.Planets;
-with Carthage.Stacks.Updates;
+with Carthage.Stacks;
 with Carthage.Structures;
 with Carthage.Tiles;
 with Carthage.Units;
 
-with Carthage.Combat;
-with Carthage.Managers;
-
-with Carthage.Logging;
-
 package body Carthage.Updates is
 
-   task Update_Task is
-      entry Start;
-      entry Stop;
-      entry Set_Speed (Speed : Update_Speed);
-      entry Render_Started;
-      entry Render_Finished;
-   end Update_Task;
+   Current_Time_Acceleration : Duration := 0.0;
+   Last_Update               : Ada.Calendar.Time;
+
+   package Update_Holders is
+      new Ada.Containers.Indefinite_Holders (Update_Interface'Class);
+
+   package Update_Queues is
+     new WL.Heaps
+       (Carthage.Calendar.Time, Update_Holders.Holder,
+        Carthage.Calendar.">", Update_Holders."=");
+
+   Update_Queue              : Update_Queues.Heap;
 
    -------------------------
    -- Before_First_Update --
@@ -106,6 +106,10 @@ package body Carthage.Updates is
          end loop;
 
       end City_Look;
+
+      ----------------
+      -- Find_Agora --
+      ----------------
 
       procedure Find_Agora
         (City : Carthage.Cities.City_Type)
@@ -271,157 +275,97 @@ package body Carthage.Updates is
       Carthage.Stacks.Scan_Stacks
         (Stack_Look'Access);
 
-      Carthage.Managers.Start_Managers;
+      Last_Update := Ada.Calendar.Clock;
 
    end Before_First_Update;
 
-   ---------------------
-   -- Render_Finished --
-   ---------------------
+   -----------
+   -- Queue --
+   -----------
 
-   procedure Render_Finished is
+   procedure Queue
+     (Item       : Update_Interface'Class;
+      Next_Event : Carthage.Calendar.Time)
+   is
    begin
-      Update_Task.Render_Finished;
-   end Render_Finished;
+      Update_Queue.Insert (Next_Event, Update_Holders.To_Holder (Item));
+   end Queue;
 
-   --------------------
-   -- Render_Started --
-   --------------------
+   ---------------------------
+   -- Set_Time_Acceleration --
+   ---------------------------
 
-   procedure Render_Started is
+   procedure Set_Time_Acceleration (Factor : Duration) is
    begin
-      Update_Task.Render_Started;
-   end Render_Started;
-
-   ---------------
-   -- Set_Speed --
-   ---------------
-
-   procedure Set_Speed (Speed : Update_Speed) is
-   begin
-      Update_Task.Set_Speed (Speed);
-   end Set_Speed;
-
-   -------------------
-   -- Start_Updates --
-   -------------------
-
-   procedure Start_Updates is
-   begin
-      Update_Task.Start;
-   end Start_Updates;
-
-   ------------------
-   -- Stop_Updates --
-   ------------------
-
-   procedure Stop_Updates is
-   begin
-      Update_Task.Stop;
-   end Stop_Updates;
+      Current_Time_Acceleration := Factor;
+   end Set_Time_Acceleration;
 
    ------------
    -- Update --
    ------------
 
    procedure Update is
-
-      procedure Execute_Round
-        (Battle : in out Carthage.Combat.Battle_Record);
-
-      -------------------
-      -- Execute_Round --
-      -------------------
-
-      procedure Execute_Round
-        (Battle : in out Carthage.Combat.Battle_Record)
-      is
-         use Carthage.Combat;
-      begin
-         Attacker (Battle).Log ("attacking " & Defender (Battle).Name);
-         for Weapon in Carthage.Units.Weapon_Category loop
-            declare
-               Round : constant Carthage.Combat.Attack_Record_Array :=
-                         Carthage.Combat.Attack_Round (Battle, Weapon);
-            begin
-               for Attack of Round loop
-                  Attacker (Battle).Log (Image (Attack));
-               end loop;
-            end;
-         end loop;
-      end Execute_Round;
-
+      use Carthage.Calendar;
+      use type Ada.Calendar.Time;
+      Now : constant Ada.Calendar.Time := Ada.Calendar.Clock;
+      Time_Since_Last_Update : constant Duration :=
+                                 Now - Last_Update;
    begin
-      Ada.Text_IO.Put_Line
-        ("Update: "
-         & Carthage.Calendar.Day_Identifier (Carthage.Calendar.Today));
-      Carthage.Logging.Log ("starting update");
-      Carthage.Managers.Start_Manager_Turns;
-      Carthage.Managers.Execute_Manager_Turns;
-      Carthage.Cities.Updates.Execute_Orders;
-      Carthage.Cities.Updates.Execute_Production;
-      Carthage.Stacks.Updates.Execute_Orders;
-      Carthage.Houses.Scan (Carthage.Houses.Log_Status'Access);
-      Carthage.Combat.Scan_Battles (Execute_Round'Access);
-      Carthage.Stacks.Remove_Empty_Ground_Stacks;
-      Carthage.Logging.Log ("update complete");
-      Carthage.Calendar.Next_Day;
+      Advance (Time_Since_Last_Update * Current_Time_Acceleration);
+      Last_Update := Now;
+
+      while Update_Queue.First_Key <= Clock loop
+         declare
+            Update : constant Update_Interface'Class :=
+                       Update_Queue.First_Element.Element;
+         begin
+            Update_Queue.Delete_First;
+            Update.Activate;
+         end;
+      end loop;
    end Update;
 
-   -----------------
-   -- Update_Task --
-   -----------------
-
-   task body Update_Task is
-      Current_Speed : Update_Speed := 0;
-      Update_Delay  : constant array (Update_Speed) of Duration :=
-                        (0 => 100.0,
-                         1 => 1.0,
-                         2 => 0.5,
-                         3 => 0.1);
-      Next_Update   : Ada.Calendar.Time;
-
-      procedure Schedule_Next_Update;
-
-      --------------------------
-      -- Schedule_Next_Update --
-      --------------------------
-
-      procedure Schedule_Next_Update is
-         use Ada.Calendar;
-      begin
-         Next_Update := Clock + Update_Delay (Current_Speed);
-      end Schedule_Next_Update;
-
-   begin
-      select
-         accept Start;
-      or
-         terminate;
-      end select;
-
-      Schedule_Next_Update;
-
-      loop
-         select
-            accept Stop;
-            exit;
-         or
-            accept Set_Speed (Speed : in Update_Speed) do
-               Current_Speed := Speed;
-            end Set_Speed;
-            Schedule_Next_Update;
-         or
-            accept Render_Started;
-            accept Render_Finished;
-         or
-            delay until Next_Update;
-            if Current_Speed > 0 then
-               Update;
-               Schedule_Next_Update;
-            end if;
-         end select;
-      end loop;
-   end Update_Task;
+--
+--        procedure Execute_Round
+--          (Battle : in out Carthage.Combat.Battle_Record);
+--
+--        -------------------
+--        -- Execute_Round --
+--        -------------------
+--
+--        procedure Execute_Round
+--          (Battle : in out Carthage.Combat.Battle_Record)
+--        is
+--           use Carthage.Combat;
+--        begin
+--           Attacker (Battle).Log ("attacking " & Defender (Battle).Name);
+--           for Weapon in Carthage.Units.Weapon_Category loop
+--              declare
+--                 Round : constant Carthage.Combat.Attack_Record_Array :=
+--                           Carthage.Combat.Attack_Round (Battle, Weapon);
+--              begin
+--                 for Attack of Round loop
+--                    Attacker (Battle).Log (Image (Attack));
+--                 end loop;
+--              end;
+--           end loop;
+--        end Execute_Round;
+--
+--     begin
+--        Ada.Text_IO.Put_Line
+--          ("Update: "
+--           & Carthage.Calendar.Image (Carthage.Calendar.Clock));
+--        Carthage.Logging.Log ("starting update");
+--        Carthage.Managers.Start_Manager_Turns;
+--        Carthage.Managers.Execute_Manager_Turns;
+--        Carthage.Cities.Updates.Execute_Orders;
+--        Carthage.Cities.Updates.Execute_Production;
+--        Carthage.Stacks.Updates.Execute_Orders;
+--        Carthage.Houses.Scan (Carthage.Houses.Log_Status'Access);
+--        Carthage.Combat.Scan_Battles (Execute_Round'Access);
+--        Carthage.Stacks.Remove_Empty_Ground_Stacks;
+--        Carthage.Logging.Log ("update complete");
+--        Carthage.Calendar.Advance (Carthage.Calendar.Days (1));
+--     end Update;
 
 end Carthage.Updates;

@@ -56,6 +56,10 @@ package Carthage.Structures is
      (Structure : Structure_Record)
       return Boolean;
 
+   function Has_Production
+     (Structure : Structure_Record)
+      return Boolean;
+
    type Resource_Quantity_Record is
       record
          Resource : Carthage.Resources.Resource_Type;
@@ -74,6 +78,11 @@ package Carthage.Structures is
       return Production_Array;
 
    function Produces
+     (Structure : Structure_Record;
+      Resource  : Carthage.Resources.Resource_Type)
+      return Boolean;
+
+   function Consumes
      (Structure : Structure_Record;
       Resource  : Carthage.Resources.Resource_Type)
       return Boolean;
@@ -218,6 +227,18 @@ private
      (Structure : Structure_Record)
       return Natural
    is (Structure.Area);
+
+   function Has_Production
+     (Structure : Structure_Record)
+      return Boolean
+   is (not Structure.Production.Is_Empty);
+
+   function Consumes
+     (Structure : Structure_Record;
+      Resource  : Carthage.Resources.Resource_Type)
+      return Boolean
+   is (for some Item of Structure.Inputs =>
+          Carthage.Resources."=" (Item.Resource, Resource));
 
    package Structure_Vectors is
      new Ada.Containers.Vectors (Positive, Structure_Type);

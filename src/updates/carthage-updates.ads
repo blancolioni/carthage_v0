@@ -1,16 +1,22 @@
-package Carthage.Updates is
+with Carthage.Calendar;
 
-   type Update_Speed is range 0 .. 3;
+package Carthage.Updates is
 
    procedure Before_First_Update;
 
-   procedure Start_Updates;
-   procedure Stop_Updates;
-   procedure Set_Speed (Speed : Update_Speed);
-
-   procedure Render_Started;
-   procedure Render_Finished;
+   procedure Set_Time_Acceleration (Factor : Duration);
+   --  for each unit of real time, advance Factor units of game time
 
    procedure Update;
+
+   type Update_Interface is interface;
+
+   procedure Activate
+     (Item : Update_Interface)
+   is abstract;
+
+   procedure Queue
+     (Item       : Update_Interface'Class;
+      Next_Event : Carthage.Calendar.Time);
 
 end Carthage.Updates;

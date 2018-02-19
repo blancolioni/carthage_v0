@@ -1,5 +1,6 @@
 package Carthage.Stacks.Updates is
 
-   procedure Execute_Orders;
+   procedure Start_Update
+     (Stack : Stack_Type);
 
 end Carthage.Stacks.Updates;

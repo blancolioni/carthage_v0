@@ -2,6 +2,8 @@ private with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 private with Ada.Containers.Indefinite_Holders;
 private with Memor.Database;
 
+private with Carthage.Calendar;
+
 with Carthage.Assets;
 with Carthage.Houses;
 with Carthage.Planets;
@@ -96,10 +98,21 @@ package Carthage.Stacks is
      (Stack : Stack_Record)
       return Natural;
 
+   function Can_Enter
+     (Stack : Stack_Record;
+      Tile  : Carthage.Tiles.Tile_Type)
+      return Boolean;
+
    function Movement_Cost
      (Stack : Stack_Record;
       Tile  : Carthage.Tiles.Tile_Type)
       return Natural;
+
+   function Movement_Duration
+     (Stack : Stack_Record;
+      Tile  : Carthage.Tiles.Tile_Type)
+      return Duration
+     with Pre => Stack.Can_Enter (Tile);
 
    function Movement_Progress
      (Stack : Stack_Record)
@@ -211,7 +224,8 @@ private
          Current_Path       : Stack_Path_Holders.Holder;
          Current_Path_Index : Natural := 0;
          Next_Tile_Cost     : Positive := 1;
-         Next_Tile_Progress : Natural := 0;
+         Next_Tile_Duration : Duration;
+         Next_Tile_Start    : Carthage.Calendar.Time;
          Manager            : access Stack_Manager_Interface'Class;
       end record;
 
@@ -279,10 +293,11 @@ private
       return Tile_Position
    is (Stack.Current_Movement (Stack.Current_Path_Index));
 
-   function Movement_Progress
-     (Stack : Stack_Record)
-      return Float
-   is (Float (Stack.Next_Tile_Progress) / Float (Stack.Next_Tile_Cost));
+   function Can_Enter
+     (Stack : Stack_Record;
+      Tile  : Carthage.Tiles.Tile_Type)
+      return Boolean
+   is (Stack.Movement_Cost (Tile) > 0);
 
    function Count (Stack : Stack_Record) return Asset_Count
    is (Stack.Count);

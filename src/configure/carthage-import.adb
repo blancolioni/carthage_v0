@@ -92,6 +92,9 @@ package body Carthage.Import is
       Image  : Image_Type;
       Offset : Word_32 := 0;
       Index  : Natural := 0;
+--        Set_Name : constant String :=
+--                     Ada.Directories.Simple_Name (Bin_File_Path);
+
    begin
       if not Have_Palette then
          Import_Palette;
@@ -134,6 +137,16 @@ package body Carthage.Import is
          Index := Index + 1;
 
          On_Load (Image);
+
+--           if True then
+--              declare
+--                 Writer : WL.Images.Bitmaps.Bitmap_Image_Writer;
+--              begin
+--                 Writer.Write
+--                   (Set_Name & Integer'Image (-Index) & ".bmp",
+--                    Image);
+--              end;
+--           end if;
 
 --           Write (BM,
 --                  Destination_Path & "/" & Base_Name

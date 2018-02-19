@@ -411,6 +411,26 @@ package body Carthage.Planets is
       end loop;
    end Scan_Cities;
 
+   -----------------
+   -- Scan_Cities --
+   -----------------
+
+   procedure Scan_Cities
+     (Planet  : Planet_Record;
+      House   : Carthage.Houses.House_Type;
+      Process : not null access
+        procedure (City : not null access constant
+                     Carthage.Cities.City_Record'Class))
+   is
+      use type Carthage.Houses.House_Type;
+   begin
+      for City of Planet.Cities loop
+         if City.Owner = House then
+            Process (City);
+         end if;
+      end loop;
+   end Scan_Cities;
+
    --------------------------
    -- Scan_Connected_Tiles --
    --------------------------

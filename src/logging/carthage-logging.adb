@@ -27,8 +27,8 @@ package body Carthage.Logging is
       Message : String)
    is
       Log_Message : constant String :=
-                      Carthage.Calendar.Day_Identifier
-                        (Carthage.Calendar.Today)
+                      Carthage.Calendar.Image
+                        (Carthage.Calendar.Clock, True)
                       & ": " & Message;
    begin
       if Logging_Enabled and then Level <= Logging_Level then

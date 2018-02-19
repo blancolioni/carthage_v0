@@ -2,9 +2,93 @@ with Ada.Containers.Doubly_Linked_Lists;
 
 with WL.String_Maps;
 
+with Carthage.Calendar;
+with Carthage.Planets;
+with Carthage.Resources;
 with Carthage.Structures;
 
+with Carthage.Cities.Updates;
+
 package body Carthage.Managers.Cities is
+
+   type City_Resource is
+      record
+         City     : Carthage.Cities.City_Type;
+         Resource : Carthage.Resources.Resource_Type;
+      end record;
+
+   package City_Resource_Lists is
+     new Ada.Containers.Doubly_Linked_Lists (City_Resource);
+
+   package City_Lists is
+     new Ada.Containers.Doubly_Linked_Lists
+       (Carthage.Cities.City_Type, Carthage.Cities."=");
+
+   package Resource_Quantity_Vectors is
+     new Ada.Containers.Vectors
+       (Carthage.Resources.Resource_Index, Resource_Quantity);
+
+   package City_Request_Maps is
+     new WL.String_Maps
+       (Resource_Quantity_Vectors.Vector, Resource_Quantity_Vectors."=");
+
+   type City_Trade_Group_Record is
+      record
+         City_Requests : City_Request_Maps.Map;
+      end record;
+
+   procedure Set_Request
+     (Group    : City_Trade_Group;
+      City     : Carthage.Cities.City_Type;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Resource_Quantity);
+
+   function Get_Total_Requests
+     (Group    : City_Trade_Group;
+      Resource : Carthage.Resources.Resource_Type)
+      return Resource_Quantity;
+
+   procedure Scan_Requests
+     (Group    : City_Trade_Group;
+      Resource : Carthage.Resources.Resource_Type;
+      Process  : not null access
+        procedure (City : Carthage.Cities.City_Type;
+                   Quantity : in out Resource_Quantity));
+
+   type City_Manager_Record is
+     new Root_Manager_Type
+     and Carthage.Cities.City_Manager_Interface with
+      record
+         House         : Carthage.Houses.House_Type;
+         Planet        : Carthage.Planets.Planet_Type;
+         Group         : City_Trade_Group;
+         City          : Carthage.Cities.City_Type;
+         Palace        : Carthage.Cities.City_Type;
+         Shield        : Carthage.Cities.City_Type;
+         Agoras        : City_Lists.List;
+         Available     : Carthage.Resources.Stock_Record;
+         Ordered       : Carthage.Resources.Stock_Record;
+         Sources       : City_Resource_Lists.List;
+         Sinks         : City_Resource_Lists.List;
+         City_Requests : City_Request_Maps.Map;
+      end record;
+
+   type City_Manager_Type is access all City_Manager_Record'Class;
+
+   overriding function Average_Update_Frequency
+     (Manager : City_Manager_Record)
+      return Duration
+   is (Carthage.Calendar.Days (10));
+
+   overriding procedure Initialize
+     (Manager : in out City_Manager_Record);
+
+   overriding function Update
+     (Manager : not null access City_Manager_Record)
+      return Duration;
+
+   procedure Create_Resource_Network
+     (Manager : in out City_Manager_Record'Class);
 
    -------------------------
    -- Create_City_Manager --
@@ -12,14 +96,30 @@ package body Carthage.Managers.Cities is
 
    function Create_City_Manager
      (House  : Carthage.Houses.House_Type;
-      Planet : Carthage.Planets.Planet_Type)
-      return City_Manager_Type
+      Group  : City_Trade_Group;
+      City   : not null access constant Carthage.Cities.City_Record'Class)
+      return Manager_Type
    is
-      Manager : City_Manager_Record;
+      Manager : constant City_Manager_Type :=
+                  new City_Manager_Record;
    begin
       Manager.House := House;
-      Manager.Planet := Planet;
-      return new City_Manager_Record'(Manager);
+      Manager.Planet := City.Planet;
+      Manager.Group := Group;
+
+      declare
+         V : Resource_Quantity_Vectors.Vector;
+      begin
+         for I in 1 .. Carthage.Resources.Last_Index loop
+            V.Append (0.0);
+         end loop;
+         Group.City_Requests.Insert (City.Identifier, V);
+      end;
+
+      Manager.City := Carthage.Cities.City_Type (City);
+      Manager.Initialize;
+      Add_Manager (Manager);
+      return Manager_Type (Manager);
    end Create_City_Manager;
 
    -----------------------------
@@ -30,408 +130,382 @@ package body Carthage.Managers.Cities is
      (Manager : in out City_Manager_Record'Class)
    is
       use Carthage.Cities, Carthage.Structures;
+      City      : constant City_Type := Manager.City;
+      Structure : constant Structure_Type := City.Structure;
+      Inputs    : constant Production_Array :=
+                    Structure.Production_Inputs;
+      Outputs   : constant Production_Array :=
+                    Structure.Production_Outputs;
+
+      procedure Add_Connection
+        (Connected_City : not null access constant City_Record'Class);
+
+      --------------------
+      -- Add_Connection --
+      --------------------
+
+      procedure Add_Connection
+        (Connected_City : not null access constant City_Record'Class)
+      is
+      begin
+         if Connected_City.Structure.Is_Palace then
+            Manager.Palace := City_Type (Connected_City);
+         elsif Connected_City.Structure.Is_Shield then
+            Manager.Shield := City_Type (Connected_City);
+         elsif Connected_City.Structure.Is_Agora then
+            Manager.Agoras.Append (City_Type (Connected_City));
+         end if;
+
+         for Item of Inputs loop
+            if Connected_City.Structure.Produces (Item.Resource) then
+               Manager.Sources.Append
+                 (City_Resource'
+                    (City     => City_Type (Connected_City),
+                     Resource => Item.Resource));
+            end if;
+         end loop;
+
+         for Item of Outputs loop
+            if Connected_City.Structure.Consumes (Item.Resource) then
+               Manager.Sinks.Append
+                 (City_Resource'
+                    (City     => City_Type (Connected_City),
+                     Resource => Item.Resource));
+            end if;
+         end loop;
+      end Add_Connection;
+
    begin
-      for Info of Manager.Cities loop
-         Info.City.Log ("creating resource network");
-         declare
-            City      : constant City_Type := Info.City;
-            Structure : constant Structure_Type := City.Structure;
-            Inputs    : constant Production_Array :=
-                          Structure.Production_Inputs;
-         begin
-            for Source_Info of Manager.Cities loop
-               for Item of Inputs loop
-                  if Source_Info.City.Structure.Produces (Item.Resource) then
-                     Info.Sources.Append ((Source_Info.City, Item.Resource));
-                     Source_Info.Sinks.Append ((Info.City, Item.Resource));
-                     City.Log ("receiving " & Item.Resource.Name
-                               & " from " & Source_Info.City.Identifier);
-                  end if;
-               end loop;
-            end loop;
-         end;
-      end loop;
+      City.Log ("creating resource network");
+
+      Manager.Planet.Scan_Cities (Manager.House, Add_Connection'Access);
+
    end Create_Resource_Network;
 
-   ------------------
-   -- Execute_Turn --
-   ------------------
+   ------------------------
+   -- Get_Total_Requests --
+   ------------------------
 
-   overriding procedure Execute_Turn
+   function Get_Total_Requests
+     (Group    : City_Trade_Group;
+      Resource : Carthage.Resources.Resource_Type)
+      return Resource_Quantity
+   is
+   begin
+      return Result : Resource_Quantity := 0.0 do
+         for Reqs of Group.City_Requests loop
+            Result := Result + Reqs.Element (Resource.Index);
+         end loop;
+      end return;
+   end Get_Total_Requests;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   overriding procedure Initialize
      (Manager : in out City_Manager_Record)
    is
-      use Carthage.Cities, Carthage.Structures;
-      use type Carthage.Resources.Resource_Type;
-
-      package Request_Maps is
-        new WL.String_Maps (City_Request_Lists.List, City_Request_Lists."=");
-
-      Requests : Request_Maps.Map;
-
    begin
-
-      for Info of Manager.Cities loop
-
-         Info.Available.Clear_Stock;
-
-         declare
-
-            procedure Save_Quantity
-              (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Positive);
-
-            -------------------
-            -- Save_Quantity --
-            -------------------
-
-            procedure Save_Quantity
-              (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Positive)
-            is
-            begin
-               Info.Available.Set_Quantity
-                 (Resource, Resource_Quantity (Quantity));
-            end Save_Quantity;
-
-         begin
-            Info.City.Scan_Stock (Save_Quantity'Access);
-         end;
-      end loop;
-
-      for Info of Manager.Cities loop
-         declare
-            City : constant City_Type := Info.City;
-            Structure : constant Structure_Type := City.Structure;
-         begin
-
-            if not Structure.Is_Harvester then
-               declare
-                  Inputs : constant Production_Array :=
-                             Structure.Production_Inputs;
-               begin
-                  for Item of Inputs loop
-                     if City.Quantity (Item.Resource)
-                       < 2.0 * Item.Quantity
-                     then
-                        for Source of Info.Sources loop
-                           if Source.Resource = Item.Resource then
-                              if not Requests.Contains
-                                (Source.City.Identifier)
-                              then
-                                 Requests.Insert
-                                   (Source.City.Identifier,
-                                    City_Request_Lists.Empty_List);
-                              end if;
-
-                              Requests (Source.City.Identifier).Append
-                                ((City, Item.Resource,
-                                 2.0 * Item.Quantity
-                                 - City.Quantity (Item.Resource)));
-                           end if;
-                        end loop;
-                     end if;
-                  end loop;
-               end;
-            end if;
-         end;
-      end loop;
-
-      for Info of Manager.Cities loop
-         declare
-            use Carthage.Resources;
-            City      : constant City_Type := Info.City;
-            Structure : constant Structure_Type := City.Structure;
-         begin
-            if Requests.Contains (City.Identifier) then
-               for Item of Structure.Production_Outputs loop
-                  declare
-                     Wanted    : Natural := 0;
-                     Available : constant Natural :=
-                                   City.Whole_Quantity (Item.Resource);
-                  begin
-                     for Request of Requests.Element (City.Identifier) loop
-                        if Request.Resource = Item.Resource then
-                           Wanted := Wanted + Natural (Request.Quantity);
-                        end if;
-                     end loop;
-
-                     Info.Available.Remove
-                       (Item.Resource, Natural'Min (Wanted, Available));
-
-                     if Wanted <= Available then
-                        Wanted := Available;
-                     end if;
-
-                     if Wanted > 0 and then Available > 0 then
-                        for Request of Requests.Element (City.Identifier) loop
-                           if Request.Resource = Item.Resource then
-                              declare
-                                 Quantity : constant Natural :=
-                                              Natural (Request.Quantity)
-                                                * Available / Wanted;
-                              begin
-                                 if Quantity > 0 then
-                                    City.Log
-                                      ("transferring" & Quantity'Img
-                                       & " " & Item.Resource.Identifier
-                                       & " to " & Request.City.Identifier);
-                                    City.Update.Transfer_Resource
-                                      (Item.Resource, Quantity, Request.City);
-                                 end if;
-                              end;
-                           end if;
-                        end loop;
-                     end if;
-                  end;
-               end loop;
-            end if;
-         end;
-
-      end loop;
-
-      for Info of Manager.Cities loop
-         declare
-            procedure Buy
-              (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Positive);
-
-            procedure Sell
-              (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Positive);
-
-            procedure Store
-              (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Positive);
-
-            ---------
-            -- Buy --
-            ---------
-
-            procedure Buy
-              (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Positive)
-            is
-            begin
-               Info.City.Log
-                 ("order" & Quantity'Img & " " & Resource.Identifier);
-               Info.City.Update.Buy_Resource (Resource, Quantity);
-               Info.Ordered.Add (Resource, Quantity);
-            end Buy;
-
-            ----------
-            -- Sell --
-            ----------
-
-            procedure Sell
-              (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Positive)
-            is
-            begin
-               Info.City.Log
-                 ("sell" & Quantity'Img & " " & Resource.Identifier);
-               Info.City.Update.Sell_Resource (Resource, Quantity);
-            end Sell;
-
-            -----------
-            -- Store --
-            -----------
-
-            procedure Store
-              (Resource : Carthage.Resources.Resource_Type;
-               Quantity : Positive)
-            is
-            begin
-               Info.City.Log
-                 ("store" & Quantity'Img & " " & Resource.Identifier);
-               Info.City.Update.Transfer_Resource
-                 (Resource, Quantity, Manager.Palace);
-            end Store;
-
-         begin
-            if Info.City.Structure.Is_Harvester then
-               if Manager.Palace /= null then
-                  Info.Available.Scan_Stock (Store'Access);
-               else
-                  Info.Available.Scan_Stock (Sell'Access);
-               end if;
-            else
-               declare
-                  Inputs  : constant Carthage.Structures.Production_Array :=
-                              Info.City.Structure.Production_Inputs;
-                  Outputs : constant Carthage.Structures.Production_Array :=
-                              Info.City.Structure.Production_Outputs;
-               begin
-                  for Item of Inputs loop
-                     declare
-                        Available : constant Natural :=
-                                      Info.Available.Whole_Quantity
-                                        (Item.Resource);
-                        Ordered   : constant Natural :=
-                                      Info.Ordered.Whole_Quantity
-                                        (Item.Resource);
-                        Pipeline  : constant Natural :=
-                                      Available + Ordered;
-                        Required  : constant Natural :=
-                                      2 * Natural (Item.Quantity);
-                     begin
-                        if Pipeline < Required then
-                           Buy (Item.Resource, Required - Pipeline);
-                        end if;
-                     end;
-                  end loop;
-
-                  for Item of Outputs loop
-                     if Info.Available.Quantity (Item.Resource) > 0.0 then
-                        if Manager.Palace /= null then
-                           Store (Item.Resource,
-                                  Info.Available.Whole_Quantity
-                                    (Item.Resource));
-                        else
-                           Sell (Item.Resource,
-                                 Info.Available.Whole_Quantity
-                                   (Item.Resource));
-                        end if;
-                     end if;
-                  end loop;
-               end;
-            end if;
-         end;
-      end loop;
-   end Execute_Turn;
-
-   ------------------------
-   -- Load_Initial_State --
-   ------------------------
-
-   overriding procedure Load_Initial_State
-     (Manager : not null access City_Manager_Record)
-   is
-
-      procedure Add_City_Info
-        (City : not null access constant Carthage.Cities.City_Class);
-
-      -------------------
-      -- Add_City_Info --
-      -------------------
-
-      procedure Add_City_Info
-        (City : not null access constant Carthage.Cities.City_Class)
-      is
-         use type Carthage.Houses.House_Type;
-      begin
-         if City.Owner = Manager.House then
-            Manager.Cities.Append
-              (City_Info_Record'
-                 (City        =>
-                      Carthage.Cities.City_Type (City),
-                  Available   => <>,
-                  Ordered     => <>,
-                  Sources     => City_Resource_Lists.Empty_List,
-                  Sinks       => City_Resource_Lists.Empty_List));
-            if City.Structure.Is_Palace then
-               Manager.House.Log (City.Identifier);
-               Manager.Palace := Carthage.Cities.City_Type (City);
-            elsif City.Structure.Is_Shield then
-               Manager.Shield := Carthage.Cities.City_Type (City);
-            end if;
-         end if;
-      end Add_City_Info;
-
-   begin
-      Manager.Planet.Scan_Cities (Add_City_Info'Access);
       Manager.Create_Resource_Network;
-   end Load_Initial_State;
+   end Initialize;
 
-   -------------------------
-   -- On_Resource_Arrival --
-   -------------------------
+   ---------------------
+   -- New_Trade_Group --
+   ---------------------
 
-   overriding procedure On_Resource_Arrival
-     (Manager  : in out City_Manager_Record;
-      City     : not null access constant Carthage.Cities.City_Record'Class;
-      Resource : Carthage.Resources.Resource_Type;
-      Quantity : Positive)
-   is
-      use type Carthage.Cities.City_Type;
+   function New_Trade_Group return City_Trade_Group is
    begin
-      for Info of Manager.Cities loop
-         if Info.City = Carthage.Cities.City_Type (City) then
-            Info.Ordered.Remove (Resource, Quantity);
-            exit;
-         end if;
-      end loop;
-   end On_Resource_Arrival;
+      return new City_Trade_Group_Record;
+   end New_Trade_Group;
 
-   -------------------------------
-   -- Set_Resource_Requirements --
-   -------------------------------
+   -------------------
+   -- Scan_Requests --
+   -------------------
 
-   procedure Set_Resource_Requirements
-     (Manager : in out City_Manager_Record;
-      Minimum : Carthage.Resources.Stock_Interface'Class;
-      Desired : Carthage.Resources.Stock_Interface'Class;
-      Result  : out Carthage.Resources.Stock_Interface'Class)
+   procedure Scan_Requests
+     (Group    : City_Trade_Group;
+      Resource : Carthage.Resources.Resource_Type;
+      Process  : not null access
+        procedure (City : Carthage.Cities.City_Type;
+                   Quantity : in out Resource_Quantity))
    is
-      use type Carthage.Houses.House_Type;
-      use type Carthage.Cities.City_Type;
+      use City_Request_Maps;
+      Position : Cursor := Group.City_Requests.First;
+   begin
+      while Has_Element (Position) loop
+         if Element (Position).Element (Resource.Index) > 0.0 then
+            declare
+               Quantity : Resource_Quantity :=
+                            Element (Position).Element (Resource.Index);
+            begin
+               Process (Carthage.Cities.Get (Key (Position)), Quantity);
+               Group.City_Requests (Position).Replace_Element
+                 (Resource.Index, Quantity);
+            end;
+         end if;
+         Next (Position);
+      end loop;
+   end Scan_Requests;
 
-      procedure Update_Result
+   -----------------
+   -- Set_Request --
+   -----------------
+
+   procedure Set_Request
+     (Group    : City_Trade_Group;
+      City     : Carthage.Cities.City_Type;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : Resource_Quantity)
+   is
+   begin
+      Group.City_Requests (City.Identifier).Replace_Element
+        (Resource.Index, Quantity);
+   end Set_Request;
+
+   ------------
+   -- Update --
+   ------------
+
+   overriding function Update
+     (Manager : not null access City_Manager_Record)
+      return Duration
+   is
+      use Carthage.Cities, Carthage.Structures;
+      use Carthage.Resources;
+
+      City      : constant City_Type := Manager.City;
+      Structure : constant Structure_Type := City.Structure;
+
+      procedure Save_Quantity
         (Resource : Carthage.Resources.Resource_Type;
          Quantity : Positive);
 
       -------------------
-      -- Update_Result --
+      -- Save_Quantity --
       -------------------
 
-      procedure Update_Result
+      procedure Save_Quantity
         (Resource : Carthage.Resources.Resource_Type;
          Quantity : Positive)
       is
-         Have           : constant Natural :=
-                            Manager.Palace.Whole_Quantity (Resource);
-         Desire         : constant Natural :=
-                            Desired.Whole_Quantity (Resource);
-         Final_Quantity : Natural;
       begin
-         if Have = 0 then
-            Final_Quantity := 0;
-         elsif Quantity >= Have then
-            Final_Quantity := Have;
-         elsif Desire + Quantity < Have then
-            Final_Quantity := Desire;
-         else
-            Final_Quantity := Quantity;
-         end if;
-
-         if Final_Quantity > 0 then
-            Manager.Palace.Log
-              (Resource.Name
-               & ": have" & Have'Img
-               & "; min" & Quantity'Img
-               & ";desire" & Desire'Img
-               & "; final quantity" & Final_Quantity'Img);
-
-            Result.Add (Resource, Final_Quantity);
-            Manager.Palace.Update.Remove (Resource, Final_Quantity);
-
-            if Desire * 2 < Have then
-               Manager.Palace.Update.Sell_Resource
-                 (Resource, Have - Desire * 2);
-            elsif Quantity * 2 > Have then
-               Manager.Palace.Update.Buy_Resource
-                 (Resource, Quantity * 2);
-            end if;
-
-         end if;
-
-      end Update_Result;
+         Manager.Available.Set_Quantity
+           (Resource, Resource_Quantity (Quantity));
+      end Save_Quantity;
 
    begin
-      if Manager.Palace /= null
-        and then Manager.Palace.Owner = Manager.House
-      then
-         Minimum.Scan_Stock (Update_Result'Access);
+
+      Manager.Available.Clear_Stock;
+      Manager.City.Scan_Stock (Save_Quantity'Access);
+
+      if not Structure.Is_Harvester then
+
+         for Item of Structure.Production_Inputs loop
+            declare
+               Have : constant Resource_Quantity :=
+                        City.Quantity (Item.Resource);
+               Want : constant Resource_Quantity :=
+                        2.0 * Item.Quantity;
+            begin
+               Set_Request
+                 (Manager.Group, City, Item.Resource,
+                  (if Have >= Want then 0.0 else Want - Have));
+            end;
+         end loop;
       end if;
-   end Set_Resource_Requirements;
+
+      for Item of Structure.Production_Outputs loop
+         declare
+            Total_Requests : constant Resource_Quantity :=
+                               Get_Total_Requests (Manager.Group,
+                                                   Item.Resource);
+            Available      : constant Resource_Quantity :=
+                               City.Quantity (Item.Resource);
+            Factor         : constant Float :=
+                               (if Available >= Total_Requests
+                                then 1.0
+                                else Float (Available)
+                                / Float (Total_Requests));
+
+            procedure Process_Request
+              (To_City  : Carthage.Cities.City_Type;
+               Quantity : in out Resource_Quantity);
+
+            ---------------------
+            -- Process_Request --
+            ---------------------
+
+            procedure Process_Request
+              (To_City  : Carthage.Cities.City_Type;
+               Quantity : in out Resource_Quantity)
+            is
+            begin
+               if Factor < 1.0 then
+                  Quantity := Resource_Quantity (Factor * Float (Quantity));
+               end if;
+
+               declare
+                  Whole_Quantity : constant Natural :=
+                                     Natural
+                                       (Float'Truncation (Float (Quantity)));
+               begin
+                  if Whole_Quantity > 0 then
+                     City.Log
+                       ("transfer"
+                        & Natural'Image (Natural (Quantity))
+                        & " " & Item.Resource.Name
+                        & " to " & To_City.Name);
+
+                     City.Update.Transfer_Resource
+                       (Resource => Item.Resource,
+                        Quantity => Whole_Quantity,
+                        To_City  => To_City);
+                  end if;
+               end;
+            end Process_Request;
+
+         begin
+            Scan_Requests (Manager.Group,
+                           Item.Resource, Process_Request'Access);
+         end;
+--           if Wanted > 0 and then Available > 0 then
+--              for Request of Requests.Element (City.Identifier) loop
+--                 if Request.Resource = Item.Resource then
+--                    declare
+--                       Quantity : constant Natural :=
+--                                    Natural (Request.Quantity)
+--                                    * Available / Wanted;
+--                    begin
+--                       if Quantity > 0 then
+--                          City.Log
+--                            ("transferring" & Quantity'Img
+--                             & " " & Item.Resource.Identifier
+--                             & " to " & Request.City.Identifier);
+--                          City.Update.Transfer_Resource
+--                            (Item.Resource, Quantity, Request.City);
+--                       end if;
+--                    end;
+--                 end if;
+--              end loop;
+--           end if;
+      end loop;
+
+      declare
+         procedure Buy
+           (Resource : Carthage.Resources.Resource_Type;
+            Quantity : Positive);
+
+         procedure Sell
+           (Resource : Carthage.Resources.Resource_Type;
+            Quantity : Positive);
+
+         procedure Store
+           (Resource : Carthage.Resources.Resource_Type;
+            Quantity : Positive);
+
+         ---------
+         -- Buy --
+         ---------
+
+         procedure Buy
+           (Resource : Carthage.Resources.Resource_Type;
+            Quantity : Positive)
+         is
+         begin
+            City.Log
+              ("order" & Quantity'Img & " " & Resource.Identifier);
+            City.Update.Buy_Resource (Resource, Quantity);
+            Manager.Ordered.Add (Resource, Quantity);
+         end Buy;
+
+         ----------
+         -- Sell --
+         ----------
+
+         procedure Sell
+           (Resource : Carthage.Resources.Resource_Type;
+            Quantity : Positive)
+         is
+         begin
+            City.Log
+              ("sell" & Quantity'Img & " " & Resource.Identifier);
+            City.Update.Sell_Resource (Resource, Quantity);
+         end Sell;
+
+         -----------
+         -- Store --
+         -----------
+
+         procedure Store
+           (Resource : Carthage.Resources.Resource_Type;
+            Quantity : Positive)
+         is
+         begin
+            City.Log
+              ("store" & Quantity'Img & " " & Resource.Identifier);
+            City.Update.Transfer_Resource
+              (Resource, Quantity, Manager.Palace);
+         end Store;
+
+      begin
+         if City.Structure.Is_Harvester then
+            if Manager.Palace /= null then
+               Manager.Available.Scan_Stock (Store'Access);
+            else
+               Manager.Available.Scan_Stock (Sell'Access);
+            end if;
+         else
+            declare
+               Inputs  : constant Carthage.Structures.Production_Array :=
+                           City.Structure.Production_Inputs;
+               Outputs : constant Carthage.Structures.Production_Array :=
+                           City.Structure.Production_Outputs;
+            begin
+               for Item of Inputs loop
+                  declare
+                     Available : constant Natural :=
+                                   Manager.Available.Whole_Quantity
+                                     (Item.Resource);
+                     Ordered   : constant Natural :=
+                                   Manager.Ordered.Whole_Quantity
+                                     (Item.Resource);
+                     Pipeline  : constant Natural :=
+                                   Available + Ordered;
+                     Required  : constant Natural :=
+                                   2 * Natural (Item.Quantity);
+                  begin
+                     if Pipeline < Required then
+                        Buy (Item.Resource, Required - Pipeline);
+                     end if;
+                  end;
+               end loop;
+
+               for Item of Outputs loop
+                  if Manager.Available.Quantity (Item.Resource) > 0.0 then
+                     if Manager.Palace /= null then
+                        Store (Item.Resource,
+                               Manager.Available.Whole_Quantity
+                                 (Item.Resource));
+                     else
+                        Sell (Item.Resource,
+                              Manager.Available.Whole_Quantity
+                                (Item.Resource));
+                     end if;
+                  end if;
+               end loop;
+            end;
+         end if;
+      end;
+
+      if City.Structure.Has_Production then
+         City.Log ("executing production");
+         Carthage.Cities.Update_City
+           (Manager.City,
+            Carthage.Cities.Updates.Execute_City_Production'Access);
+      end if;
+
+      return Carthage.Calendar.Days (10);
+   end Update;
 
 end Carthage.Managers.Cities;

@@ -73,6 +73,8 @@ package body Carthage.UI.Models.Planets is
          Rec   : Layout_Rectangle;
       end record;
 
+   type Layer_Flags is array (Planet_Model_Layer) of Boolean;
+
    package Rendered_Asset_Lists is
      new Ada.Containers.Doubly_Linked_Lists (Rendered_Asset_Icon);
 
@@ -84,8 +86,8 @@ package body Carthage.UI.Models.Planets is
          Selected_Stack        : Carthage.Stacks.Stack_Type;
          Rendered_Stacks       : Rendered_Stack_Lists.List;
          Rendered_Assets       : Rendered_Asset_Lists.List;
-         Needs_Render          : Boolean := False;
          Layout_Loaded         : Boolean := False;
+         Needs_Render          : Layer_Flags := (others => True);
          Current_Zoom          : Zoom_Level := 0;
          Left_Toolbar_Layout   : Layout_Rectangle;
          Top_Toolbar_Layout    : Layout_Rectangle;
@@ -102,7 +104,7 @@ package body Carthage.UI.Models.Planets is
    overriding function Handle_Update
      (Model    : in out Root_Planet_Model)
       return Boolean
-   is (Model.Needs_Render);
+   is (for some Set of Model.Needs_Render => Set);
 
    overriding procedure Resize
      (Item          : in out Root_Planet_Model;
@@ -647,11 +649,11 @@ package body Carthage.UI.Models.Planets is
             declare
                Left       : Integer :=
                               Screen_X - Icon_Size / 2;
-               Right      : constant Integer := Left + Icon_Size;
+               Right      : Integer := Left + Icon_Size;
                Top        : Integer :=
                               Screen_Y + Tile_Height / 2
                                 - Icon_Size;
-               Bottom     : constant Integer := Top + Icon_Size;
+               Bottom     : Integer := Top + Icon_Size;
                Stack      : constant Carthage.Stacks.Stack_Type :=
                               Tile.First_Stack;
                Background : Carthage.Colours.Colour_Type :=
@@ -670,8 +672,12 @@ package body Carthage.UI.Models.Planets is
                   begin
                      Model.Get_Screen_Tile_Centre
                        (Next_Position, Next_X, Next_Y);
-                     Left := Left + Integer (Float (Next_X - Left) * Progress);
-                     Top := Top + Integer (Float (Next_Y - Top) * Progress);
+                     Left := Left
+                       + Integer (Float (Next_X - Screen_X) * Progress);
+                     Top := Top
+                       + Integer (Float (Next_Y - Screen_Y) * Progress);
+                     Right := Left + Icon_Size;
+                     Bottom := Top + Icon_Size;
                   end;
                end if;
 
@@ -831,7 +837,7 @@ package body Carthage.UI.Models.Planets is
          when UI_Layer =>
             null;
       end case;
-      Model.Needs_Render := False;
+      Model.Needs_Render := (others => False);
    end Render;
 
    ------------
@@ -1119,7 +1125,7 @@ package body Carthage.UI.Models.Planets is
                end if;
             end;
          end if;
-         Model.Needs_Render := True;
+         Model.Needs_Render := (others => True);
       end if;
    end Zoom;
 

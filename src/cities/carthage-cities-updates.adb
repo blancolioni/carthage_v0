@@ -7,9 +7,6 @@ package body Carthage.Cities.Updates is
    procedure Execute_City_Orders
      (City : in out City_Class);
 
-   procedure Execute_City_Production
-     (City : in out City_Class);
-
    procedure Execute_Harvester_Production
      (City : in out City_Class);
 

@@ -217,6 +217,13 @@ package Carthage.Planets is
         procedure (City : not null access constant
                      Carthage.Cities.City_Record'Class));
 
+   procedure Scan_Cities
+     (Planet  : Planet_Record;
+      House   : Carthage.Houses.House_Type;
+      Process : not null access
+        procedure (City : not null access constant
+                     Carthage.Cities.City_Record'Class));
+
    function Palace
      (Planet : Planet_Record)
       return access constant Carthage.Cities.City_Record'Class;

@@ -1,54 +1,131 @@
+with Ada.Containers.Doubly_Linked_Lists;
+
 with WL.Random;
+with WL.String_Maps;
+
+with Carthage.Calendar;
+
+with Carthage.Cities;
+with Carthage.Stacks;
+with Carthage.Tiles;
+
+with Carthage.Managers.Assets;
+with Carthage.Managers.Cities;
 
 package body Carthage.Managers.Planets is
 
-   package Tiles_Of_Interest_Lists is
-     new Ada.Containers.Doubly_Linked_Lists (Tile_Position);
+   package List_Of_Tiles is
+     new Ada.Containers.Doubly_Linked_Lists
+       (Carthage.Tiles.Tile_Type, Carthage.Tiles."=");
 
-   ----------------------------------
-   -- Add_Surface_Exploration_Goal --
-   ----------------------------------
+   package Stack_Lists is
+     new Ada.Containers.Doubly_Linked_Lists
+       (Carthage.Stacks.Stack_Type, Carthage.Stacks."=");
 
-   procedure Add_Surface_Exploration_Goal
-     (Manager : in out Planet_Manager_Record)
-   is
-   begin
-      Manager.Goals.Append
-        (Planet_Manager_Goal'
-           (Carthage.Goals.Goal_Record with
-                Priority   => Default_Priority (Explore_Surface),
-            Class      => Explore_Surface));
-   end Add_Surface_Exploration_Goal;
+   type Planet_Area_Class is (Sea, Continent);
 
-   ----------------
-   -- Check_Goal --
-   ----------------
+   type Planet_Area_Record is
+      record
+         Class           : Planet_Area_Class;
+         Tiles           : List_Of_Tiles.List;
+         Internal_Border : List_Of_Tiles.List;
+         External_Border : List_Of_Tiles.List;
+      end record;
 
-   overriding function Check_Goal
-     (Manager : Planet_Manager_Record;
-      Goal    : Carthage.Goals.Goal_Record'Class)
-      return Boolean
-   is
-      Planet_Goal : Planet_Manager_Goal renames Planet_Manager_Goal (Goal);
-   begin
-      case Planet_Goal.Class is
-         when Explore_Surface =>
-            return Manager.Scan_Unexplored_Tiles;
-      end case;
-   end Check_Goal;
+   package Planet_Area_Lists is
+     new Ada.Containers.Doubly_Linked_Lists (Planet_Area_Record);
 
-   -----------------
-   -- Check_Goals --
-   -----------------
+   type Tile_Info_Record is
+      record
+         Tile                 : Carthage.Tiles.Tile_Type;
+         Nearest_Seen         : Carthage.Tiles.Tile_Type;
+         Nearest_Explored     : Carthage.Tiles.Tile_Type;
+         Nearest_Controlled   : Carthage.Tiles.Tile_Type;
+         Interest             : Integer := 0;
+         Continent            : Planet_Area_Lists.Cursor :=
+                                  Planet_Area_Lists.No_Element;
+         Area_Internal_Border : Boolean;
+         Area_External_Border : Boolean;
+         Controlled           : Boolean;
+         Explored             : Boolean;
+         Seen                 : Boolean;
+         Targeted             : Boolean;
+      end record;
 
-   overriding procedure Check_Goals
-     (Manager : in out Planet_Manager_Record)
-   is
-   begin
-      Manager_Record (Manager).Check_Goals;
-      Manager.Ground_Asset_Manager.Check_Goals;
-      Manager.City_Manager.Check_Goals;
-   end Check_Goals;
+   type Tile_Info_Array is array (Tile_X, Tile_Y) of Tile_Info_Record;
+
+   type Goal_Class is (Explore_Surface);
+
+--     type Planet_Manager_Goal is
+--       new Carthage.Goals.Goal_Record with
+--        record
+--           Class : Goal_Class;
+--        end record;
+--
+--     overriding function Show
+--       (Goal : Planet_Manager_Goal)
+--        return String
+--     is ("planet goal: " & Goal.Class'Img);
+
+   function Default_Priority
+     (Class : Goal_Class)
+      return Carthage.Goals.Goal_Priority
+   is (case Class is
+          when Explore_Surface => 20)
+        with Unreferenced;
+
+   package Identifier_Sets is
+     new WL.String_Maps (Boolean);
+
+   package City_Manager_Maps is
+     new WL.String_Maps (Manager_Type);
+
+   type Planet_Manager_Record is
+     new Root_Manager_Type
+     and Carthage.Managers.Assets.Asset_Meta_Manager_Interface with
+      record
+         Owned                : Boolean;
+         House                : Carthage.Houses.House_Type;
+         Planet               : Carthage.Planets.Planet_Type;
+         City_Managers        : City_Manager_Maps.Map;
+         Ground_Asset_Manager : Manager_Type;
+         Areas                : Planet_Area_Lists.List;
+         Controlled_Tiles     : List_Of_Tiles.List;
+         Explored_Tiles       : List_Of_Tiles.List;
+         Seen_Tiles           : List_Of_Tiles.List;
+         Unseen_Tiles         : List_Of_Tiles.List;
+         Target_Tiles         : List_Of_Tiles.List;
+         Hostile_Tiles        : List_Of_Tiles.List;
+         Active_Targets       : List_Of_Tiles.List;
+         Tile_Info            : Tile_Info_Array;
+         Hostile_Stacks       : Stack_Lists.List;
+         Spotted_Hostiles     : Identifier_Sets.Map;
+         Palace               : Carthage.Cities.City_Type;
+         Shield               : Carthage.Cities.City_Type;
+      end record;
+
+   type Planet_Manager_Type is access all Planet_Manager_Record'Class;
+
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Planet_Manager_Record;
+      Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is null;
+
+   overriding function Average_Update_Frequency
+     (Manager : Planet_Manager_Record)
+      return Duration
+   is (Carthage.Calendar.Days (5));
+
+   overriding procedure Initialize
+     (Manager : in out Planet_Manager_Record);
+
+   overriding function Update
+     (Manager : not null access Planet_Manager_Record)
+      return Duration;
+
+   procedure Scan_Unexplored_Tiles
+     (Manager : in out Planet_Manager_Record'Class);
 
    ---------------------------
    -- Create_Planet_Manager --
@@ -57,53 +134,55 @@ package body Carthage.Managers.Planets is
    function Create_Planet_Manager
      (House  : Carthage.Houses.House_Type;
       Planet : Carthage.Planets.Planet_Type)
-      return Planet_Manager_Type
+      return Manager_Type
    is
       Manager : constant Planet_Manager_Type :=
                   new Planet_Manager_Record;
+
+      Group : constant Carthage.Managers.Cities.City_Trade_Group :=
+                Carthage.Managers.Cities.New_Trade_Group;
+
+      procedure Add_City_Manager
+        (City : not null access constant Carthage.Cities.City_Record'Class);
+
+      ----------------------
+      -- Add_City_Manager --
+      ----------------------
+
+      procedure Add_City_Manager
+        (City : not null access constant Carthage.Cities.City_Record'Class)
+      is
+         use type Carthage.Houses.House_Type;
+      begin
+         if City.Owner = House then
+            Manager.City_Managers.Insert
+              (City.Identifier,
+               Carthage.Managers.Cities.Create_City_Manager
+                 (House, Group, City));
+         end if;
+      end Add_City_Manager;
+
    begin
       Manager.House := House;
       Manager.Planet := Planet;
+
+      Planet.Scan_Cities (Add_City_Manager'Access);
       Manager.Ground_Asset_Manager :=
-        Carthage.Managers.Assets.Create_Asset_Manager
+        Carthage.Managers.Assets.Ground_Asset_Manager
           (Manager, House, Planet);
-      Manager.City_Manager :=
-        Carthage.Managers.Cities.Create_City_Manager
-          (House, Planet);
-      return Manager;
+
+      Manager.Initialize;
+      Add_Manager (Manager);
+
+      return Manager_Type (Manager);
    end Create_Planet_Manager;
 
-   ------------------
-   -- Execute_Turn --
-   ------------------
+   ----------------
+   -- Initialize --
+   ----------------
 
-   overriding procedure Execute_Turn
+   overriding procedure Initialize
      (Manager : in out Planet_Manager_Record)
-   is
-      Minimum_Stock   : Carthage.Resources.Stock_Record;
-      Desired_Stock   : Carthage.Resources.Stock_Record;
-      Available_Stock : Carthage.Resources.Stock_Record;
-   begin
-      Manager_Record (Manager).Execute_Turn;
-      Manager.Ground_Asset_Manager.Get_Resource_Requirements
-        (Minimum_Stock, Desired_Stock);
-      Manager.City_Manager.Set_Resource_Requirements
-        (Minimum => Minimum_Stock,
-         Desired => Desired_Stock,
-         Result  => Available_Stock);
-      Manager.Ground_Asset_Manager.Transfer_Resources
-        (Available_Stock);
-
-      Manager.Ground_Asset_Manager.Execute_Turn;
-      Manager.City_Manager.Execute_Turn;
-   end Execute_Turn;
-
-   ------------------------
-   -- Load_Initial_State --
-   ------------------------
-
-   overriding procedure Load_Initial_State
-     (Manager : not null access Planet_Manager_Record)
    is
       use type Carthage.Houses.House_Type;
 
@@ -128,7 +207,7 @@ package body Carthage.Managers.Planets is
 
          function Is_Member (Tile : Carthage.Tiles.Tile_Type) return Boolean
          is (case Class is
-                when Sea => Tile.Is_Water,
+                when Sea       => Tile.Is_Water,
                 when Continent => not Tile.Is_Water);
 
          procedure Process (Tile : Carthage.Tiles.Tile_Type);
@@ -299,10 +378,10 @@ package body Carthage.Managers.Planets is
 
       if Manager.Owned then
          declare
-            Palace_Tile    : constant Carthage.Tiles.Tile_Type :=
-                               Manager.Palace.Tile;
+            Palace_Tile     : constant Carthage.Tiles.Tile_Type :=
+                                Manager.Palace.Tile;
             Palace_Position : constant Tile_Position := Palace_Tile.Position;
-            Home_Continent : constant Planet_Area_Lists.Cursor :=
+            Home_Continent  : constant Planet_Area_Lists.Cursor :=
                                 Manager.Tile_Info
                                   (Palace_Position.X, Palace_Position.Y)
                                   .Continent;
@@ -314,83 +393,40 @@ package body Carthage.Managers.Planets is
          end;
       end if;
 
-      Manager.Ground_Asset_Manager.Load_Initial_State;
-      Manager.City_Manager.Load_Initial_State;
-   end Load_Initial_State;
+      Manager.Scan_Unexplored_Tiles;
 
-   -------------
-   -- Execute --
-   -------------
-
---     overriding procedure Execute
---       (Manager : in out Planet_Manager_Record)
---     is
---     begin
---        for Tile of Manager.Active_Targets loop
---           if Tile.Has_Stack
---             and then Manager.House.At_War_With (Tile.Stack.Owner)
---           then
---              Manager.Ground_Asset_Manager.Add_Request
---                (Tile_Attack_Request
---                   (Manager.Planet, Tile));
---           else
---              Manager.Ground_Asset_Manager.Add_Request
---                (Tile_Recon_Request
---                   (Manager.Planet, Tile));
---           end if;
---        end loop;
---
---        Manager.Ground_Asset_Manager.Execute;
---        Manager.City_Manager.Execute;
---     end Execute;
-
-   ------------------------
-   -- On_Hostile_Spotted --
-   ------------------------
-
-   overriding procedure On_Hostile_Spotted
-     (Manager : in out Planet_Manager_Record;
-      Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
-      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
-   is
-      pragma Unreferenced (Spotter);
-   begin
-      if not Manager.Spotted_Hostiles.Contains (Hostile.Identifier) then
-         Manager.Spotted_Hostiles.Insert (Hostile.Identifier, True);
-         Manager.Ground_Asset_Manager.Add_Goal
-           (Manager.Ground_Asset_Manager.Capture_Goal
-              (Tile     => Hostile.Tile,
-               Strength => Hostile.Total_Strength * 3));
-      end if;
-   end On_Hostile_Spotted;
+   end Initialize;
 
    ---------------------------
    -- Scan_Unexplored_Tiles --
    ---------------------------
 
-   function Scan_Unexplored_Tiles
-     (Manager : Planet_Manager_Record'Class)
-      return Boolean
+   procedure Scan_Unexplored_Tiles
+     (Manager : in out Planet_Manager_Record'Class)
    is
-      Tiles : Tiles_Of_Interest_Lists.List;
+      Tiles : List_Of_Tiles.List renames Manager.Active_Targets;
 
-      function Higher_Interest (Left, Right : Tile_Position) return Boolean
-      is (Manager.Tile_Info (Left.X, Left.Y).Interest
-          > Manager.Tile_Info (Right.X, Right.Y).Interest);
+      function Higher_Interest
+        (Left, Right : Carthage.Tiles.Tile_Type)
+         return Boolean
+      is (Manager.Tile_Info (Left.Position.X, Left.Position.Y).Interest
+          > Manager.Tile_Info (Right.Position.X, Right.Position.Y).Interest);
 
       package Sorting is
-        new Tiles_Of_Interest_Lists.Generic_Sorting
+        new List_Of_Tiles.Generic_Sorting
           (Higher_Interest);
 
    begin
       Manager.Planet.Log
         (Manager.House.Name & ": looking for unexplored tiles");
 
+      Tiles.Clear;
+
       for Unseen of Manager.Unseen_Tiles loop
-         Tiles.Append (Unseen.Position);
+         Tiles.Append (Unseen);
       end loop;
       for Seen of Manager.Seen_Tiles loop
-         Tiles.Append (Seen.Position);
+         Tiles.Append (Seen);
       end loop;
 
       Manager.Planet.Log
@@ -402,22 +438,24 @@ package body Carthage.Managers.Planets is
       while not Tiles.Is_Empty loop
 
          declare
-            Tile : constant Tile_Position := Tiles.First_Element;
-            New_List : Tiles_Of_Interest_Lists.List;
+            Tile     : constant Carthage.Tiles.Tile_Type :=
+                         Tiles.First_Element;
+            New_List : List_Of_Tiles.List;
          begin
 
             Manager.House.Log
               ("interest:"
-               & Manager.Tile_Info (Tile.X, Tile.Y).Interest'Img
-               & ": " & Manager.Planet.Tile (Tile).Description);
+               & Manager.Tile_Info
+                 (Tile.Position.X, Tile.Position.Y).Interest'Img
+               & ": " & Manager.Planet.Tile (Tile.Position).Description);
             declare
                Goal : constant Carthage.Goals.Goal_Record'Class :=
-                        Manager.Ground_Asset_Manager.Recon_Goal
-                          (Manager.Planet.Tile (Tile));
+                        Carthage.Managers.Assets.Recon_Goal (Tile);
             begin
-               if Manager.Ground_Asset_Manager.Have_Immediate_Capacity
-                 (Goal)
+               if Manager.Ground_Asset_Manager
+                 .Have_Immediate_Capacity (Goal)
                then
+                  Manager.House.Log ("  adding goal: " & Goal.Show);
                   Manager.Ground_Asset_Manager.Add_Goal (Goal);
                else
                   exit;
@@ -425,7 +463,10 @@ package body Carthage.Managers.Planets is
             end;
 
             for Check_Tile of Tiles loop
-               if Carthage.Planets.Hex_Distance (Tile, Check_Tile) > 6 then
+               if Carthage.Planets.Hex_Distance
+                 (Tile.Position, Check_Tile.Position)
+                 > 6
+               then
                   New_List.Append (Check_Tile);
                end if;
             end loop;
@@ -435,8 +476,25 @@ package body Carthage.Managers.Planets is
 
       end loop;
 
-      return True;
-
    end Scan_Unexplored_Tiles;
+
+   ------------
+   -- Update --
+   ------------
+
+   overriding function Update
+     (Manager : not null access Planet_Manager_Record)
+      return Duration
+   is
+   begin
+      Manager.Planet.Log ("updating for House " & Manager.House.Name);
+      Manager.Check_Goals;
+
+      if False then
+         Manager.Ground_Asset_Manager.Transfer_Resources
+           (Manager.Palace.Update);
+      end if;
+      return Manager.Average_Update_Frequency;
+   end Update;
 
 end Carthage.Managers.Planets;

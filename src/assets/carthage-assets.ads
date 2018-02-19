@@ -36,6 +36,16 @@ package Carthage.Assets is
      (Asset : Asset_Record)
       return Carthage.Units.Unit_Type;
 
+   function Space_Asset
+     (Asset : Asset_Record'Class)
+      return Boolean
+   is (Asset.Unit.Space_Unit);
+
+   function Ground_Asset
+     (Asset : Asset_Record'Class)
+      return Boolean
+   is (Asset.Unit.Ground_Unit);
+
    function Movement
      (Asset : Asset_Record)
       return Natural;

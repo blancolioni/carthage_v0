@@ -1,77 +1,116 @@
-with Ada.Text_IO;
+with Ada.Numerics.Float_Random;
+
+with Carthage.Calendar;
 
 package body Carthage.Managers is
+
+   Gen : Ada.Numerics.Float_Random.Generator;
+
+   --------------
+   -- Activate --
+   --------------
+
+   overriding procedure Activate
+     (Upd : Manager_Update)
+   is
+      use type Carthage.Calendar.Time;
+      Next_Event_Delay : constant Duration :=
+                           Upd.Manager.Update;
+   begin
+      if Next_Event_Delay > 0.0 then
+         Upd.Queue (Carthage.Calendar.Clock + Next_Event_Delay);
+      end if;
+   end Activate;
 
    --------------
    -- Add_Goal --
    --------------
 
    procedure Add_Goal
-     (Manager : not null access Manager_Record;
+     (Manager : in out Root_Manager_Type'Class;
       Goal    : Carthage.Goals.Goal_Record'Class)
    is
    begin
-      Manager.Goals.Append (Goal);
+      Manager.Goals.Insert (Goal.Priority, Goal);
    end Add_Goal;
+
+   -----------------
+   -- Add_Manager --
+   -----------------
+
+   procedure Add_Manager
+     (Manager : not null access Root_Manager_Type'Class)
+   is
+      use type Carthage.Calendar.Time;
+      Upd : constant Manager_Update := (Manager => Manager_Type (Manager));
+      First_Update_Delay : constant Duration :=
+                             Duration
+                               (Float (Manager.Average_Update_Frequency)
+                                * (Ada.Numerics.Float_Random.Random (Gen)
+                                    + 0.5));
+   begin
+      Upd.Queue (Carthage.Calendar.Clock + First_Update_Delay);
+   end Add_Manager;
 
    -----------------
    -- Check_Goals --
    -----------------
 
    procedure Check_Goals
-     (Manager : in out Manager_Record)
+     (Manager : not null access Root_Manager_Type'Class)
    is
-      use Goal_Lists;
-      Position : Cursor;
    begin
-      Sorting.Sort (Manager.Goals);
-      Position := Manager.Goals.First;
-      while Has_Element (Position) loop
-         declare
-            Current : Cursor := Position;
-         begin
-            Next (Position);
-            if Manager_Record'Class (Manager).Check_Goal
-              (Element (Current))
-            then
-               Manager.Goals.Delete (Current);
-            end if;
-         end;
+      while not Manager.Goals.Is_Empty loop
+         if Manager.Check_Goal (Manager.Goals.First_Element) then
+            Manager.Goals.Delete_First;
+         else
+            exit;
+         end if;
       end loop;
    end Check_Goals;
 
-   ---------------------------
-   -- Execute_Manager_Turns --
-   ---------------------------
+   -------------------------------
+   -- Get_Resource_Requirements --
+   -------------------------------
 
-   procedure Execute_Manager_Turns is
+   procedure Get_Resource_Requirements
+     (Manager : in out Root_Manager_Type;
+      Minimum : in out Carthage.Resources.Stock_Interface'Class;
+      Desired : in out Carthage.Resources.Stock_Interface'Class)
+   is
+      pragma Unreferenced (Manager);
    begin
-      for Manager of Top_Managers loop
-         Manager.Execute_Turn;
-      end loop;
-   end Execute_Manager_Turns;
+      Minimum.Clear_Stock;
+      Desired.Clear_Stock;
+   end Get_Resource_Requirements;
 
-   -------------------------
-   -- Start_Manager_Turns --
-   -------------------------
+   ------------------------
+   -- Transfer_Resources --
+   ------------------------
 
-   procedure Start_Manager_Turns is
+   procedure Transfer_Resources
+     (Manager : in out Root_Manager_Type;
+      From    : in out Carthage.Resources.Stock_Interface'Class)
+   is
+      procedure Transfer
+        (Resource : Carthage.Resources.Resource_Type;
+         Quantity : Positive);
+
+      --------------
+      -- Transfer --
+      --------------
+
+      procedure Transfer
+        (Resource : Carthage.Resources.Resource_Type;
+         Quantity : Positive)
+      is
+      begin
+         Manager.Resources.Add (Resource, Quantity);
+      end Transfer;
+
    begin
-      for Manager of Top_Managers loop
-         Manager.Check_Goals;
-      end loop;
-   end Start_Manager_Turns;
-
-   --------------------
-   -- Start_Managers --
-   --------------------
-
-   procedure Start_Managers is
-   begin
-      for Manager of Top_Managers loop
-         Ada.Text_IO.Put_Line (Manager.House.Name);
-         Manager.Load_Initial_State;
-      end loop;
-   end Start_Managers;
+      From.Scan_Stock (Transfer'Access);
+      From.Clear_Stock;
+   end Transfer_Resources;
 
 end Carthage.Managers;

@@ -43,7 +43,7 @@ package body Carthage.UI.Gtk_UI is
          Property_List  : Gtk.Tree_View.Gtk_Tree_View;
          Date_Label     : Gtk.Label.Gtk_Label;
          Current_Speed  : Natural := 0;
-         Date           : Carthage.Calendar.Date;
+         Date           : Carthage.Calendar.Time;
          Status_Bar     : Gtk.Status_Bar.Gtk_Status_Bar;
          Status_Context : Gtk.Status_Bar.Context_Id;
          Current_Status : Ada.Strings.Unbounded.Unbounded_String;
@@ -207,19 +207,20 @@ package body Carthage.UI.Gtk_UI is
    overriding procedure On_Idle
      (State : in out Carthage_UI)
    is
-      use type Carthage.Calendar.Date;
-      New_Date : constant Carthage.Calendar.Date :=
-                   Carthage.Calendar.Today;
+      use Carthage.Calendar;
+      New_Date : constant Time := Clock;
    begin
+      Carthage.Updates.Update;
       if New_Date /= State.Date then
          State.Date := New_Date;
          State.Date_Label.Set_Label
-           (Carthage.Calendar.Day_Identifier (State.Date));
-         for I in 1 .. State.Models.Count loop
-            Carthage.UI.Models.Carthage_Model (State.Models.Model (I)).Reload;
-            State.Models.Model (I).Queue_Render;
-         end loop;
+           (Carthage.Calendar.Image (State.Date));
       end if;
+
+      for I in 1 .. State.Models.Count loop
+         State.Models.Model (I).Queue_Render;
+      end loop;
+
    end On_Idle;
 
    ----------------------------
@@ -231,10 +232,11 @@ package body Carthage.UI.Gtk_UI is
    is
       use Carthage.Updates;
       Name      : constant String := Button.Get_Name;
-      New_Speed : constant Update_Speed :=
+      New_Speed : constant Natural :=
                     Character'Pos (Name (Name'Last)) - 48;
    begin
-      Set_Speed (New_Speed);
+      Carthage.Updates.Set_Time_Acceleration
+        (Duration (New_Speed * 84_600 / 3));
    end On_Step_Button_Clicked;
 
    --------------------
@@ -361,7 +363,7 @@ package body Carthage.UI.Gtk_UI is
                            Property_List  => Property_List,
                            Date_Label     => Date_Label,
                            Current_Speed  => 0,
-                           Date           => Carthage.Calendar.Today,
+                           Date           => Carthage.Calendar.Clock,
                            Status_Bar     => Status_Bar,
                            Status_Context =>
                              Status_Bar.Get_Context_Id ("star mouseover"),

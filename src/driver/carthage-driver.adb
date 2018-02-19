@@ -3,6 +3,7 @@ with Ada.Text_IO;
 
 with WL.Command_Line;
 
+with Carthage.Calendar;
 with Carthage.Configure;
 with Carthage.Logging;
 with Carthage.Updates;
@@ -10,7 +11,7 @@ with Carthage.Updates;
 with Carthage.Houses;
 with Carthage.UI.Gtk_UI;
 
-with Carthage.Managers.Houses;
+with Carthage.Managers.Manager;
 
 with Carthage.Game;
 
@@ -47,25 +48,25 @@ begin
    Carthage.Updates.Before_First_Update;
    Ada.Text_IO.Put_Line ("done");
 
-   Ada.Text_IO.Put_Line ("setting up house managers");
+   Ada.Text_IO.Put_Line ("setting up managers");
 
-   declare
-      procedure Create_Manager (House : Carthage.Houses.House_Type);
+   Carthage.Managers.Manager.Start_Managers;
 
-      --------------------
-      -- Create_Manager --
-      --------------------
-
-      procedure Create_Manager (House : Carthage.Houses.House_Type) is
-      begin
-         Carthage.Managers.Houses.Create_House_Manager (House);
-      end Create_Manager;
-
-   begin
-      Carthage.Houses.Scan (Create_Manager'Access);
-   end;
-
-   Carthage.Managers.Start_Managers;
+--     declare
+--        procedure Create_Manager (House : Carthage.Houses.House_Type);
+--
+--        --------------------
+--        -- Create_Manager --
+--        --------------------
+--
+--        procedure Create_Manager (House : Carthage.Houses.House_Type) is
+--        begin
+--           Carthage.Managers.Houses.Create_House_Manager (House);
+--        end Create_Manager;
+--
+--     begin
+--        Carthage.Houses.Scan (Create_Manager'Access);
+--     end;
 
    Ada.Text_IO.Put_Line ("done");
 
@@ -75,15 +76,17 @@ begin
 
    if Carthage.Options.Update then
       for I in 1 .. Natural'Max (Carthage.Options.Update_Count, 1) loop
-         Carthage.Updates.Update;
+         for J in 1 .. 24 loop
+            Carthage.Updates.Update;
+            Carthage.Calendar.Advance (Carthage.Calendar.Hours (1));
+         end loop;
       end loop;
    end if;
 
    if Carthage.Options.Gtk_UI then
-      Carthage.Updates.Start_Updates;
+      Carthage.Updates.Set_Time_Acceleration (4.0 * 3600.0);
       Carthage.UI.Gtk_UI.Start
         (Carthage.Houses.Get (Carthage.Options.House));
-      Carthage.Updates.Stop_Updates;
    end if;
 
    Carthage.Logging.Stop_Logging;

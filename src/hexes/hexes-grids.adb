@@ -101,11 +101,11 @@ package body Hexes.Grids is
       while not Frontier.Is_Empty loop
          declare
             Current      : constant Cube_Coordinate :=
-                             Frontier.Maximum_Element;
+                             Frontier.First_Element;
             Current_Cost : constant Float :=
                              Cost_So_Far (Grid.Square_Tile_Index (Current));
          begin
-            Frontier.Delete_Maximum;
+            Frontier.Delete_First;
 
             exit when Current = Finish;
 

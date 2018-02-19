@@ -25,9 +25,9 @@ package body Carthage.Tests is
 
       for X of Xs loop
          declare
-            Y : constant Positive := H.Maximum_Element;
+            Y : constant Positive := H.First_Element;
          begin
-            H.Delete_Maximum;
+            H.Delete_First;
             Ada.Text_IO.Put (Y'Img);
          end;
       end loop;
@@ -46,9 +46,9 @@ package body Carthage.Tests is
 
       for X of Xs loop
          declare
-            Y : constant Positive := H.Maximum_Element;
+            Y : constant Positive := H.First_Element;
          begin
-            H.Delete_Maximum;
+            H.Delete_First;
             X := Y;
          end;
       end loop;

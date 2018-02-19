@@ -1,3 +1,5 @@
+private with Ada.Containers.Vectors;
+
 private with Memor.Database;
 private with Memor.Element_Vectors;
 
@@ -5,10 +7,14 @@ with Carthage.Objects.Localised;
 
 package Carthage.Resources is
 
+   type Resource_Index is new Positive;
+
    type Resource_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with private;
 
    function Base_Price (Resource : Resource_Record) return Positive;
+
+   function Index (Resource : Resource_Record'Class) return Resource_Index;
 
    subtype Resource_Class is Resource_Record'Class;
 
@@ -20,6 +26,10 @@ package Carthage.Resources is
 
    function Get (Id : String) return Resource_Type
    with Pre => Exists (Id);
+
+   function Last_Index return Resource_Index;
+
+   function Get (Index : Resource_Index) return Resource_Type;
 
    procedure Scan
      (Process : not null access procedure (Resource : Resource_Type));
@@ -90,6 +100,7 @@ private
    type Resource_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with
       record
+         Index : Resource_Index;
          Price : Natural;
       end record;
 
@@ -107,6 +118,9 @@ private
      (Item : Resource_Record)
       return Memor.Memor_Database
    is (Db.Get_Database);
+
+   function Index (Resource : Resource_Record'Class) return Resource_Index
+   is (Resource.Index);
 
    function Base_Price (Resource : Resource_Record) return Positive
    is (Resource.Price);
@@ -145,5 +159,16 @@ private
       Process : not null access
         procedure (Resource : Resource_Type;
                    Quantity : Resource_Quantity));
+
+   package Resource_Vectors is
+     new Ada.Containers.Vectors (Resource_Index, Resource_Type);
+
+   Resource_Vector : Resource_Vectors.Vector;
+
+   function Get (Index : Resource_Index) return Resource_Type
+   is (Resource_Vector.Element (Index));
+
+   function Last_Index return Resource_Index
+   is (Resource_Vector.Last_Index);
 
 end Carthage.Resources;
