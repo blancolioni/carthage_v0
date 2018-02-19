@@ -78,6 +78,9 @@ package body Carthage.Configure is
    procedure Import_Technology
      (Config : Tropos.Configuration);
 
+   procedure Import_Resources
+     (Config : Tropos.Configuration);
+
    procedure Import_Terrain
      (Colour_Config      : Tropos.Configuration;
       Road_Cost_Config   : Tropos.Configuration;
@@ -534,6 +537,49 @@ package body Carthage.Configure is
          end;
       end loop;
    end Import_Cities;
+
+   ----------------------
+   -- Import_Resources --
+   ----------------------
+
+   procedure Import_Resources
+     (Config : Tropos.Configuration)
+   is
+      At_Name  : Boolean := False;
+      At_Price : Boolean := False;
+      At_Desc  : Boolean := False;
+      Output   : Tropos.Configuration := Tropos.New_Config ("resources");
+      Current  : Tropos.Configuration;
+   begin
+      for Res_Config of Config.Child (1) loop
+         declare
+            Name : constant String := Res_Config.Config_Name;
+         begin
+            if Name = "name" then
+               At_Name := True;
+            elsif At_Name then
+               Current :=
+                 Tropos.New_Config
+                   (Ada.Characters.Handling.To_Lower
+                      (Res_Config.Config_Name));
+               At_Name := False;
+            elsif Name = "price" then
+               At_Price := True;
+            elsif At_Price then
+               Current.Add ("price", Res_Config.Config_Name);
+               At_Price := False;
+            elsif Name = "desc" then
+               At_Desc := True;
+            elsif At_Desc then
+               Current.Add ("desc", Res_Config.Config_Name);
+               At_Desc := False;
+               Output.Add (Current);
+            end if;
+         end;
+      end loop;
+      Tropos.Writer.Write_Config
+        (Output, Carthage.Paths.Config_File ("resources.txt"));
+   end Import_Resources;
 
    -----------------------
    -- Import_Technology --
@@ -1090,6 +1136,20 @@ package body Carthage.Configure is
          end if;
       end;
 
+      declare
+         Resources_Path : constant String :=
+                            Carthage.Paths.Config_File ("resources.txt");
+      begin
+         if Carthage.Options.Clear_Import_Cache
+           or else not Ada.Directories.Exists (Resources_Path)
+         then
+            Ada.Text_IO.Put_Line ("   importing fading suns resources");
+            Import_Resources
+              (Tropos.Reader.Read_Config
+                 (Fading_Suns_Data_File ("RES")));
+         end if;
+      end;
+
       Ada.Text_IO.Put_Line ("  technology");
       Load_Directory_Configuration
         ("technology",
@@ -1099,8 +1159,12 @@ package body Carthage.Configure is
          Carthage.Technology.Configure.Configure_Tree'Access);
 
       Ada.Text_IO.Put_Line ("  resources");
-      Load_Directory_Configuration
-        ("resources", Carthage.Resources.Configure.Configure_Resource'Access);
+      for Config of
+        Tropos.Reader.Read_Config
+          (Carthage.Paths.Config_File ("resources.txt"))
+      loop
+         Carthage.Resources.Configure.Configure_Resource (Config);
+      end loop;
 
       declare
          Terrain_Path : constant String :=
