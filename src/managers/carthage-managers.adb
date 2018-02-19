@@ -90,27 +90,32 @@ package body Carthage.Managers is
 
    procedure Transfer_Resources
      (Manager : in out Root_Manager_Type;
-      From    : in out Carthage.Resources.Stock_Interface'Class)
+      From    : in out Carthage.Resources.Stock_Interface'Class;
+      Max     : Carthage.Resources.Stock_Interface'Class)
    is
       procedure Transfer
-        (Resource : Carthage.Resources.Resource_Type;
-         Quantity : Positive);
+        (Resource : Carthage.Resources.Resource_Type);
 
       --------------
       -- Transfer --
       --------------
 
       procedure Transfer
-        (Resource : Carthage.Resources.Resource_Type;
-         Quantity : Positive)
+        (Resource : Carthage.Resources.Resource_Type)
       is
+         Transferred : constant Natural :=
+                         Natural'Min
+                           (From.Whole_Quantity (Resource),
+                            Max.Whole_Quantity (Resource));
       begin
-         Manager.Resources.Add (Resource, Quantity);
+         if Transferred > 0 then
+            Manager.Resources.Add (Resource, Transferred);
+            From.Remove (Resource, Transferred);
+         end if;
       end Transfer;
 
    begin
-      From.Scan_Stock (Transfer'Access);
-      From.Clear_Stock;
+      Carthage.Resources.Scan (Transfer'Access);
    end Transfer_Resources;
 
 end Carthage.Managers;

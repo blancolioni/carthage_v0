@@ -10,3 +10,4 @@ config/units
 config/terrain/
 *.orig
 ./images/*.bmp
+src/managers-v1/*

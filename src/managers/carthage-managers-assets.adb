@@ -70,6 +70,11 @@ package body Carthage.Managers.Assets is
    overriding procedure Initialize
      (Manager : in out Asset_Manager_Record);
 
+   overriding procedure Get_Resource_Requirements
+     (Manager : in out Asset_Manager_Record;
+      Minimum : in out Carthage.Resources.Stock_Interface'Class;
+      Desired : in out Carthage.Resources.Stock_Interface'Class);
+
    overriding procedure On_Hostile_Spotted
      (Manager : in out Asset_Manager_Record;
       Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
@@ -89,6 +94,11 @@ package body Carthage.Managers.Assets is
      (Manager : not null access Asset_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
      return Boolean;
+
+   overriding procedure Take_Resource
+     (From     : in out Asset_Manager_Record;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : in out Resource_Quantity);
 
    overriding function Update
      (Manager : not null access Asset_Manager_Record)
@@ -309,6 +319,37 @@ package body Carthage.Managers.Assets is
 
       end case;
    end Check_Goal;
+
+   -------------------------------
+   -- Get_Resource_Requirements --
+   -------------------------------
+
+   overriding procedure Get_Resource_Requirements
+     (Manager : in out Asset_Manager_Record;
+      Minimum : in out Carthage.Resources.Stock_Interface'Class;
+      Desired : in out Carthage.Resources.Stock_Interface'Class)
+   is
+      Food : constant Carthage.Resources.Resource_Type :=
+               Carthage.Resources.Food;
+      Current_Food : constant Natural :=
+                       Manager.Resources.Whole_Quantity (Food);
+   begin
+      if Manager.Minimum_Food = 0 then
+         for Stack of Manager.Stacks loop
+            Manager.Minimum_Food :=
+              Manager.Minimum_Food + Natural (Stack.Stack.Count);
+         end loop;
+         Manager.Desired_Food := Manager.Minimum_Food * 2;
+      end if;
+
+      if Manager.Minimum_Food > Current_Food then
+         Minimum.Add (Food, Manager.Minimum_Food - Current_Food);
+      end if;
+      if Manager.Desired_Food > Current_Food then
+         Desired.Add (Food, Manager.Desired_Food - Current_Food);
+      end if;
+
+   end Get_Resource_Requirements;
 
    --------------------------
    -- Ground_Asset_Manager --
@@ -565,6 +606,22 @@ package body Carthage.Managers.Assets is
    begin
       return Goal;
    end Recon_Goal;
+
+   -------------------
+   -- Take_Resource --
+   -------------------
+
+   overriding procedure Take_Resource
+     (From     : in out Asset_Manager_Record;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : in out Resource_Quantity)
+   is
+   begin
+      Quantity :=
+        Resource_Quantity'Min
+          (Quantity, From.Resources.Quantity (Resource));
+      From.Resources.Remove (Resource, Quantity);
+   end Take_Resource;
 
    ------------
    -- Update --

@@ -27,7 +27,8 @@ package Carthage.Managers is
 
    procedure Transfer_Resources
      (Manager : in out Root_Manager_Type;
-      From    : in out Carthage.Resources.Stock_Interface'Class);
+      From    : in out Carthage.Resources.Stock_Interface'Class;
+      Max     : Carthage.Resources.Stock_Interface'Class);
 
    function Check_Goal
      (Manager : not null access Root_Manager_Type;

@@ -486,14 +486,22 @@ package body Carthage.Managers.Planets is
      (Manager : not null access Planet_Manager_Record)
       return Duration
    is
+      use type Carthage.Cities.City_Type;
    begin
       Manager.Planet.Log ("updating for House " & Manager.House.Name);
       Manager.Check_Goals;
 
-      if False then
-         Manager.Ground_Asset_Manager.Transfer_Resources
-           (Manager.Palace.Update);
+      if Manager.Palace /= null then
+         declare
+            Minimum, Desired : Carthage.Resources.Stock_Record;
+         begin
+            Manager.Ground_Asset_Manager.Get_Resource_Requirements
+              (Minimum, Desired);
+            Manager.Ground_Asset_Manager.Transfer_Resources
+              (Manager.Palace.Update, Desired);
+         end;
       end if;
+
       return Manager.Average_Update_Frequency;
    end Update;
 

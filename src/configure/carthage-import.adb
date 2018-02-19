@@ -258,6 +258,10 @@ package body Carthage.Import is
       Have_Palette := True;
    end Import_Palette;
 
+   -------------------------
+   -- Import_Terrain_Cost --
+   -------------------------
+
    procedure Import_Terrain_Cost
      (Config : Tropos.Configuration)
    is

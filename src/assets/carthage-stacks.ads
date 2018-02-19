@@ -7,6 +7,7 @@ private with Carthage.Calendar;
 with Carthage.Assets;
 with Carthage.Houses;
 with Carthage.Planets;
+with Carthage.Resources;
 with Carthage.Tiles;
 
 with Carthage.Objects;
@@ -16,6 +17,12 @@ package Carthage.Stacks is
    Maximum_Stack_Size : constant := 20;
 
    type Stack_Manager_Interface is interface;
+
+   procedure Take_Resource
+     (From     : in out Stack_Manager_Interface;
+      Resource : Carthage.Resources.Resource_Type;
+      Quantity : in out Resource_Quantity)
+   is abstract;
 
    type Asset_Count is range 0 .. Maximum_Stack_Size;
    subtype Asset_Index is Asset_Count range 1 .. Asset_Count'Last;
