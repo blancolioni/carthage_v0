@@ -1138,6 +1138,13 @@ package body Carthage.UI.Models.Planets is
             end if;
          end loop;
          return "";
+      elsif Contains (Model.Bottom_Toolbar_Layout, X, Y) then
+         for Index in Model.Resource_Layout'Range loop
+            if Contains (Model.Resource_Layout (Index).Rectangle, X, Y) then
+               return Carthage.Resources.Get (Index).Name;
+            end if;
+         end loop;
+         return "";
       else
          return "";
       end if;
