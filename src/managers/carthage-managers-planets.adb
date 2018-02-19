@@ -497,6 +497,32 @@ package body Carthage.Managers.Planets is
          begin
             Manager.Ground_Asset_Manager.Get_Resource_Requirements
               (Minimum, Desired);
+            Manager.Planet.Log ("ground asset desired resources");
+
+            declare
+               procedure Report_Stock
+                 (Resource : Carthage.Resources.Resource_Type);
+
+               ------------------
+               -- Report_Stock --
+               ------------------
+
+               procedure Report_Stock
+                 (Resource : Carthage.Resources.Resource_Type)
+               is
+                  Quantity : constant Natural :=
+                               Desired.Whole_Quantity (Resource);
+               begin
+                  if Quantity > 0 then
+                     Manager.Planet.Log
+                       (Resource.Name & ":" & Quantity'Img);
+                  end if;
+               end Report_Stock;
+
+            begin
+               Carthage.Resources.Scan (Report_Stock'Access);
+            end;
+
             Manager.Ground_Asset_Manager.Transfer_Resources
               (Manager.Palace.Update, Desired);
          end;
