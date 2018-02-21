@@ -1,4 +1,5 @@
 with Ada.Containers.Doubly_Linked_Lists;
+with Ada.Strings.Fixed;
 
 with Tropos.Reader;
 
@@ -710,6 +711,11 @@ package body Carthage.UI.Models.Planets is
                Resource   : constant String :=
                               "unit"
                               & Integer'Image (-(Stack.Asset (1).Unit.Index));
+               Size       : constant String :=
+                              Ada.Strings.Fixed.Trim
+                                (Carthage.Stacks.Asset_Count'Image
+                                   (Stack.Count),
+                                 Ada.Strings.Left);
             begin
                if Stack.Has_Movement then
                   declare
@@ -741,6 +747,12 @@ package body Carthage.UI.Models.Planets is
                   To_Lui_Colour (Background), True);
                Renderer.Draw_Image
                  (Left, Top, Icon_Size, Icon_Size, Resource);
+               Renderer.Draw_Rectangle
+                 (Left + Icon_Size - 12, Top + Icon_Size - 8,
+                  12, 8, Lui.Colours.Black, True);
+               Renderer.Draw_String
+                 (Left + Icon_Size - 10, Top + Icon_Size, 8,
+                  Lui.Colours.White, Size);
             end;
          end if;
       end Draw_Unit_Layer_Tile;
