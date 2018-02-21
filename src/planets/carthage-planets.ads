@@ -243,6 +243,11 @@ package Carthage.Planets is
         procedure (Stack : not null access constant
                      Carthage.Stacks.Stack_Record'Class));
 
+   function Orbital_Stack
+     (Planet : Planet_Record;
+      Owner  : Carthage.Houses.House_Type)
+      return access constant Carthage.Stacks.Stack_Record'Class;
+
    type Planet_Manager_Interface is interface;
 
    subtype Planet_Class is Planet_Record'Class;
@@ -430,6 +435,12 @@ private
      (Planet : Planet_Record)
       return access constant Carthage.Cities.City_Record'Class
    is (Planet.Palace);
+
+   function Orbital_Stack
+     (Planet : Planet_Record;
+      Owner  : Carthage.Houses.House_Type)
+      return access constant Carthage.Stacks.Stack_Record'Class
+   is (Planet.Stacks.Element (Owner));
 
    type Updateable_Reference (Item : not null access Planet_Record'Class) is
       record
