@@ -56,8 +56,8 @@ package body Carthage.Managers.Assets is
          Stack_Maps   : Managed_Stack_Maps.Map;
          Spotters     : Asset_Classification_List.List;
          Movers       : Asset_Classification_List.List;
-         Minimum_Food : Natural;
-         Desired_Food : Natural;
+         Minimum_Food : Natural := 0;
+         Desired_Food : Natural := 0;
       end record;
 
    type Asset_Manager_Type is access all Asset_Manager_Record'Class;
