@@ -140,6 +140,7 @@ package Carthage.Stacks is
      (Stack : Stack_Record'Class)
       return Natural;
 
+   function Is_Empty (Stack : Stack_Record) return Boolean;
    function Count (Stack : Stack_Record) return Asset_Count;
    function Asset (Stack : Stack_Record;
                    Index : Asset_Index)
@@ -305,6 +306,9 @@ private
       Tile  : Carthage.Tiles.Tile_Type)
       return Boolean
    is (Stack.Movement_Cost (Tile) > 0);
+
+   function Is_Empty (Stack : Stack_Record) return Boolean
+   is (Stack.Count = 0);
 
    function Count (Stack : Stack_Record) return Asset_Count
    is (Stack.Count);
