@@ -3,6 +3,7 @@ with Ada.Characters.Latin_1;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Containers.Vectors;
 with Ada.Directories;
+with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 
 with Lui.Colours;
@@ -11,8 +12,10 @@ with Lui.Rendering;
 with Carthage.Galaxy;
 with Carthage.Houses;
 with Carthage.Planets;
+with Carthage.Stacks;
 
 with Carthage.UI.Models.Planets;
+with Carthage.UI.Models.Stacks;
 
 with Carthage.Paths;
 
@@ -516,6 +519,80 @@ package body Carthage.UI.Models.Galaxy is
       Renderer : in out Lui.Rendering.Root_Renderer'Class)
    is
       use type Lui.Rendering.Render_Layer;
+
+      procedure Draw_Orbital_Stacks
+        (System : Rendered_Planet;
+         X, Y   : Integer);
+
+      -------------------------
+      -- Draw_Orbital_Stacks --
+      -------------------------
+
+      procedure Draw_Orbital_Stacks
+        (System : Rendered_Planet;
+         X, Y   : Integer)
+      is
+         Index : Natural := 0;
+         DXs   : constant array (1 .. 8) of Integer :=
+                   (-1, 0, 1, -1, 1, -1, 0, 1);
+         DYs   : constant array (1 .. 8) of Integer :=
+                   (-1, -1, -1, 0, 0, 1, 1, 1);
+
+         procedure Draw_Stack (House : Carthage.Houses.House_Type);
+
+         ----------------
+         -- Draw_Stack --
+         ----------------
+
+         procedure Draw_Stack (House : Carthage.Houses.House_Type) is
+            use Carthage.Stacks;
+            Stack : constant Carthage.Stacks.Stack_Type :=
+                      System.Planet.Orbital_Stack (House);
+         begin
+            Index := Natural'Min (Index + 1, DXs'Last);
+            if not Stack.Is_Empty then
+               declare
+                  Background : Carthage.Colours.Colour_Type :=
+                                 House.Colour;
+                  Icon_Size  : constant := 32;
+                  DX         : constant Integer := DXs (Index);
+                  DY         : constant Integer := DYs (Index);
+                  Left       : constant Integer :=
+                                 X + DX * System.Radius * 3 / 2
+                                   + (if DX < 0 then DX * Icon_Size else 0);
+                  Top        : constant Integer :=
+                                 Y + DY * System.Radius * 3 / 2
+                                   + (if DY < 0 then DY * Icon_Size else 0);
+                  Resource   : constant String :=
+                                 Carthage.UI.Models.Stacks.Asset_Resource
+                                   (Stack.Asset (1));
+                  Size       : constant String :=
+                                 Ada.Strings.Fixed.Trim
+                                   (Carthage.Stacks.Asset_Count'Image
+                                      (Stack.Count),
+                                    Ada.Strings.Left);
+               begin
+                  Background.Alpha := 0.7;
+
+                  Renderer.Draw_Rectangle
+                    (Left, Top, Icon_Size, Icon_Size,
+                     To_Lui_Colour (Background), True);
+                  Renderer.Draw_Image
+                    (Left, Top, Icon_Size, Icon_Size, Resource);
+                  Renderer.Draw_Rectangle
+                    (Left + Icon_Size - 12, Top + Icon_Size - 8,
+                     12, 8, Lui.Colours.Black, True);
+                  Renderer.Draw_String
+                    (Left + Icon_Size - 10, Top + Icon_Size, 8,
+                     Lui.Colours.White, Size);
+               end;
+            end if;
+         end Draw_Stack;
+
+      begin
+         Carthage.Houses.Scan (Draw_Stack'Access);
+      end Draw_Orbital_Stacks;
+
    begin
       --  Carthage.Updates.Begin_Render;
 
@@ -602,6 +679,14 @@ package body Carthage.UI.Models.Galaxy is
                                  Text   => Name);
                            end if;
                         end;
+
+                        if Model.Zoomed_To_System
+                          and then System.Planet = Model.Selected_Planet
+                        then
+                           Draw_Orbital_Stacks
+                             (System, Screen_X, Screen_Y);
+                        end if;
+
                      else
 
                         for Connection of System.Connections loop
@@ -728,6 +813,7 @@ package body Carthage.UI.Models.Galaxy is
    begin
       Model.Zooming_In := False;
       Model.Zooming_Out := True;
+      Model.Zoomed_To_System := False;
       Model.Zoom_Progress := 1.0 - Model.Zoom_Progress;
       Model.Zoom_Start := Ada.Calendar.Clock;
    end Start_Zoom_Out;
