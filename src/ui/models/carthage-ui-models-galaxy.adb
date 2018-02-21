@@ -1,3 +1,4 @@
+with Ada.Calendar;
 with Ada.Characters.Latin_1;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Containers.Vectors;
@@ -17,7 +18,8 @@ with Carthage.Paths;
 
 package body Carthage.UI.Models.Galaxy is
 
-   Zoom_Limit : constant := 5.0;
+   Zoom_Limit    : constant := 5.0;
+   Zoom_Duration : constant Duration := 0.8;
 
    Have_Bitmaps     : Boolean := False;
 
@@ -55,6 +57,10 @@ package body Carthage.UI.Models.Galaxy is
          Rendered_Planets   : Rendered_Planet_Vectors.Vector;
          Needs_Render       : Boolean := True;
          Zoomed_To_System   : Boolean := False;
+         Zooming_In         : Boolean := False;
+         Zooming_Out        : Boolean := False;
+         Zoom_Start         : Ada.Calendar.Time;
+         Zoom_Progress      : Float := 1.0;
          Selected_Planet    : Carthage.Planets.Planet_Type;
       end record;
 
@@ -135,7 +141,17 @@ package body Carthage.UI.Models.Galaxy is
      (Planet : Carthage.Planets.Planet_Type)
       return String;
 
---     Unexplored_Colour : constant Lui.Colours.Colour_Type :=
+   procedure Start_Zoom_In
+     (Model  : in out Root_Galaxy_Model'Class;
+      Target : Carthage.Planets.Planet_Type);
+
+   procedure Start_Zoom_Out
+     (Model  : in out Root_Galaxy_Model'Class);
+
+   procedure Clear_Zoom
+     (Model : in out Root_Galaxy_Model'Class);
+
+   --     Unexplored_Colour : constant Lui.Colours.Colour_Type :=
 --                           (0.5, 0.5, 0.5, 0.6);
 --     Border_Colour     : constant Lui.Colours.Colour_Type :=
 --                           (1.0, 1.0, 1.0, 1.0);
@@ -160,6 +176,19 @@ package body Carthage.UI.Models.Galaxy is
 --           Attach_Top    => True,
 --           Attach_Bottom => True);
 --     end After_Transition;
+
+   ----------------
+   -- Clear_Zoom --
+   ----------------
+
+   procedure Clear_Zoom
+     (Model  : in out Root_Galaxy_Model'Class)
+   is
+   begin
+      Model.Zooming_In := False;
+      Model.Zooming_Out := False;
+      Model.Zoom_Progress := 1.0;
+   end Clear_Zoom;
 
    --------------------
    -- Closest_System --
@@ -335,23 +364,45 @@ package body Carthage.UI.Models.Galaxy is
       X, Y               : Carthage.Planets.Coordinate;
       Screen_X, Screen_Y : out Integer)
    is
+      Local_X : Float := Float (X);
+      Local_Y : Float := Float (Y);
    begin
-      if Model.Zoomed_To_System then
+      if Model.Zooming_In
+        or else Model.Zooming_Out
+        or else Model.Zoomed_To_System
+      then
          declare
-            Local_X : constant Float :=
-                        (Float (X) - Float (Model.Selected_Planet.X))
-                        * 3.0 + 0.5;
-            Local_Y : constant Float :=
-                        (Float (Y) - Float (Model.Selected_Planet.Y))
-                        * 3.0 + 0.5;
+            Zoomed_X : constant Float :=
+                         (Float (X) - Float (Model.Selected_Planet.X))
+                         * 3.0 + 0.5;
+            Zoomed_Y : constant Float :=
+                         (Float (Y) - Float (Model.Selected_Planet.Y))
+                         * 3.0 + 0.5;
          begin
-            Screen_X := Integer (Local_X * Float (Model.Width));
-            Screen_Y := Integer (Local_Y * Float (Model.Height));
+            if Model.Zooming_In then
+               Local_X :=
+                 Model.Zoom_Progress * Zoomed_X
+                   + (1.0 - Model.Zoom_Progress) * Local_X;
+               Local_Y :=
+                 Model.Zoom_Progress * Zoomed_Y
+                   + (1.0 - Model.Zoom_Progress) * Local_Y;
+            elsif Model.Zooming_Out then
+               Local_X :=
+                 Model.Zoom_Progress * Local_X
+                   + (1.0 - Model.Zoom_Progress) * Zoomed_X;
+               Local_Y :=
+                 Model.Zoom_Progress * Local_Y
+                   + (1.0 - Model.Zoom_Progress) * Zoomed_Y;
+            else
+               Local_X := Zoomed_X;
+               Local_Y := Zoomed_Y;
+            end if;
          end;
-      else
-         Screen_X := Integer (Float (X) * Float (Model.Width));
-         Screen_Y := Integer (Float (Y) * Float (Model.Height));
       end if;
+
+      Screen_X := Integer (Local_X * Float (Model.Width));
+      Screen_Y := Integer (Local_Y * Float (Model.Height));
+
    end Get_Screen_Position;
 
    ------------------
@@ -395,8 +446,9 @@ package body Carthage.UI.Models.Galaxy is
    begin
       if Key = Ada.Characters.Latin_1.ESC then
          if Model.Zoomed_To_System then
-            Model.Zoomed_To_System := False;
-            Model.Queue_Render;
+            Model.Start_Zoom_Out;
+         elsif Model.Zooming_In then
+            Model.Clear_Zoom;
          end if;
       end if;
    end On_Key_Press;
@@ -471,6 +523,23 @@ package body Carthage.UI.Models.Galaxy is
          Load_Bitmaps (Renderer);
       end if;
 
+      if Model.Zooming_In or else Model.Zooming_Out then
+         declare
+            use Ada.Calendar;
+         begin
+            Model.Zoom_Progress :=
+              Float (Clock - Model.Zoom_Start) / Float (Zoom_Duration);
+            if Model.Zoom_Progress >= 1.0 then
+               if Model.Zooming_In then
+                  Model.Zoomed_To_System := True;
+               else
+                  Model.Zoomed_To_System := False;
+               end if;
+               Model.Clear_Zoom;
+            end if;
+         end;
+      end if;
+
       if Renderer.Current_Render_Layer = 1 then
          for Star_Pass in Boolean loop
             for System of Model.Rendered_Planets loop
@@ -483,6 +552,8 @@ package body Carthage.UI.Models.Galaxy is
                      Screen_X, Screen_Y);
 
                   if not Model.Zoomed_To_System
+                    or else Model.Zooming_In
+                    or else Model.Zooming_Out
                     or else Model.Selected_Planet = System.Planet
                     or else Carthage.Galaxy.Connected
                       (System.Planet, Model.Selected_Planet)
@@ -584,8 +655,7 @@ package body Carthage.UI.Models.Galaxy is
    begin
       if Planet = null then
          if Model.Zoomed_To_System then
-            Model.Zoomed_To_System := False;
-            Model.Needs_Render := True;
+            Model.Start_Zoom_Out;
          end if;
       else
          if Model.Zoomed_To_System then
@@ -598,9 +668,7 @@ package body Carthage.UI.Models.Galaxy is
                Model.Needs_Render := True;
             end if;
          else
-            Model.Zoomed_To_System := True;
-            Model.Selected_Planet := Planet;
-            Model.Needs_Render := True;
+            Model.Start_Zoom_In (Planet);
          end if;
       end if;
 
@@ -633,6 +701,36 @@ package body Carthage.UI.Models.Galaxy is
          end;
       end if;
    end Ship_Count_Image;
+
+   -------------------
+   -- Start_Zoom_In --
+   -------------------
+
+   procedure Start_Zoom_In
+     (Model  : in out Root_Galaxy_Model'Class;
+      Target : Carthage.Planets.Planet_Type)
+   is
+   begin
+      Model.Zooming_In := True;
+      Model.Zooming_Out := False;
+      Model.Zoom_Start := Ada.Calendar.Clock;
+      Model.Zoom_Progress := 1.0 - Model.Zoom_Progress;
+      Model.Selected_Planet := Target;
+   end Start_Zoom_In;
+
+   --------------------
+   -- Start_Zoom_Out --
+   --------------------
+
+   procedure Start_Zoom_Out
+     (Model  : in out Root_Galaxy_Model'Class)
+   is
+   begin
+      Model.Zooming_In := False;
+      Model.Zooming_Out := True;
+      Model.Zoom_Progress := 1.0 - Model.Zoom_Progress;
+      Model.Zoom_Start := Ada.Calendar.Clock;
+   end Start_Zoom_Out;
 
    -------------
    -- Tooltip --
