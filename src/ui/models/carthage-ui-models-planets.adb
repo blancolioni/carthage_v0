@@ -1,3 +1,4 @@
+with Ada.Characters.Latin_1;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Strings.Fixed;
 
@@ -136,8 +137,12 @@ package body Carthage.UI.Models.Planets is
    is null;
 
    overriding procedure Select_XY
-     (Model : in out Root_Planet_Model;
+     (Model : not null access Root_Planet_Model;
       X, Y  : Natural);
+
+   overriding procedure On_Key_Press
+     (Model : in out Root_Planet_Model;
+      Key   : Character);
 
    overriding procedure Zoom
      (Model   : in out Root_Planet_Model;
@@ -449,6 +454,20 @@ package body Carthage.UI.Models.Planets is
          return Tile_X_Count (Available);
       end if;
    end Map_Hex_Width;
+
+   ------------------
+   -- On_Key_Press --
+   ------------------
+
+   overriding procedure On_Key_Press
+     (Model : in out Root_Planet_Model;
+      Key   : Character)
+   is
+   begin
+      if Key = Ada.Characters.Latin_1.ESC then
+         Model.Pop_Model;
+      end if;
+   end On_Key_Press;
 
    ------------------
    -- Planet_Model --
@@ -1044,7 +1063,7 @@ package body Carthage.UI.Models.Planets is
    ---------------
 
    overriding procedure Select_XY
-     (Model : in out Root_Planet_Model;
+     (Model : not null access Root_Planet_Model;
       X, Y  : Natural)
    is
    begin

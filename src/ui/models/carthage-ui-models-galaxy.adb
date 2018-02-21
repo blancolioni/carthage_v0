@@ -71,10 +71,9 @@ package body Carthage.UI.Models.Galaxy is
       Child : not null access Lui.Models.Root_Object_Model'Class)
    is null;
 
-   overriding function Select_XY
-     (Model : in out Root_Galaxy_Model;
-      X, Y  : Natural)
-      return Lui.Models.Object_Model;
+   overriding procedure Select_XY
+     (Model : not null access Root_Galaxy_Model;
+      X, Y  : Natural);
 
    overriding procedure Zoom
      (Model   : in out Root_Galaxy_Model;
@@ -552,10 +551,9 @@ package body Carthage.UI.Models.Galaxy is
    -- Select_XY --
    ---------------
 
-   overriding function Select_XY
-     (Model : in out Root_Galaxy_Model;
+   overriding procedure Select_XY
+     (Model : not null access Root_Galaxy_Model;
       X, Y  : Natural)
-      return Lui.Models.Object_Model
    is
       use Carthage.Planets;
 
@@ -567,23 +565,20 @@ package body Carthage.UI.Models.Galaxy is
             Model.Zoomed_To_System := False;
             Model.Needs_Render := True;
          end if;
-         return null;
       else
          if Model.Zoomed_To_System then
             if Planet = Model.Selected_Planet then
-               return Lui.Models.Object_Model
+               Model.Push_Model
                  (Carthage.UI.Models.Planets.Planet_Model
                     (Model.House, Planet));
             else
                Model.Selected_Planet := Planet;
                Model.Needs_Render := True;
-               return null;
             end if;
          else
             Model.Zoomed_To_System := True;
             Model.Selected_Planet := Planet;
             Model.Needs_Render := True;
-            return null;
          end if;
       end if;
 

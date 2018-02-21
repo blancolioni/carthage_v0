@@ -5,14 +5,11 @@ with Glib;
 with Glib.Error;
 with Glib.Object;
 
-with Gtk.Box;
 with Gtk.Builder;
 with Gtk.Button;
 with Gtk.Cell_Renderer_Text;
-with Gtk.Label;
+with Gtk.Container;
 with Gtk.Main;
-with Gtk.Notebook;
-with Gtk.Status_Bar;
 with Gtk.Tree_Model;
 with Gtk.Tree_Store;
 with Gtk.Tree_View;
@@ -38,14 +35,8 @@ package body Carthage.UI.Gtk_UI is
      and Lui.Gtk_UI.Lui_Gtk_Interface with
       record
          Models         : Lui.Models.Active_Model_List;
-         Notebook       : Gtk.Notebook.Gtk_Notebook;
-         Info_Boxes     : Gtk.Box.Gtk_Box;
-         Property_List  : Gtk.Tree_View.Gtk_Tree_View;
-         Date_Label     : Gtk.Label.Gtk_Label;
-         Current_Speed  : Natural := 0;
-         Date           : Carthage.Calendar.Time;
-         Status_Bar     : Gtk.Status_Bar.Gtk_Status_Bar;
-         Status_Context : Gtk.Status_Bar.Context_Id;
+         Model_Area     : Gtk.Container.Gtk_Container;
+         Active_Area    : Gtk.Widget.Gtk_Widget;
          Current_Status : Ada.Strings.Unbounded.Unbounded_String;
       end record;
 
@@ -61,8 +52,7 @@ package body Carthage.UI.Gtk_UI is
      (To      : in out Carthage_UI;
       Feature : Lui.Lui_UI_Feature;
       Element : not null access Lui.Root_UI_Element'Class;
-      Top     : not null access Gtk.Widget.Gtk_Widget_Record'Class)
-   is null;
+      Top     : not null access Gtk.Widget.Gtk_Widget_Record'Class);
 
    overriding procedure Clear_Features
      (To      : in out Carthage_UI;
@@ -77,6 +67,7 @@ package body Carthage.UI.Gtk_UI is
 
    procedure Create_Property_List
      (Tree_View : Gtk.Tree_View.Gtk_Tree_View);
+   pragma Unreferenced (Create_Property_List);
 
    procedure Show_Properties
      (UI      : Carthage_UI'Class;
@@ -85,12 +76,13 @@ package body Carthage.UI.Gtk_UI is
    procedure Destroy_Handler (W : access Gtk.Widget.Gtk_Widget_Record'Class);
 
    procedure On_Step_Button_Clicked
-     (Button : access Gtk.Button.Gtk_Button_Record'Class);
+     (Button : access Gtk.Button.Gtk_Button_Record'Class)
+     with Unreferenced;
 
-   procedure On_Switch_Page
-     (Self     : access Glib.Object.GObject_Record'Class;
-      Page     : not null access Gtk.Widget.Gtk_Widget_Record'Class;
-      Page_Num : Glib.Guint);
+--     procedure On_Switch_Page
+--       (Self     : access Glib.Object.GObject_Record'Class;
+--        Page     : not null access Gtk.Widget.Gtk_Widget_Record'Class;
+--        Page_Num : Glib.Guint);
 
    --------------------
    -- Append_Feature --
@@ -104,6 +96,7 @@ package body Carthage.UI.Gtk_UI is
    is
       use Glib;
       use Lui;
+      use type Gtk.Widget.Gtk_Widget;
    begin
       case Feature is
          when UI_Gadget =>
@@ -112,19 +105,20 @@ package body Carthage.UI.Gtk_UI is
             declare
                Model : constant Lui.Models.Object_Model :=
                          Lui.Models.Object_Model (Element);
-               Label : Gtk.Label.Gtk_Label;
             begin
                To.Models.Append (Model);
-               Gtk.Label.Gtk_New (Label, Model.Name);
-               Label.Show;
-               To.Notebook.Append_Page (Top, Label);
+               if To.Active_Area /= null then
+                  To.Active_Area.Ref;
+                  To.Model_Area.Remove (To.Active_Area);
+               end if;
 
-               To.Notebook.Set_Current_Page
-                 (To.Notebook.Get_N_Pages - 1);
+               To.Model_Area.Add (Top);
+               To.Active_Area := Gtk.Widget.Gtk_Widget (Top);
                To.Show_Properties (Model);
             end;
          when UI_Table =>
-            To.Info_Boxes.Add (Top);
+            null;
+--              To.Info_Boxes.Add (Top);
       end case;
    end Append_Feature;
 
@@ -136,6 +130,7 @@ package body Carthage.UI.Gtk_UI is
      (To      : in out Carthage_UI;
       Feature : Lui.Lui_UI_Feature)
    is
+      pragma Unreferenced (To);
       use Lui;
       use type Gtk.Widget.Gtk_Widget;
    begin
@@ -145,9 +140,10 @@ package body Carthage.UI.Gtk_UI is
          when UI_Model =>
             null;
          when UI_Table =>
-            while To.Info_Boxes.Get_Child (0) /= null loop
-               To.Info_Boxes.Remove (To.Info_Boxes.Get_Child (0));
-            end loop;
+            null;
+--              while To.Info_Boxes.Get_Child (0) /= null loop
+--                 To.Info_Boxes.Remove (To.Info_Boxes.Get_Child (0));
+--              end loop;
       end case;
    end Clear_Features;
 
@@ -209,13 +205,14 @@ package body Carthage.UI.Gtk_UI is
    is
       use Carthage.Calendar;
       New_Date : constant Time := Clock;
+      pragma Unreferenced (New_Date);
    begin
       Carthage.Updates.Update;
-      if New_Date /= State.Date then
-         State.Date := New_Date;
-         State.Date_Label.Set_Label
-           (Carthage.Calendar.Image (State.Date));
-      end if;
+--        if New_Date /= State.Date then
+--           State.Date := New_Date;
+--           State.Date_Label.Set_Label
+--             (Carthage.Calendar.Image (State.Date));
+--        end if;
 
       for I in 1 .. State.Models.Count loop
          State.Models.Model (I).Queue_Render;
@@ -243,19 +240,54 @@ package body Carthage.UI.Gtk_UI is
    -- On_Switch_Page --
    --------------------
 
-   procedure On_Switch_Page
-     (Self     : access Glib.Object.GObject_Record'Class;
-      Page     : not null access Gtk.Widget.Gtk_Widget_Record'Class;
-      Page_Num : Glib.Guint)
+--     procedure On_Switch_Page
+--       (Self     : access Glib.Object.GObject_Record'Class;
+--        Page     : not null access Gtk.Widget.Gtk_Widget_Record'Class;
+--        Page_Num : Glib.Guint)
+--     is
+--        pragma Unreferenced (Page);
+--        UI : Carthage_UI renames Carthage_UI (Self.all);
+--        Model : constant Lui.Models.Object_Model :=
+--                  UI.Models.Model (Natural (Page_Num) + 1);
+--     begin
+--        Lui.Gtk_UI.On_Model_Activation (Model);
+--        UI.Show_Properties (Model);
+--     end On_Switch_Page;
+
+   --------------------
+   -- Select_Feature --
+   --------------------
+
+   overriding procedure Select_Feature
+     (To      : in out Carthage_UI;
+      Feature : Lui.Lui_UI_Feature;
+      Element : not null access Lui.Root_UI_Element'Class;
+      Top     : not null access Gtk.Widget.Gtk_Widget_Record'Class)
    is
-      pragma Unreferenced (Page);
-      UI : Carthage_UI renames Carthage_UI (Self.all);
-      Model : constant Lui.Models.Object_Model :=
-                UI.Models.Model (Natural (Page_Num) + 1);
+      use Glib;
+      use Lui;
+      use type Gtk.Widget.Gtk_Widget;
    begin
-      Lui.Gtk_UI.On_Model_Activation (Model);
-      UI.Show_Properties (Model);
-   end On_Switch_Page;
+      case Feature is
+         when UI_Gadget =>
+            null;
+         when UI_Model =>
+            declare
+               Model : constant Lui.Models.Object_Model :=
+                         Lui.Models.Object_Model (Element);
+            begin
+               if To.Active_Area /= null then
+                  To.Model_Area.Remove (To.Active_Area);
+               end if;
+               To.Model_Area.Add (Top);
+               To.Active_Area := Gtk.Widget.Gtk_Widget (Top);
+               To.Show_Properties (Model);
+            end;
+         when UI_Table =>
+            null;
+            --              To.Info_Boxes.Add (Top);
+      end case;
+   end Select_Feature;
 
    ---------------------
    -- Show_Properties --
@@ -264,28 +296,28 @@ package body Carthage.UI.Gtk_UI is
    procedure Show_Properties
      (UI      : Carthage_UI'Class;
       Model   : Lui.Models.Object_Model)
-   is
-      Count : constant Natural :=
-                Model.Property_Count;
-      Store : constant Gtk.Tree_Store.Gtk_Tree_Store :=
-                Gtk.Tree_Store.Gtk_Tree_Store
-                  (Gtk.Tree_Model."-" (UI.Property_List.Get_Model));
-   begin
-      Store.Clear;
-      for I in 1 .. Count loop
-         declare
-            Result : Gtk.Tree_Model.Gtk_Tree_Iter;
-            Name   : constant String :=
-                       Model.Property_Name (I);
-            Value  : constant String :=
-                       Model.Property_Value (I);
-         begin
-            Store.Append (Result, Gtk.Tree_Model.Null_Iter);
-            Store.Set (Result, 0, Name);
-            Store.Set (Result, 1, Value);
-         end;
-      end loop;
-   end Show_Properties;
+   is null;
+--        Count : constant Natural :=
+--                  Model.Property_Count;
+--        Store : constant Gtk.Tree_Store.Gtk_Tree_Store :=
+--                  Gtk.Tree_Store.Gtk_Tree_Store
+--                    (Gtk.Tree_Model."-" (UI.Property_List.Get_Model));
+--     begin
+--        Store.Clear;
+--        for I in 1 .. Count loop
+--           declare
+--              Result : Gtk.Tree_Model.Gtk_Tree_Iter;
+--              Name   : constant String :=
+--                         Model.Property_Name (I);
+--              Value  : constant String :=
+--                         Model.Property_Value (I);
+--           begin
+--              Store.Append (Result, Gtk.Tree_Model.Null_Iter);
+--              Store.Set (Result, 0, Name);
+--              Store.Set (Result, 1, Value);
+--           end;
+--        end loop;
+--     end Show_Properties;
 
    -----------
    -- Start --
@@ -338,62 +370,26 @@ package body Carthage.UI.Gtk_UI is
       end;
 
       declare
-         Main_Tab : constant Gtk.Notebook.Gtk_Notebook :=
-                      Gtk.Notebook.Gtk_Notebook
-                        (Builder.Get_Object ("Main_Tab"));
-         Info_Boxes : constant Gtk.Box.Gtk_Box :=
-                        Gtk.Box.Gtk_Box
-                          (Builder.Get_Object ("Info_Vbox"));
-         Date_Label : constant Gtk.Label.Gtk_Label :=
-                        Gtk.Label.Gtk_Label
-                          (Builder.Get_Object ("Date_Label"));
-         Property_List : constant Gtk.Tree_View.Gtk_Tree_View :=
-                           Gtk.Tree_View.Gtk_Tree_View
-                             (Builder.Get_Object ("Property_View"));
-         Status_Bar : constant Gtk.Status_Bar.Gtk_Status_Bar :=
-                        Gtk.Status_Bar.Gtk_Status_Bar
-                          (Builder.Get_Object ("Status_Bar"));
+         Model_Area : constant Gtk.Container.Gtk_Container :=
+                        Gtk.Container.Gtk_Container
+                          (Builder.Get_Object ("Carthage_Main_Window"));
          Models   : Lui.Models.Active_Model_List;
          UI         : constant Carthage_UI_Access :=
                         new Carthage_UI'
                           (Glib.Object.GObject_Record with
                            Models         => Models,
-                           Notebook       => Main_Tab,
-                           Info_Boxes     => Info_Boxes,
-                           Property_List  => Property_List,
-                           Date_Label     => Date_Label,
-                           Current_Speed  => 0,
-                           Date           => Carthage.Calendar.Clock,
-                           Status_Bar     => Status_Bar,
-                           Status_Context =>
-                             Status_Bar.Get_Context_Id ("star mouseover"),
+                           Model_Area     => Model_Area,
+                           Active_Area    => null,
                            Current_Status =>
                              Ada.Strings.Unbounded.Null_Unbounded_String);
       begin
          UI.Initialize;
-         Main_Tab.Remove_Page (0);
-
-         Create_Property_List (UI.Property_List);
 
          Lui.Gtk_UI.Start
            (Main => UI,
             Top  =>
               Lui.Models.Object_Model
                 (Carthage.UI.Models.Top_Model (House)));
-         Main_Tab.On_Switch_Page
-           (On_Switch_Page'Access, UI);
-
-         for I in 0 .. 3 loop
-            declare
-               Id : constant String :=
-                      "Speed_" & Character'Val (I + 48);
-               Step  : constant Gtk.Button.Gtk_Button :=
-                         Gtk.Button.Gtk_Button
-                           (Builder.Get_Object (Id));
-            begin
-               Step.On_Clicked (On_Step_Button_Clicked'Access);
-            end;
-         end loop;
       end;
 
       Gtk.Main.Main;
@@ -407,24 +403,24 @@ package body Carthage.UI.Gtk_UI is
    overriding procedure Status_Message
      (To      : in out Carthage_UI;
       Message : String)
-   is
-      use Ada.Strings.Unbounded;
-   begin
-      if Message /= To.Current_Status then
-         To.Current_Status := To_Unbounded_String (Message);
-         declare
-            Id      : Gtk.Status_Bar.Message_Id;
-            pragma Unreferenced (Id);
-         begin
-            To.Status_Bar.Pop (To.Status_Context);
-
-            if Message /= "" then
-               Id :=
-                 To.Status_Bar.Push
-                   (To.Status_Context, Message);
-            end if;
-         end;
-      end if;
-   end Status_Message;
+   is null;
+--        use Ada.Strings.Unbounded;
+--     begin
+--        if Message /= To.Current_Status then
+--           To.Current_Status := To_Unbounded_String (Message);
+--           declare
+--              Id      : Gtk.Status_Bar.Message_Id;
+--              pragma Unreferenced (Id);
+--           begin
+--              To.Status_Bar.Pop (To.Status_Context);
+--
+--              if Message /= "" then
+--                 Id :=
+--                   To.Status_Bar.Push
+--                     (To.Status_Context, Message);
+--              end if;
+--           end;
+--        end if;
+--     end Status_Message;
 
 end Carthage.UI.Gtk_UI;
