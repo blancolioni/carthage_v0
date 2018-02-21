@@ -1,3 +1,4 @@
+with Ada.Characters.Latin_1;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Containers.Vectors;
 with Ada.Directories;
@@ -74,6 +75,10 @@ package body Carthage.UI.Models.Galaxy is
    overriding procedure Select_XY
      (Model : not null access Root_Galaxy_Model;
       X, Y  : Natural);
+
+   overriding procedure On_Key_Press
+     (Model : in out Root_Galaxy_Model;
+      Key   : Character);
 
    overriding procedure Zoom
      (Model   : in out Root_Galaxy_Model;
@@ -378,6 +383,23 @@ package body Carthage.UI.Models.Galaxy is
         (Save_Resource'Access);
       Have_Bitmaps := True;
    end Load_Bitmaps;
+
+   ------------------
+   -- On_Key_Press --
+   ------------------
+
+   overriding procedure On_Key_Press
+     (Model : in out Root_Galaxy_Model;
+      Key   : Character)
+   is
+   begin
+      if Key = Ada.Characters.Latin_1.ESC then
+         if Model.Zoomed_To_System then
+            Model.Zoomed_To_System := False;
+            Model.Queue_Render;
+         end if;
+      end if;
+   end On_Key_Press;
 
    ------------
    -- Reload --
