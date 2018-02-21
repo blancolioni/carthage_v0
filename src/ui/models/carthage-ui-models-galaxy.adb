@@ -53,6 +53,7 @@ package body Carthage.UI.Models.Galaxy is
          Show_System_Names  : Boolean := False;
          Rendered_Planets   : Rendered_Planet_Vectors.Vector;
          Needs_Render       : Boolean := True;
+         Zoomed_To_System   : Boolean := False;
          Selected_Planet    : Carthage.Planets.Planet_Type;
       end record;
 
@@ -331,8 +332,22 @@ package body Carthage.UI.Models.Galaxy is
       Screen_X, Screen_Y : out Integer)
    is
    begin
-      Screen_X := Integer (Float (X) * Float (Model.Width));
-      Screen_Y := Integer (Float (Y) * Float (Model.Height));
+      if Model.Zoomed_To_System then
+         declare
+            Local_X : constant Float :=
+                        (Float (X) - Float (Model.Selected_Planet.X))
+                        * 3.0 + 0.5;
+            Local_Y : constant Float :=
+                        (Float (Y) - Float (Model.Selected_Planet.Y))
+                        * 3.0 + 0.5;
+         begin
+            Screen_X := Integer (Local_X * Float (Model.Width));
+            Screen_Y := Integer (Local_Y * Float (Model.Height));
+         end;
+      else
+         Screen_X := Integer (Float (X) * Float (Model.Width));
+         Screen_Y := Integer (Float (Y) * Float (Model.Height));
+      end if;
    end Get_Screen_Position;
 
    ------------------
@@ -439,85 +454,88 @@ package body Carthage.UI.Models.Galaxy is
          for Star_Pass in Boolean loop
             for System of Model.Rendered_Planets loop
                declare
+                  use type Carthage.Planets.Planet_Type;
                   Screen_X, Screen_Y : Integer;
                begin
-                  Model.Get_Screen_Position (System.Planet.X, System.Planet.Y,
-                                             Screen_X, Screen_Y);
+                  Model.Get_Screen_Position
+                    (System.Planet.X, System.Planet.Y,
+                     Screen_X, Screen_Y);
 
-                  if Star_Pass then
-                     Renderer.Draw_Image
-                       (X        => Screen_X - System.Radius,
-                        Y        => Screen_Y - System.Radius,
-                        W        => System.Radius * 2,
-                        H        => System.Radius * 2,
-                        Resource =>
-                          Ada.Strings.Unbounded.To_String
-                            (System.Image));
---                       Renderer.Draw_Circle
---                         (X          => Screen_X,
---                          Y          => Screen_Y,
---                          Radius     => System.Radius,
---                          Colour     => System.Colour,
---                          Filled     => True,
---                          Line_Width => 1);
+                  if not Model.Zoomed_To_System
+                    or else Model.Selected_Planet = System.Planet
+                    or else Carthage.Galaxy.Connected
+                      (System.Planet, Model.Selected_Planet)
+                    or else (Screen_X in 1 .. Model.Width
+                             and then Screen_Y in 1 .. Model.Height)
+                  then
+                     if Star_Pass then
+                        Renderer.Draw_Image
+                          (X        => Screen_X - System.Radius,
+                           Y        => Screen_Y - System.Radius,
+                           W        => System.Radius * 2,
+                           H        => System.Radius * 2,
+                           Resource =>
+                             Ada.Strings.Unbounded.To_String
+                               (System.Image));
+                        if System.Colony then
+                           Renderer.Draw_Circle
+                             (X          => Screen_X,
+                              Y          => Screen_Y,
+                              Radius     => System.Radius * 2,
+                              Colour     => System.Colour,
+                              Filled     => False,
+                              Line_Width => 2);
 
-                     if System.Colony then
-                        Renderer.Draw_Circle
-                          (X          => Screen_X,
-                           Y          => Screen_Y,
-                           Radius     => System.Radius * 2,
-                           Colour     => System.Colour,
-                           Filled     => False,
-                           Line_Width => 2);
-
-                     end if;
-
-                     declare
-                        Name : constant String :=
-                                 Ada.Strings.Unbounded.To_String (System.Name);
-                     begin
-                        if Model.Show_System_Names
-                          or else (System.Capital
-                                   and then Model.Show_Capital_Names)
-                        then
-                           Renderer.Draw_String
-                             (X      => Screen_X - 4 * Name'Length,
-                              Y      => Screen_Y + 42,
-                              Size   => 16,
-                              Colour =>
-                                (if System.Planet.Has_Owner
-                                 then To_Lui_Colour
-                                   (System.Planet.Owner.Colour)
-                                 else Lui.Colours.To_Colour
-                                   (100, 100, 100)),
-                              Text   => Name);
                         end if;
-                     end;
-                  else
 
-                     for Connection of System.Connections loop
                         declare
-                           use Carthage.Planets;
-                           To : Rendered_Planet renames
-                                  Model.Rendered_Planets (Connection);
-                           To_X : constant Coordinate := To.Planet.X;
-                           To_Y : constant Coordinate := To.Planet.Y;
-                           To_Screen_X : Integer;
-                           To_Screen_Y : Integer;
+                           Name : constant String :=
+                                    Ada.Strings.Unbounded.To_String
+                                      (System.Name);
                         begin
-                           Model.Get_Screen_Position
-                             (To_X, To_Y, To_Screen_X, To_Screen_Y);
-                           Renderer.Draw_Line
-                             (X1         => Screen_X,
-                              Y1         => Screen_Y,
-                              X2         => To_Screen_X,
-                              Y2         => To_Screen_Y,
-                              Colour     =>
-                                Lui.Colours.To_Colour (100, 100, 100),
-                              Line_Width => 1);
+                           if Model.Show_System_Names
+                             or else (System.Capital
+                                      and then Model.Show_Capital_Names)
+                           then
+                              Renderer.Draw_String
+                                (X      => Screen_X - 4 * Name'Length,
+                                 Y      => Screen_Y + 42,
+                                 Size   => 16,
+                                 Colour =>
+                                   (if System.Planet.Has_Owner
+                                    then To_Lui_Colour
+                                      (System.Planet.Owner.Colour)
+                                    else Lui.Colours.To_Colour
+                                      (100, 100, 100)),
+                                 Text   => Name);
+                           end if;
                         end;
-                     end loop;
+                     else
 
+                        for Connection of System.Connections loop
+                           declare
+                              use Carthage.Planets;
+                              To          : Rendered_Planet renames
+                                              Model.Rendered_Planets
+                                                (Connection);
+                              To_X        : constant Coordinate := To.Planet.X;
+                              To_Y        : constant Coordinate := To.Planet.Y;
+                              To_Screen_X : Integer;
+                              To_Screen_Y : Integer;
+                           begin
+                              Model.Get_Screen_Position
+                                (To_X, To_Y, To_Screen_X, To_Screen_Y);
+                              Renderer.Draw_Line
+                                (X1         => Screen_X,
+                                 Y1         => Screen_Y,
+                                 X2         => To_Screen_X,
+                                 Y2         => To_Screen_Y,
+                                 Colour     =>
+                                   Lui.Colours.To_Colour (100, 100, 100),
+                                 Line_Width => 1);
+                           end;
+                        end loop;
+                     end if;
                   end if;
                end;
             end loop;
@@ -544,13 +562,29 @@ package body Carthage.UI.Models.Galaxy is
       Planet : constant Planet_Type :=
                  Model.Closest_System (X, Y, 30);
    begin
-      if Planet /= null and then Planet /= Model.Selected_Planet then
-         Model.Selected_Planet := Planet;
-         return Lui.Models.Object_Model
-           (Carthage.UI.Models.Planets.Planet_Model
-              (Model.House, Planet));
-      else
+      if Planet = null then
+         if Model.Zoomed_To_System then
+            Model.Zoomed_To_System := False;
+            Model.Needs_Render := True;
+         end if;
          return null;
+      else
+         if Model.Zoomed_To_System then
+            if Planet = Model.Selected_Planet then
+               return Lui.Models.Object_Model
+                 (Carthage.UI.Models.Planets.Planet_Model
+                    (Model.House, Planet));
+            else
+               Model.Selected_Planet := Planet;
+               Model.Needs_Render := True;
+               return null;
+            end if;
+         else
+            Model.Zoomed_To_System := True;
+            Model.Selected_Planet := Planet;
+            Model.Needs_Render := True;
+            return null;
+         end if;
       end if;
 
    end Select_XY;
