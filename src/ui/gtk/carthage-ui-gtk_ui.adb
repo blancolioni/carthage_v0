@@ -1,4 +1,3 @@
-with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 with Glib;
@@ -34,10 +33,9 @@ package body Carthage.UI.Gtk_UI is
      new Glib.Object.GObject_Record
      and Lui.Gtk_UI.Lui_Gtk_Interface with
       record
-         Models         : Lui.Models.Active_Model_List;
-         Model_Area     : Gtk.Container.Gtk_Container;
-         Active_Area    : Gtk.Widget.Gtk_Widget;
-         Current_Status : Ada.Strings.Unbounded.Unbounded_String;
+         Models      : Lui.Models.Active_Model_List;
+         Model_Area  : Gtk.Container.Gtk_Container;
+         Active_Area : Gtk.Widget.Gtk_Widget;
       end record;
 
    type Carthage_UI_Access is access all Carthage_UI'Class;
@@ -57,10 +55,6 @@ package body Carthage.UI.Gtk_UI is
    overriding procedure Clear_Features
      (To      : in out Carthage_UI;
       Feature : Lui.Lui_UI_Feature);
-
-   overriding procedure Status_Message
-     (To      : in out Carthage_UI;
-      Message : String);
 
    overriding procedure On_Idle
      (State : in out Carthage_UI);
@@ -379,9 +373,7 @@ package body Carthage.UI.Gtk_UI is
                           (Glib.Object.GObject_Record with
                            Models         => Models,
                            Model_Area     => Model_Area,
-                           Active_Area    => null,
-                           Current_Status =>
-                             Ada.Strings.Unbounded.Null_Unbounded_String);
+                           Active_Area    => null);
       begin
          UI.Initialize;
 
@@ -395,32 +387,5 @@ package body Carthage.UI.Gtk_UI is
       Gtk.Main.Main;
 
    end Start;
-
-   --------------------
-   -- Status_Message --
-   --------------------
-
-   overriding procedure Status_Message
-     (To      : in out Carthage_UI;
-      Message : String)
-   is null;
---        use Ada.Strings.Unbounded;
---     begin
---        if Message /= To.Current_Status then
---           To.Current_Status := To_Unbounded_String (Message);
---           declare
---              Id      : Gtk.Status_Bar.Message_Id;
---              pragma Unreferenced (Id);
---           begin
---              To.Status_Bar.Pop (To.Status_Context);
---
---              if Message /= "" then
---                 Id :=
---                   To.Status_Bar.Push
---                     (To.Status_Context, Message);
---              end if;
---           end;
---        end if;
---     end Status_Message;
 
 end Carthage.UI.Gtk_UI;
