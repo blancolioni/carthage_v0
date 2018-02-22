@@ -85,6 +85,7 @@ package body Carthage.Managers.Planets is
      and Carthage.Managers.Assets.Asset_Meta_Manager_Interface with
       record
          Owned                : Boolean;
+         Active               : Boolean;
          House                : Carthage.Houses.House_Type;
          Planet               : Carthage.Planets.Planet_Type;
          City_Managers        : City_Manager_Maps.Map;
@@ -127,15 +128,35 @@ package body Carthage.Managers.Planets is
    procedure Scan_Unexplored_Tiles
      (Manager : in out Planet_Manager_Record'Class);
 
+   function Create_Planet_Manager
+     (House  : Carthage.Houses.House_Type;
+      Planet : Carthage.Planets.Planet_Type;
+      Active : Boolean)
+      return Manager_Type;
+
+   function Create_Active_Planet_Manager
+     (House  : Carthage.Houses.House_Type;
+      Planet : Carthage.Planets.Planet_Type)
+      return Manager_Type
+   is (Create_Planet_Manager (House, Planet, True));
+
+   function Create_Passive_Planet_Manager
+     (House  : Carthage.Houses.House_Type;
+      Planet : Carthage.Planets.Planet_Type)
+      return Manager_Type
+   is (Create_Planet_Manager (House, Planet, False));
+
    ---------------------------
    -- Create_Planet_Manager --
    ---------------------------
 
    function Create_Planet_Manager
      (House  : Carthage.Houses.House_Type;
-      Planet : Carthage.Planets.Planet_Type)
+      Planet : Carthage.Planets.Planet_Type;
+      Active : Boolean)
       return Manager_Type
    is
+
       Manager : constant Planet_Manager_Type :=
                   new Planet_Manager_Record;
 
@@ -165,8 +186,10 @@ package body Carthage.Managers.Planets is
    begin
       Manager.House := House;
       Manager.Planet := Planet;
+      Manager.Active := Active;
 
       Planet.Scan_Cities (Add_City_Manager'Access);
+
       Manager.Ground_Asset_Manager :=
         Carthage.Managers.Assets.Ground_Asset_Manager
           (Manager, House, Planet);
@@ -186,8 +209,142 @@ package body Carthage.Managers.Planets is
    is
       use type Carthage.Houses.House_Type;
 
+      procedure Classify_Tiles;
+
       procedure Scan_Area
         (Start : Tile_Position);
+
+      procedure Classify_Tiles is
+      begin
+         for Y in Tile_Y loop
+            for X in Tile_X loop
+               declare
+                  Tile : constant Carthage.Tiles.Tile_Type :=
+                           Manager.Planet.Tile (X, Y);
+                  Info : Tile_Info_Record :=
+                           Tile_Info_Record'
+                             (Tile                 => Tile,
+                              Nearest_Seen         => null,
+                              Nearest_Explored     => null,
+                              Nearest_Controlled   => null,
+                              Interest             => 0,
+                              Continent            =>
+                                Planet_Area_Lists.No_Element,
+                              Area_Internal_Border => False,
+                              Area_External_Border => False,
+                              Controlled           => False,
+                              Explored             => False,
+                              Seen                 => False,
+                              Targeted             => False);
+
+                  function At_War_With
+                    (Enemy : not null access constant
+                       Carthage.Stacks.Stack_Record'Class)
+                  return Boolean
+                  is (Manager.House.At_War_With (Enemy.Owner));
+
+               begin
+                  if Tile.Currently_Visible_To (Manager.House) then
+
+                     if Tile.Has_Stack (At_War_With'Access) then
+                        Manager.Planet.Log
+                          (Manager.House.Name
+                           & ": hostile at "
+                           & Carthage.Tiles.Position_Image (Tile.Position));
+                        Info.Interest := 1_000
+                          + Natural (Tile.Find_Stack
+                                     (At_War_With'Access).Count)
+                          + WL.Random.Random_Number (1, 100);
+                        Manager.Hostile_Tiles.Append (Tile);
+                     end if;
+
+                     Manager.Controlled_Tiles.Append (Tile);
+                     Info.Nearest_Seen := Tile;
+                     Info.Nearest_Explored := Tile;
+                     Info.Nearest_Controlled := Tile;
+                  end if;
+
+                  if Tile.Explored_By (Manager.House) then
+
+                     if Tile.Has_City
+                       and then Tile.City.Owner /= Manager.House
+                       and then Manager.House.At_War_With (Tile.City.Owner)
+                     then
+                        Info.Interest := 600
+                          + WL.Random.Random_Number (1, 100);
+                     end if;
+
+                     if Tile.Has_City then
+                        if Tile.City.Structure.Is_Palace then
+                           Manager.Palace := Tile.City;
+                        elsif Tile.City.Structure.Is_Shield then
+                           Manager.Shield := Tile.City;
+                        end if;
+                     end if;
+
+                     Manager.Explored_Tiles.Append (Tile);
+                     Info.Nearest_Explored := Tile;
+                     Info.Nearest_Controlled := Tile;
+
+                  elsif Tile.Seen_By (Manager.House) then
+                     Manager.Seen_Tiles.Append (Tile);
+                     Info.Nearest_Seen := Tile;
+                     Info.Interest := WL.Random.Random_Number (1, 100);
+                  else
+                     Manager.Unseen_Tiles.Append (Tile);
+                     declare
+                        use Carthage.Planets;
+                        Ns : Surface_Tiles;
+                     begin
+                        Manager.Planet.Get_Tiles
+                          (Tile, 1, 3, null, Ns);
+                        Info.Interest := 100;
+                        for I in 1 .. Tile_Count (Ns) loop
+                           if Get_Tile (Ns, I).Seen_By (Manager.House) then
+                              Info.Interest := Info.Interest + 6
+                                + WL.Random.Random_Number (1, 6);
+                           end if;
+                        end loop;
+                     end;
+
+                  end if;
+                  Manager.Tile_Info (X, Y) := Info;
+               end;
+            end loop;
+         end loop;
+
+         for Y in Tile_Y loop
+            for X in Tile_X loop
+               declare
+                  Info : Tile_Info_Record renames Manager.Tile_Info (X, Y);
+               begin
+                  if not Planet_Area_Lists.Has_Element (Info.Continent) then
+                     Scan_Area ((X, Y));
+                  end if;
+               end;
+            end loop;
+         end loop;
+
+         if Manager.Owned then
+            declare
+               Palace_Tile     : constant Carthage.Tiles.Tile_Type :=
+                                   Manager.Palace.Tile;
+               Palace_Position : constant Tile_Position :=
+                                   Palace_Tile.Position;
+               Home_Continent  : constant Planet_Area_Lists.Cursor :=
+                                   Manager.Tile_Info
+                                     (Palace_Position.X, Palace_Position.Y)
+                                     .Continent;
+            begin
+               for Tile of Manager.Areas (Home_Continent).Internal_Border loop
+                  Manager.Tile_Info
+                    (Tile.Position.X, Tile.Position.Y).Interest :=
+                    100 + WL.Random.Random_Number (1, 100);
+               end loop;
+            end;
+         end if;
+
+      end Classify_Tiles;
 
       ---------------
       -- Scan_Area --
@@ -268,132 +425,10 @@ package body Carthage.Managers.Planets is
       Manager.Unseen_Tiles.Clear;
       Manager.Hostile_Tiles.Clear;
 
-      for Y in Tile_Y loop
-         for X in Tile_X loop
-            declare
-               Tile : constant Carthage.Tiles.Tile_Type :=
-                        Manager.Planet.Tile (X, Y);
-               Info : Tile_Info_Record :=
-                        Tile_Info_Record'
-                          (Tile                 => Tile,
-                           Nearest_Seen         => null,
-                           Nearest_Explored     => null,
-                           Nearest_Controlled   => null,
-                           Interest             => 0,
-                           Continent            =>
-                             Planet_Area_Lists.No_Element,
-                           Area_Internal_Border => False,
-                           Area_External_Border => False,
-                           Controlled           => False,
-                           Explored             => False,
-                           Seen                 => False,
-                           Targeted             => False);
-
-               function At_War_With
-                 (Enemy : not null access constant
-                    Carthage.Stacks.Stack_Record'Class)
-                  return Boolean
-               is (Manager.House.At_War_With (Enemy.Owner));
-
-            begin
-               if Tile.Currently_Visible_To (Manager.House) then
-
-                  if Tile.Has_Stack (At_War_With'Access) then
-                     Manager.Planet.Log
-                       (Manager.House.Name
-                        & ": hostile at "
-                        & Carthage.Tiles.Position_Image (Tile.Position));
-                     Info.Interest := 1_000
-                       + Natural (Tile.Find_Stack (At_War_With'Access).Count)
-                       + WL.Random.Random_Number (1, 100);
-                     Manager.Hostile_Tiles.Append (Tile);
-                  end if;
-
-                  Manager.Controlled_Tiles.Append (Tile);
-                  Info.Nearest_Seen := Tile;
-                  Info.Nearest_Explored := Tile;
-                  Info.Nearest_Controlled := Tile;
-               end if;
-
-               if Tile.Explored_By (Manager.House) then
-
-                  if Tile.Has_City
-                    and then Tile.City.Owner /= Manager.House
-                    and then Manager.House.At_War_With (Tile.City.Owner)
-                  then
-                     Info.Interest := 600
-                       + WL.Random.Random_Number (1, 100);
-                  end if;
-
-                  if Tile.Has_City then
-                     if Tile.City.Structure.Is_Palace then
-                        Manager.Palace := Tile.City;
-                     elsif Tile.City.Structure.Is_Shield then
-                        Manager.Shield := Tile.City;
-                     end if;
-                  end if;
-
-                  Manager.Explored_Tiles.Append (Tile);
-                  Info.Nearest_Explored := Tile;
-                  Info.Nearest_Controlled := Tile;
-
-               elsif Tile.Seen_By (Manager.House) then
-                  Manager.Seen_Tiles.Append (Tile);
-                  Info.Nearest_Seen := Tile;
-                  Info.Interest := WL.Random.Random_Number (1, 100);
-               else
-                  Manager.Unseen_Tiles.Append (Tile);
-                  declare
-                     use Carthage.Planets;
-                     Ns : Surface_Tiles;
-                  begin
-                     Manager.Planet.Get_Tiles
-                       (Tile, 1, 3, null, Ns);
-                     Info.Interest := 100;
-                     for I in 1 .. Tile_Count (Ns) loop
-                        if Get_Tile (Ns, I).Seen_By (Manager.House) then
-                           Info.Interest := Info.Interest + 6
-                             + WL.Random.Random_Number (1, 6);
-                        end if;
-                     end loop;
-                  end;
-
-               end if;
-               Manager.Tile_Info (X, Y) := Info;
-            end;
-         end loop;
-      end loop;
-
-      for Y in Tile_Y loop
-         for X in Tile_X loop
-            declare
-               Info : Tile_Info_Record renames Manager.Tile_Info (X, Y);
-            begin
-               if not Planet_Area_Lists.Has_Element (Info.Continent) then
-                  Scan_Area ((X, Y));
-               end if;
-            end;
-         end loop;
-      end loop;
-
-      if Manager.Owned then
-         declare
-            Palace_Tile     : constant Carthage.Tiles.Tile_Type :=
-                                Manager.Palace.Tile;
-            Palace_Position : constant Tile_Position := Palace_Tile.Position;
-            Home_Continent  : constant Planet_Area_Lists.Cursor :=
-                                Manager.Tile_Info
-                                  (Palace_Position.X, Palace_Position.Y)
-                                  .Continent;
-         begin
-            for Tile of Manager.Areas (Home_Continent).Internal_Border loop
-               Manager.Tile_Info (Tile.Position.X, Tile.Position.Y).Interest :=
-                 100 + WL.Random.Random_Number (1, 100);
-            end loop;
-         end;
+      if Manager.Active then
+         Classify_Tiles;
+         Manager.Scan_Unexplored_Tiles;
       end if;
-
-      Manager.Scan_Unexplored_Tiles;
 
    end Initialize;
 

@@ -94,6 +94,11 @@ private
       return Duration
    is (Carthage.Calendar.Days (10));
 
+   function Planet_Manager
+     (Manager : House_Manager_Record;
+      Planet  : Carthage.Planets.Planet_Type)
+      return Manager_Type;
+
 --     overriding procedure Check_Goals
 --       (Manager : in out House_Manager_Record);
 --

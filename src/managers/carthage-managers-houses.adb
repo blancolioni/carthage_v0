@@ -11,6 +11,13 @@ package body Carthage.Managers.Houses is
    overriding procedure Initialize
      (Manager : in out Noble_House_Manager_Record);
 
+   overriding function Planet_Manager
+     (Manager : Noble_House_Manager_Record;
+      Planet  : Carthage.Planets.Planet_Type)
+      return Manager_Type
+   is (Carthage.Managers.Planets.Create_Active_Planet_Manager
+       (Manager.House, Planet));
+
    --     overriding procedure Check_Goals
    --       (Manager : in out Noble_House_Manager_Record);
 
@@ -188,8 +195,8 @@ package body Carthage.Managers.Houses is
             Managed_Planet_Record'
               (Planet         => Planet,
                Planet_Manager =>
-                 Carthage.Managers.Planets.Create_Planet_Manager
-                   (Manager.House, Planet)));
+                 House_Manager_Record'Class (Manager)
+               .Planet_Manager (Planet)));
       end Add_Planet_Info;
 
       --------------------
@@ -246,6 +253,20 @@ package body Carthage.Managers.Houses is
          end;
       end loop;
    end Initialize;
+
+   --------------------
+   -- Planet_Manager --
+   --------------------
+
+   function Planet_Manager
+     (Manager : House_Manager_Record;
+      Planet  : Carthage.Planets.Planet_Type)
+      return Manager_Type
+   is
+   begin
+      return Carthage.Managers.Planets.Create_Passive_Planet_Manager
+        (Manager.House, Planet);
+   end Planet_Manager;
 
    ------------
    -- Update --
