@@ -3,7 +3,6 @@ with Ada.Characters.Latin_1;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Containers.Vectors;
 with Ada.Directories;
-with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded;
 
 with Lui.Colours;
@@ -24,6 +23,9 @@ package body Carthage.UI.Models.Galaxy is
    Zoom_Limit    : constant := 5.0;
    Zoom_Duration : constant Duration := 0.8;
 
+   Zoomed_Out_Radius : constant := 30;
+   Zoomed_In_Radius  : constant := 60;
+
    Have_Bitmaps     : Boolean := False;
 
    procedure Load_Bitmaps
@@ -42,7 +44,6 @@ package body Carthage.UI.Models.Galaxy is
          Planet      : Carthage.Planets.Planet_Type;
          Name        : Ada.Strings.Unbounded.Unbounded_String;
          Image       : Ada.Strings.Unbounded.Unbounded_String;
-         Radius      : Positive;
          Colour      : Lui.Colours.Colour_Type;
          Capital     : Boolean;
          Colony      : Boolean;
@@ -58,6 +59,7 @@ package body Carthage.UI.Models.Galaxy is
          Show_Capital_Names : Boolean := True;
          Show_System_Names  : Boolean := False;
          Rendered_Planets   : Rendered_Planet_Vectors.Vector;
+         Rendered_Stacks    : Carthage.UI.Models.Stacks.Rendered_Stack_List;
          Needs_Render       : Boolean := True;
          Zoomed_To_System   : Boolean := False;
          Zooming_In         : Boolean := False;
@@ -481,7 +483,6 @@ package body Carthage.UI.Models.Galaxy is
                        Image       =>
                          Ada.Strings.Unbounded.To_Unbounded_String
                            (Resource),
-                       Radius      => 30,
                        Colour      => Lui.Colours.White,
                        Colony      => False,
                        Capital     => False,
@@ -520,78 +521,71 @@ package body Carthage.UI.Models.Galaxy is
    is
       use type Lui.Rendering.Render_Layer;
 
-      procedure Draw_Orbital_Stacks
-        (System : Rendered_Planet;
+      System_Radius : Natural :=
+                        (if Model.Zoomed_To_System
+                         then Zoomed_In_Radius
+                         else Zoomed_Out_Radius);
+
+      procedure Load_Orbital_Stacks
+        (Planet : Carthage.Planets.Planet_Type;
          X, Y   : Integer);
 
       -------------------------
-      -- Draw_Orbital_Stacks --
+      -- Load_Orbital_Stacks --
       -------------------------
 
-      procedure Draw_Orbital_Stacks
-        (System : Rendered_Planet;
+      procedure Load_Orbital_Stacks
+        (Planet : Carthage.Planets.Planet_Type;
          X, Y   : Integer)
       is
          Index : Natural := 0;
-         DXs   : constant array (1 .. 8) of Integer :=
-                   (-1, 0, 1, -1, 1, -1, 0, 1);
-         DYs   : constant array (1 .. 8) of Integer :=
-                   (-1, -1, -1, 0, 0, 1, 1, 1);
+         subtype Orbital_Stack_Index is Integer range 1 .. 8;
 
-         procedure Draw_Stack (House : Carthage.Houses.House_Type);
+         procedure Load_Stack (House : Carthage.Houses.House_Type);
 
          ----------------
-         -- Draw_Stack --
+         -- Load_Stack --
          ----------------
 
-         procedure Draw_Stack (House : Carthage.Houses.House_Type) is
+         procedure Load_Stack (House : Carthage.Houses.House_Type) is
             use Carthage.Stacks;
             Stack : constant Carthage.Stacks.Stack_Type :=
-                      System.Planet.Orbital_Stack (House);
+                      Planet.Orbital_Stack (House);
          begin
-            Index := Natural'Min (Index + 1, DXs'Last);
+            Index := Natural'Min (Index + 1, Orbital_Stack_Index'Last);
             if not Stack.Is_Empty then
                declare
-                  Background : Carthage.Colours.Colour_Type :=
-                                 House.Colour;
-                  Icon_Size  : constant := 32;
-                  DX         : constant Integer := DXs (Index);
-                  DY         : constant Integer := DYs (Index);
+                  Icon_Size  : constant := 48;
                   Left       : constant Integer :=
-                                 X + DX * System.Radius * 3 / 2
-                                   + (if DX < 0 then DX * Icon_Size else 0);
+                                 (case Orbital_Stack_Index (Index) is
+                                     when 1 | 4 | 6 =>
+                                        X - System_Radius * 3 / 2 - Icon_Size,
+                                     when 3 | 5 | 8 =>
+                                        X + System_Radius * 3 / 2,
+                                     when 2 | 7     =>
+                                        X - Icon_Size / 2);
                   Top        : constant Integer :=
-                                 Y + DY * System.Radius * 3 / 2
-                                   + (if DY < 0 then DY * Icon_Size else 0);
-                  Resource   : constant String :=
-                                 Carthage.UI.Models.Stacks.Asset_Resource
-                                   (Stack.Asset (1));
-                  Size       : constant String :=
-                                 Ada.Strings.Fixed.Trim
-                                   (Carthage.Stacks.Asset_Count'Image
-                                      (Stack.Count),
-                                    Ada.Strings.Left);
+                                 (case Orbital_Stack_Index (Index) is
+                                     when 1 | 2 | 3 =>
+                                        Y - System_Radius * 3 / 2 - Icon_Size,
+                                     when 4 | 5    =>
+                                        Y - Icon_Size / 2,
+                                     when 6 | 7 | 8 =>
+                                        Y + System_Radius * 3 / 2);
                begin
-                  Background.Alpha := 0.7;
-
-                  Renderer.Draw_Rectangle
-                    (Left, Top, Icon_Size, Icon_Size,
-                     To_Lui_Colour (Background), True);
-                  Renderer.Draw_Image
-                    (Left, Top, Icon_Size, Icon_Size, Resource);
-                  Renderer.Draw_Rectangle
-                    (Left + Icon_Size - 12, Top + Icon_Size - 8,
-                     12, 8, Lui.Colours.Black, True);
-                  Renderer.Draw_String
-                    (Left + Icon_Size - 10, Top + Icon_Size, 8,
-                     Lui.Colours.White, Size);
+                  Model.Rendered_Stacks.Add_Stack
+                    (Stack  => Stack,
+                     Left   => Left,
+                     Top    => Top,
+                     Width  => Icon_Size,
+                     Height => Icon_Size);
                end;
             end if;
-         end Draw_Stack;
+         end Load_Stack;
 
       begin
-         Carthage.Houses.Scan (Draw_Stack'Access);
-      end Draw_Orbital_Stacks;
+         Carthage.Houses.Scan (Load_Stack'Access);
+      end Load_Orbital_Stacks;
 
    begin
       --  Carthage.Updates.Begin_Render;
@@ -609,10 +603,33 @@ package body Carthage.UI.Models.Galaxy is
             if Model.Zoom_Progress >= 1.0 then
                if Model.Zooming_In then
                   Model.Zoomed_To_System := True;
+                  System_Radius := Zoomed_In_Radius;
+                  declare
+                     Screen_X, Screen_Y : Integer;
+                  begin
+                     Model.Get_Screen_Position
+                       (Model.Selected_Planet.X, Model.Selected_Planet.Y,
+                        Screen_X, Screen_Y);
+                     Load_Orbital_Stacks
+                       (Model.Selected_Planet, Screen_X, Screen_Y);
+                  end;
                else
                   Model.Zoomed_To_System := False;
+                  System_Radius := Zoomed_Out_Radius;
                end if;
                Model.Clear_Zoom;
+            else
+               if Model.Zooming_In then
+                  System_Radius :=
+                    Natural (Float (Zoomed_In_Radius) * Model.Zoom_Progress
+                             + Float (Zoomed_Out_Radius)
+                             * (1.0 - Model.Zoom_Progress));
+               else
+                  System_Radius :=
+                    Natural (Float (Zoomed_Out_Radius) * Model.Zoom_Progress
+                             + Float (Zoomed_In_Radius)
+                             * (1.0 - Model.Zoom_Progress));
+               end if;
             end if;
          end;
       end if;
@@ -639,10 +656,10 @@ package body Carthage.UI.Models.Galaxy is
                   then
                      if Star_Pass then
                         Renderer.Draw_Image
-                          (X        => Screen_X - System.Radius,
-                           Y        => Screen_Y - System.Radius,
-                           W        => System.Radius * 2,
-                           H        => System.Radius * 2,
+                          (X        => Screen_X - System_Radius,
+                           Y        => Screen_Y - System_Radius,
+                           W        => System_Radius * 2,
+                           H        => System_Radius * 2,
                            Resource =>
                              Ada.Strings.Unbounded.To_String
                                (System.Image));
@@ -650,7 +667,7 @@ package body Carthage.UI.Models.Galaxy is
                            Renderer.Draw_Circle
                              (X          => Screen_X,
                               Y          => Screen_Y,
-                              Radius     => System.Radius * 2,
+                              Radius     => System_Radius * 2,
                               Colour     => System.Colour,
                               Filled     => False,
                               Line_Width => 2);
@@ -680,12 +697,12 @@ package body Carthage.UI.Models.Galaxy is
                            end if;
                         end;
 
-                        if Model.Zoomed_To_System
-                          and then System.Planet = Model.Selected_Planet
-                        then
-                           Draw_Orbital_Stacks
-                             (System, Screen_X, Screen_Y);
-                        end if;
+--                          if Model.Zoomed_To_System
+--                            and then System.Planet = Model.Selected_Planet
+--                          then
+--                             Draw_Orbital_Stacks
+--                               (System, Screen_X, Screen_Y);
+--                          end if;
 
                      else
 
@@ -717,6 +734,11 @@ package body Carthage.UI.Models.Galaxy is
                end;
             end loop;
          end loop;
+
+         if Model.Zoomed_To_System then
+            Model.Rendered_Stacks.Render (Model, Renderer);
+         end if;
+
       end if;
 
       Model.Needs_Render := False;
@@ -816,6 +838,7 @@ package body Carthage.UI.Models.Galaxy is
       Model.Zoomed_To_System := False;
       Model.Zoom_Progress := 1.0 - Model.Zoom_Progress;
       Model.Zoom_Start := Ada.Calendar.Clock;
+      Model.Rendered_Stacks.Clear;
    end Start_Zoom_Out;
 
    -------------
@@ -827,11 +850,15 @@ package body Carthage.UI.Models.Galaxy is
       X, Y  : Natural)
       return String
    is
-      use Carthage.Planets;
+      use Carthage.Planets, Carthage.Stacks;
       Planet : constant Planet_Type :=
                  Model.Closest_System (X, Y, 30);
+      Stack  : constant Stack_Type :=
+                 Model.Rendered_Stacks.Find_Stack (X, Y);
    begin
-      if Planet /= null then
+      if Stack /= null then
+         return Stack.Owner.Name;
+      elsif Planet /= null then
          if Planet.Has_Owner then
             return Planet.Name & " owned by " & Planet.Owner.Full_Name;
          else
