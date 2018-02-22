@@ -1,5 +1,3 @@
-with Carthage.Calendar;
-
 with Carthage.Stacks.Create;
 with Carthage.Stacks.Updates;
 
@@ -15,11 +13,6 @@ package body Carthage.Managers.Assets is
 
    type Ground_Asset_Manager_Type is
      access all Ground_Asset_Manager_Record'Class;
-
-   overriding function Average_Update_Frequency
-     (Manager : Ground_Asset_Manager_Record)
-      return Duration
-   is (Carthage.Calendar.Days (1));
 
    overriding procedure Load_Assets
      (Manager : in out Ground_Asset_Manager_Record);
@@ -47,6 +40,24 @@ package body Carthage.Managers.Assets is
    overriding function Update
      (Manager : not null access Ground_Asset_Manager_Record)
       return Duration;
+
+   type Space_Asset_Manager_Record is
+     new Root_Asset_Manager_Record with
+      record
+         null;
+      end record;
+
+   type Space_Asset_Manager_Type is
+     access all Space_Asset_Manager_Record'Class;
+
+   overriding procedure Load_Assets
+     (Manager : in out Space_Asset_Manager_Record);
+
+   overriding function Update
+     (Manager : not null access Space_Asset_Manager_Record)
+      return Duration
+   is (Space_Asset_Manager_Record'Class (Manager.all)
+       .Average_Update_Frequency);
 
    ----------------
    -- Check_Goal --
@@ -423,6 +434,10 @@ package body Carthage.Managers.Assets is
 
    end Initialize;
 
+   -----------------
+   -- Load_Assets --
+   -----------------
+
    overriding procedure Load_Assets
      (Manager : in out Ground_Asset_Manager_Record)
    is
@@ -451,9 +466,10 @@ package body Carthage.Managers.Assets is
          for I in 1 .. Stack.Count loop
             Manager.Assets.Append
               (Managed_Asset_Record'
-                 (Asset => Stack.Asset (I),
-                  Stack => Manager.Stacks.Last,
-                  Tile  => Stack.Tile));
+                 (Asset  => Stack.Asset (I),
+                  Stack  => Manager.Stacks.Last,
+                  Planet => Stack.Planet,
+                  Tile   => Stack.Tile));
          end loop;
       end Add_Stack;
 
@@ -461,6 +477,45 @@ package body Carthage.Managers.Assets is
       Manager.Planet.Scan_Stacks
         (Manager.House,
          Add_Stack'Access);
+   end Load_Assets;
+
+   -----------------
+   -- Load_Assets --
+   -----------------
+
+   overriding procedure Load_Assets
+     (Manager : in out Space_Asset_Manager_Record)
+   is
+      procedure Add_Assets
+        (Planet : Carthage.Planets.Planet_Type);
+
+      ----------------
+      -- Add_Assets --
+      ----------------
+
+      procedure Add_Assets
+        (Planet : Carthage.Planets.Planet_Type)
+      is
+         Stack : constant Carthage.Stacks.Stack_Type :=
+                   Carthage.Stacks.Stack_Type
+                     (Planet.Orbital_Stack (Manager.House));
+      begin
+         if not Stack.Is_Empty then
+            Manager.House.Log ("adding orbital assets at "
+                               & Planet.Name);
+            for Index in 1 .. Stack.Count loop
+               Manager.Assets.Append
+                 (Managed_Asset_Record'
+                    (Asset  => Stack.Asset (Index),
+                     Stack  => Managed_Stack_List.No_Element,
+                     Planet => Planet,
+                     Tile   => null));
+            end loop;
+         end if;
+      end Add_Assets;
+
+   begin
+      Carthage.Planets.Scan (Add_Assets'Access);
    end Load_Assets;
 
    ------------------------
@@ -531,6 +586,27 @@ package body Carthage.Managers.Assets is
    begin
       return Goal;
    end Planet_Reconnaissance_Goal;
+
+   -------------------------
+   -- Space_Asset_Manager --
+   -------------------------
+
+   function Space_Asset_Manager
+     (Meta_Manager : not null access Asset_Meta_Manager_Interface'Class;
+      House        : Carthage.Houses.House_Type)
+      return Manager_Type
+   is
+      Manager : constant Space_Asset_Manager_Type :=
+                  new Space_Asset_Manager_Record;
+   begin
+      Manager.Meta_Manager := Meta_Manager;
+      Manager.House := House;
+      Manager.Initialize;
+
+      Add_Manager (Manager);
+
+      return Manager_Type (Manager);
+   end Space_Asset_Manager;
 
    -------------------
    -- Take_Resource --

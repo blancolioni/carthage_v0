@@ -3,6 +3,7 @@ private with Ada.Containers.Indefinite_Holders;
 
 private with WL.String_Maps;
 
+private with Carthage.Calendar;
 private with Carthage.Assets;
 
 with Carthage.Houses;
@@ -29,8 +30,7 @@ package Carthage.Managers.Assets is
    function Space_Asset_Manager
      (Meta_Manager : not null access Asset_Meta_Manager_Interface'Class;
       House        : Carthage.Houses.House_Type)
-      return Manager_Type
-   is (null);
+      return Manager_Type;
 
    function Tile_Reconnaissance_Goal
      (Tile    : Carthage.Tiles.Tile_Type)
@@ -105,9 +105,10 @@ private
 
    type Managed_Asset_Record is
       record
-         Asset : Carthage.Assets.Asset_Type;
-         Stack : Managed_Stack_List.Cursor;
-         Tile  : Carthage.Tiles.Tile_Type;
+         Asset  : Carthage.Assets.Asset_Type;
+         Stack  : Managed_Stack_List.Cursor;
+         Planet : Carthage.Planets.Planet_Type;
+         Tile   : Carthage.Tiles.Tile_Type;
       end record;
 
    package Managed_Asset_List is
@@ -158,5 +159,10 @@ private
      (From     : in out Root_Asset_Manager_Record;
       Resource : Carthage.Resources.Resource_Type;
       Quantity : in out Resource_Quantity);
+
+   overriding function Average_Update_Frequency
+     (Manager : Root_Asset_Manager_Record)
+      return Duration
+   is (Carthage.Calendar.Days (1));
 
 end Carthage.Managers.Assets;
