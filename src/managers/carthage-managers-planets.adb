@@ -115,7 +115,7 @@ package body Carthage.Managers.Planets is
    overriding function Average_Update_Frequency
      (Manager : Planet_Manager_Record)
       return Duration
-   is (Carthage.Calendar.Days (5));
+   is (Carthage.Calendar.Days (1));
 
    overriding procedure Initialize
      (Manager : in out Planet_Manager_Record);
