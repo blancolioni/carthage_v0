@@ -1392,11 +1392,36 @@ package body Carthage.Configure is
    --------------------------
 
    procedure Load_Standard_Houses is
+      procedure Load (Name : String);
+
+      ----------
+      -- Load --
+      ----------
+
+      procedure Load (Name : String) is
+      begin
+         Carthage.Houses.Configure.Configure_House
+           (Tropos.Reader.Read_Config
+              (Carthage.Paths.Config_File
+                   ("scenarios/standard/houses/"
+                    & Name & ".txt")));
+      end Load;
+
    begin
-      Load_Directory_Configuration
-        (Directory_Name => "scenarios/standard/houses",
-         Configure      =>
-           Carthage.Houses.Configure.Configure_House'Access);
+      Load ("li-halan");
+      Load ("hazat");
+      Load ("decados");
+      Load ("hawkwood");
+      Load ("al-malik");
+      Load ("league");
+      Load ("church");
+      Load ("symbiot");
+      Load ("vau");
+      Load ("imperial");
+      Load ("fleet");
+      Load ("stigmata");
+      Load ("spy");
+      Load ("rebel");
    end Load_Standard_Houses;
 
    --------------------
