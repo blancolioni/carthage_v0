@@ -193,6 +193,14 @@ package Carthage.Stacks is
      (Item : not null access constant Stack_Record'Class)
       return Updateable_Reference;
 
+   type Asset_Meta_Manager_Interface is interface;
+
+   procedure On_Hostile_Spotted
+     (Manager : in out Asset_Meta_Manager_Interface;
+      Spotter : not null access constant Stack_Record'Class;
+      Hostile : not null access constant Stack_Record'Class)
+   is null;
+
 private
 
    type Asset_Array is array (Asset_Index) of Carthage.Assets.Asset_Type;

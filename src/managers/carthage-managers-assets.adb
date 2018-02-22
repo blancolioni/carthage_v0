@@ -284,7 +284,8 @@ package body Carthage.Managers.Assets is
    --------------------------
 
    function Ground_Asset_Manager
-     (Meta_Manager : not null access Asset_Meta_Manager_Interface'Class;
+     (Meta_Manager : not null access
+        Carthage.Stacks.Asset_Meta_Manager_Interface'Class;
       House        : Carthage.Houses.House_Type;
       Planet       : Carthage.Planets.Planet_Type)
       return Manager_Type
@@ -592,7 +593,8 @@ package body Carthage.Managers.Assets is
    -------------------------
 
    function Space_Asset_Manager
-     (Meta_Manager : not null access Asset_Meta_Manager_Interface'Class;
+     (Meta_Manager : not null access
+        Carthage.Stacks.Asset_Meta_Manager_Interface'Class;
       House        : Carthage.Houses.House_Type)
       return Manager_Type
    is

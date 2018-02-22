@@ -82,7 +82,7 @@ package body Carthage.Managers.Planets is
 
    type Planet_Manager_Record is
      new Root_Manager_Type
-     and Carthage.Managers.Assets.Asset_Meta_Manager_Interface with
+     and Carthage.Stacks.Asset_Meta_Manager_Interface with
       record
          Owned                : Boolean;
          Active               : Boolean;

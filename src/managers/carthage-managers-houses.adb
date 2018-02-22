@@ -1,3 +1,4 @@
+with Carthage.Managers.Assets;
 with Carthage.Managers.Planets;
 
 package body Carthage.Managers.Houses is
@@ -164,6 +165,10 @@ package body Carthage.Managers.Houses is
             Manager := new Passive_House_Manager_Record;
       end case;
       Manager.House := House;
+      Manager.Space_Assets :=
+        Carthage.Managers.Assets.Space_Asset_Manager
+          (Manager, Manager.House);
+
       House.Update.Set_House_Manager (Manager);
       Manager.Initialize;
       Add_Manager (Manager);
@@ -220,6 +225,7 @@ package body Carthage.Managers.Houses is
       end Add_Stack_Info;
 
    begin
+
       Carthage.Stacks.Scan_Stacks (Add_Stack_Info'Access);
 
 --        for Info of Manager.Planets loop

@@ -15,6 +15,7 @@ package Carthage.Managers.Houses is
    type House_Manager_Record is
      abstract new Root_Manager_Type
      and Carthage.Houses.House_Manager_Interface
+     and Carthage.Stacks.Asset_Meta_Manager_Interface
    with private;
 
 --     procedure Add_Surface_Exploration_Goal
@@ -76,10 +77,12 @@ private
 
    type House_Manager_Record is
      abstract new Root_Manager_Type
-     and Carthage.Houses.House_Manager_Interface with
+     and Carthage.Houses.House_Manager_Interface
+     and Carthage.Stacks.Asset_Meta_Manager_Interface with
       record
-         House   : Carthage.Houses.House_Type;
-         Planets : Managed_Planet_Maps.Map;
+         House        : Carthage.Houses.House_Type;
+         Planets      : Managed_Planet_Maps.Map;
+         Space_Assets : Manager_Type;
       end record;
 
    overriding procedure Initialize
