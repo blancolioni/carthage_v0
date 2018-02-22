@@ -1,9 +1,3 @@
-with Ada.Containers.Doubly_Linked_Lists;
-with Ada.Containers.Indefinite_Holders;
-
-with WL.String_Maps;
-
-with Carthage.Assets;
 with Carthage.Calendar;
 
 with Carthage.Stacks.Create;
@@ -11,127 +5,55 @@ with Carthage.Stacks.Updates;
 
 package body Carthage.Managers.Assets is
 
-   package Asset_Manager_Goal_Holders is
-     new Ada.Containers.Indefinite_Holders (Asset_Manager_Goal);
-
-   type Managed_Stack_Record is
+   type Ground_Asset_Manager_Record is
+     new Root_Asset_Manager_Record with
       record
-         Stack        : Carthage.Stacks.Stack_Type;
-         Goal         : Asset_Manager_Goal_Holders.Holder;
-         Minimum_Food : Natural := 0;
-         Desired_Food : Natural := 0;
-      end record;
-
-   package Managed_Stack_List is
-     new Ada.Containers.Doubly_Linked_Lists
-       (Managed_Stack_Record);
-
-   package Managed_Stack_Maps is
-     new WL.String_Maps (Managed_Stack_List.Cursor, Managed_Stack_List."=");
-
-   type Managed_Asset_Record is
-      record
-         Asset : Carthage.Assets.Asset_Type;
-         Stack : Managed_Stack_List.Cursor;
-         Tile  : Carthage.Tiles.Tile_Type;
-      end record;
-
-   package Managed_Asset_List is
-     new Ada.Containers.Doubly_Linked_Lists
-       (Managed_Asset_Record);
-
-   package Asset_Classification_List is
-     new Ada.Containers.Doubly_Linked_Lists
-       (Managed_Asset_List.Cursor, Managed_Asset_List."=");
-
-   type Asset_Manager_Record is
-     new Root_Manager_Type
-     and Carthage.Stacks.Stack_Manager_Interface with
-      record
-         Meta_Manager : access Asset_Meta_Manager_Interface'Class;
-         House        : Carthage.Houses.House_Type;
          Planet       : Carthage.Planets.Planet_Type;
-         Assets       : Managed_Asset_List.List;
          Stacks       : Managed_Stack_List.List;
          Stack_Maps   : Managed_Stack_Maps.Map;
-         Spotters     : Asset_Classification_List.List;
-         Movers       : Asset_Classification_List.List;
-         Minimum_Food : Natural := 0;
-         Desired_Food : Natural := 0;
       end record;
 
-   type Asset_Manager_Type is access all Asset_Manager_Record'Class;
+   type Ground_Asset_Manager_Type is
+     access all Ground_Asset_Manager_Record'Class;
 
    overriding function Average_Update_Frequency
-     (Manager : Asset_Manager_Record)
+     (Manager : Ground_Asset_Manager_Record)
       return Duration
    is (Carthage.Calendar.Days (1));
 
-   overriding procedure Initialize
-     (Manager : in out Asset_Manager_Record);
-
-   overriding procedure Get_Resource_Requirements
-     (Manager : in out Asset_Manager_Record;
-      Minimum : in out Carthage.Resources.Stock_Interface'Class;
-      Desired : in out Carthage.Resources.Stock_Interface'Class);
+   overriding procedure Load_Assets
+     (Manager : in out Ground_Asset_Manager_Record);
 
    overriding procedure On_Hostile_Spotted
-     (Manager : in out Asset_Manager_Record;
+     (Manager : in out Ground_Asset_Manager_Record;
       Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
       Hostile : not null access constant Carthage.Stacks.Stack_Record'Class;
       Stop    : out Boolean);
 
    overriding procedure On_Stack_Removed
-     (Manager : in out Asset_Manager_Record;
+     (Manager : in out Ground_Asset_Manager_Record;
       Stack   : not null access constant Carthage.Stacks.Stack_Record'Class);
 
    overriding function Have_Immediate_Capacity
-     (Manager : Asset_Manager_Record;
+     (Manager : Ground_Asset_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
       return Boolean;
 
    overriding function Check_Goal
-     (Manager : not null access Asset_Manager_Record;
+     (Manager : not null access Ground_Asset_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
-     return Boolean;
-
-   overriding procedure Take_Resource
-     (From     : in out Asset_Manager_Record;
-      Resource : Carthage.Resources.Resource_Type;
-      Quantity : in out Resource_Quantity);
+      return Boolean;
 
    overriding function Update
-     (Manager : not null access Asset_Manager_Record)
+     (Manager : not null access Ground_Asset_Manager_Record)
       return Duration;
-
-   ------------------
-   -- Capture_Goal --
-   ------------------
-
-   function Capture_Goal
-     (Tile     : Carthage.Tiles.Tile_Type;
-      Strength : Natural)
-      return Carthage.Goals.Goal_Record'Class
-   is
-      Goal : constant Asset_Manager_Goal :=
-               Asset_Manager_Goal'
-                 (Carthage.Goals.Goal_Record with
-                  Priority   => Default_Priority (Capture),
-                  Class      => Capture,
-                  Tile       => Tile,
-                  Parameters =>
-                    (Speed    => Low, Spot => Low,
-                     Military => High, Strength => Strength));
-   begin
-      return Goal;
-   end Capture_Goal;
 
    ----------------
    -- Check_Goal --
    ----------------
 
    overriding function Check_Goal
-     (Manager : not null access Asset_Manager_Record;
+     (Manager : not null access Ground_Asset_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
       return Boolean
    is
@@ -325,29 +247,24 @@ package body Carthage.Managers.Assets is
    -------------------------------
 
    overriding procedure Get_Resource_Requirements
-     (Manager : in out Asset_Manager_Record;
+     (Manager : in out Root_Asset_Manager_Record;
       Minimum : in out Carthage.Resources.Stock_Interface'Class;
       Desired : in out Carthage.Resources.Stock_Interface'Class)
    is
       Food : constant Carthage.Resources.Resource_Type :=
                Carthage.Resources.Food;
-      Current_Food : constant Natural :=
-                       Manager.Resources.Whole_Quantity (Food);
+      Minimum_Food : Resource_Quantity := 0.0;
+      Desired_Food : Resource_Quantity;
    begin
-      if Manager.Minimum_Food = 0 then
-         for Stack of Manager.Stacks loop
-            Manager.Minimum_Food :=
-              Manager.Minimum_Food + Natural (Stack.Stack.Count);
-         end loop;
-         Manager.Desired_Food := Manager.Minimum_Food * 2;
-      end if;
 
-      if Manager.Minimum_Food > Current_Food then
-         Minimum.Add (Food, Manager.Minimum_Food - Current_Food);
-      end if;
-      if Manager.Desired_Food > Current_Food then
-         Desired.Add (Food, Manager.Desired_Food - Current_Food);
-      end if;
+      for Managed_Asset of Manager.Assets loop
+         Minimum_Food := Minimum_Food + Managed_Asset.Asset.Unit.Eat;
+      end loop;
+
+      Desired_Food := Minimum_Food * 2.0;
+
+      Minimum.Add (Food, Minimum_Food / 20.0);
+      Desired.Add (Food, Desired_Food / 20.0);
 
    end Get_Resource_Requirements;
 
@@ -361,8 +278,8 @@ package body Carthage.Managers.Assets is
       Planet       : Carthage.Planets.Planet_Type)
       return Manager_Type
    is
-      Manager : constant Asset_Manager_Type :=
-                  new Asset_Manager_Record;
+      Manager : constant Ground_Asset_Manager_Type :=
+                  new Ground_Asset_Manager_Record;
    begin
       Manager.Meta_Manager := Meta_Manager;
       Manager.House := House;
@@ -383,7 +300,7 @@ package body Carthage.Managers.Assets is
    -----------------------------
 
    overriding function Have_Immediate_Capacity
-     (Manager : Asset_Manager_Record;
+     (Manager : Ground_Asset_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
       return Boolean
    is
@@ -436,12 +353,8 @@ package body Carthage.Managers.Assets is
    ----------------
 
    overriding procedure Initialize
-     (Manager : in out Asset_Manager_Record)
+     (Manager : in out Root_Asset_Manager_Record)
    is
-
-      procedure Add_Stack
-        (Stack : not null access constant
-           Carthage.Stacks.Stack_Record'Class);
 
       procedure Add_Asset_Classification
         (Asset_Cursor : Managed_Asset_List.Cursor;
@@ -486,38 +399,9 @@ package body Carthage.Managers.Assets is
          end if;
       end Add_Asset_Classification;
 
-      ---------------
-      -- Add_Stack --
-      ---------------
-
-      procedure Add_Stack
-        (Stack : not null access constant
-           Carthage.Stacks.Stack_Record'Class)
-      is
-      begin
-         Manager.Stacks.Append
-           (Managed_Stack_Record'
-              (Stack        => Carthage.Stacks.Stack_Type (Stack),
-               Goal         => <>,
-               Minimum_Food => 0,
-               Desired_Food => 0));
-
-         Manager.Stack_Maps.Insert
-           (Stack.Identifier, Manager.Stacks.Last);
-
-         for I in 1 .. Stack.Count loop
-            Manager.Assets.Append
-              (Managed_Asset_Record'
-                 (Asset => Stack.Asset (I),
-                  Stack => Manager.Stacks.Last,
-                  Tile  => Stack.Tile));
-         end loop;
-      end Add_Stack;
-
    begin
-      Manager.Planet.Scan_Stacks
-        (Manager.House,
-         Add_Stack'Access);
+
+      Root_Asset_Manager_Record'Class (Manager).Load_Assets;
 
       declare
          use Carthage.Assets;
@@ -539,12 +423,52 @@ package body Carthage.Managers.Assets is
 
    end Initialize;
 
+   overriding procedure Load_Assets
+     (Manager : in out Ground_Asset_Manager_Record)
+   is
+
+      procedure Add_Stack
+        (Stack : not null access constant
+           Carthage.Stacks.Stack_Record'Class);
+
+      ---------------
+      -- Add_Stack --
+      ---------------
+
+      procedure Add_Stack
+        (Stack : not null access constant
+           Carthage.Stacks.Stack_Record'Class)
+      is
+      begin
+         Manager.Stacks.Append
+           (Managed_Stack_Record'
+              (Stack        => Carthage.Stacks.Stack_Type (Stack),
+               Goal         => <>));
+
+         Manager.Stack_Maps.Insert
+           (Stack.Identifier, Manager.Stacks.Last);
+
+         for I in 1 .. Stack.Count loop
+            Manager.Assets.Append
+              (Managed_Asset_Record'
+                 (Asset => Stack.Asset (I),
+                  Stack => Manager.Stacks.Last,
+                  Tile  => Stack.Tile));
+         end loop;
+      end Add_Stack;
+
+   begin
+      Manager.Planet.Scan_Stacks
+        (Manager.House,
+         Add_Stack'Access);
+   end Load_Assets;
+
    ------------------------
    -- On_Hostile_Spotted --
    ------------------------
 
    overriding procedure On_Hostile_Spotted
-     (Manager : in out Asset_Manager_Record;
+     (Manager : in out Ground_Asset_Manager_Record;
       Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
       Hostile : not null access constant Carthage.Stacks.Stack_Record'Class;
       Stop    : out Boolean)
@@ -578,7 +502,7 @@ package body Carthage.Managers.Assets is
    ----------------------
 
    overriding procedure On_Stack_Removed
-     (Manager : in out Asset_Manager_Record;
+     (Manager : in out Ground_Asset_Manager_Record;
       Stack   : not null access constant Carthage.Stacks.Stack_Record'Class)
    is
       Position : Managed_Stack_List.Cursor :=
@@ -588,12 +512,12 @@ package body Carthage.Managers.Assets is
       Manager.Stack_Maps.Delete (Stack.Identifier);
    end On_Stack_Removed;
 
-   ----------------
-   -- Recon_Goal --
-   ----------------
+   --------------------------------
+   -- Planet_Reconnaissance_Goal --
+   --------------------------------
 
-   function Recon_Goal
-     (Tile    : Carthage.Tiles.Tile_Type)
+   function Planet_Reconnaissance_Goal
+     (Planet : Carthage.Planets.Planet_Type)
       return Carthage.Goals.Goal_Record'Class
    is
       Goal : constant Asset_Manager_Goal :=
@@ -601,18 +525,19 @@ package body Carthage.Managers.Assets is
                  (Carthage.Goals.Goal_Record with
                   Priority   => Default_Priority (Recon),
                   Class      => Recon,
-                  Tile       => Tile,
+                  Planet     => Planet,
+                  Tile       => null,
                   Parameters => (Speed => High, Spot => High, others => <>));
    begin
       return Goal;
-   end Recon_Goal;
+   end Planet_Reconnaissance_Goal;
 
    -------------------
    -- Take_Resource --
    -------------------
 
    overriding procedure Take_Resource
-     (From     : in out Asset_Manager_Record;
+     (From     : in out Root_Asset_Manager_Record;
       Resource : Carthage.Resources.Resource_Type;
       Quantity : in out Resource_Quantity)
    is
@@ -623,12 +548,55 @@ package body Carthage.Managers.Assets is
       From.Resources.Remove (Resource, Quantity);
    end Take_Resource;
 
+   -----------------------
+   -- Tile_Capture_Goal --
+   -----------------------
+
+   function Tile_Capture_Goal
+     (Tile     : Carthage.Tiles.Tile_Type;
+      Strength : Natural)
+      return Carthage.Goals.Goal_Record'Class
+   is
+      Goal : constant Asset_Manager_Goal :=
+               Asset_Manager_Goal'
+                 (Carthage.Goals.Goal_Record with
+                  Priority   => Default_Priority (Capture),
+                  Class      => Capture,
+                  Planet     => null,
+                  Tile       => Tile,
+                  Parameters =>
+                    (Speed    => Low, Spot => Low,
+                     Military => High, Strength => Strength));
+   begin
+      return Goal;
+   end Tile_Capture_Goal;
+
+   ------------------------------
+   -- Tile_Reconnaissance_Goal --
+   ------------------------------
+
+   function Tile_Reconnaissance_Goal
+     (Tile    : Carthage.Tiles.Tile_Type)
+      return Carthage.Goals.Goal_Record'Class
+   is
+      Goal : constant Asset_Manager_Goal :=
+               Asset_Manager_Goal'
+                 (Carthage.Goals.Goal_Record with
+                  Priority   => Default_Priority (Recon),
+                  Class      => Recon,
+                  Planet     => null,
+                  Tile       => Tile,
+                  Parameters => (Speed => High, Spot => High, others => <>));
+   begin
+      return Goal;
+   end Tile_Reconnaissance_Goal;
+
    ------------
    -- Update --
    ------------
 
    overriding function Update
-     (Manager : not null access Asset_Manager_Record)
+     (Manager : not null access Ground_Asset_Manager_Record)
       return Duration
    is
    begin

@@ -450,7 +450,8 @@ package body Carthage.Managers.Planets is
                & ": " & Manager.Planet.Tile (Tile.Position).Description);
             declare
                Goal : constant Carthage.Goals.Goal_Record'Class :=
-                        Carthage.Managers.Assets.Recon_Goal (Tile);
+                        Carthage.Managers.Assets.Tile_Reconnaissance_Goal
+                          (Tile);
             begin
                if Manager.Ground_Asset_Manager
                  .Have_Immediate_Capacity (Goal)
