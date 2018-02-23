@@ -500,10 +500,34 @@ package body Carthage.Managers.Assets is
          Stack : constant Carthage.Stacks.Stack_Type :=
                    Carthage.Stacks.Stack_Type
                      (Planet.Orbital_Stack (Manager.House));
+
+         procedure Add_Space_Assets
+           (Stack : not null access constant
+              Carthage.Stacks.Stack_Class);
+
+         ----------------------
+         -- Add_Space_Assets --
+         ----------------------
+
+         procedure Add_Space_Assets
+           (Stack : not null access constant
+              Carthage.Stacks.Stack_Class)
+         is
+         begin
+            for Asset_Index in 1 .. Stack.Count loop
+               if Stack.Asset (Asset_Index).Space_Asset then
+                  Manager.Assets.Append
+                    (Managed_Asset_Record'
+                       (Asset  => Stack.Asset (Asset_Index),
+                        Stack  => Managed_Stack_List.No_Element,
+                        Planet => Planet,
+                        Tile   => Stack.Tile));
+               end if;
+            end loop;
+         end Add_Space_Assets;
+
       begin
          if not Stack.Is_Empty then
-            Manager.House.Log ("adding orbital assets at "
-                               & Planet.Name);
             for Index in 1 .. Stack.Count loop
                Manager.Assets.Append
                  (Managed_Asset_Record'
@@ -513,6 +537,7 @@ package body Carthage.Managers.Assets is
                      Tile   => null));
             end loop;
          end if;
+         Planet.Scan_Stacks (Manager.House, Add_Space_Assets'Access);
       end Add_Assets;
 
    begin
