@@ -263,8 +263,19 @@ package body Carthage.Managers.Houses is
            and then not Planet.Seen_By (Manager.House)
            and then not Goal_Planets.Contains (Planet.Identifier)
          then
-            Manager.House.Log ("adding goal to visit " & Planet.Name);
             Goal_Planets.Insert (Planet.Identifier);
+
+            declare
+               Goal : constant Carthage.Goals.Goal_Record'Class :=
+                        Carthage.Managers.Assets.Planet_Reconnaissance_Goal
+                          (Planet);
+            begin
+               if Manager.Space_Assets.Have_Immediate_Capacity (Goal) then
+                  Manager.House.Log ("  adding goal: " & Goal.Show);
+                  Manager.Space_Assets.Add_Goal (Goal);
+               end if;
+            end;
+
          end if;
       end Add_Visit_Goal;
 

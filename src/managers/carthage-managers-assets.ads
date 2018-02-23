@@ -103,6 +103,7 @@ private
          Stack  : Managed_Stack_List.Cursor;
          Planet : Carthage.Planets.Planet_Type;
          Tile   : Carthage.Tiles.Tile_Type;
+         Goal   : Asset_Manager_Goal_Holders.Holder;
       end record;
 
    package Managed_Asset_List is

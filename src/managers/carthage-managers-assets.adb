@@ -50,6 +50,11 @@ package body Carthage.Managers.Assets is
    type Space_Asset_Manager_Type is
      access all Space_Asset_Manager_Record'Class;
 
+   overriding function Have_Immediate_Capacity
+     (Manager : Space_Asset_Manager_Record;
+      Goal    : Carthage.Goals.Goal_Record'Class)
+      return Boolean;
+
    overriding procedure Load_Assets
      (Manager : in out Space_Asset_Manager_Record);
 
@@ -359,6 +364,33 @@ package body Carthage.Managers.Assets is
       end case;
    end Have_Immediate_Capacity;
 
+   -----------------------------
+   -- Have_Immediate_Capacity --
+   -----------------------------
+
+   overriding function Have_Immediate_Capacity
+     (Manager : Space_Asset_Manager_Record;
+      Goal    : Carthage.Goals.Goal_Record'Class)
+      return Boolean
+   is
+      Asset_Goal : Asset_Manager_Goal renames Asset_Manager_Goal (Goal);
+
+   begin
+      case Asset_Goal.Class is
+         when None =>
+            return True;
+         when Recon =>
+            for Managed_Asset of Manager.Assets loop
+               if Managed_Asset.Goal.Is_Empty then
+                  return True;
+               end if;
+            end loop;
+            return False;
+         when Capture =>
+            return False;
+      end case;
+   end Have_Immediate_Capacity;
+
    ----------------
    -- Initialize --
    ----------------
@@ -469,7 +501,8 @@ package body Carthage.Managers.Assets is
                  (Asset  => Stack.Asset (I),
                   Stack  => Manager.Stacks.Last,
                   Planet => Stack.Planet,
-                  Tile   => Stack.Tile));
+                  Tile   => Stack.Tile,
+                  Goal   => <>));
          end loop;
       end Add_Stack;
 
@@ -520,7 +553,8 @@ package body Carthage.Managers.Assets is
                        (Asset  => Stack.Asset (Asset_Index),
                         Stack  => Managed_Stack_List.No_Element,
                         Planet => Planet,
-                        Tile   => Stack.Tile));
+                        Tile   => Stack.Tile,
+                        Goal   => <>));
                end if;
             end loop;
          end Add_Space_Assets;
@@ -533,7 +567,8 @@ package body Carthage.Managers.Assets is
                     (Asset  => Stack.Asset (Index),
                      Stack  => Managed_Stack_List.No_Element,
                      Planet => Planet,
-                     Tile   => null));
+                     Tile   => null,
+                     Goal   => <>));
             end loop;
          end if;
          Planet.Scan_Stacks (Manager.House, Add_Space_Assets'Access);
