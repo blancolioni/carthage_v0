@@ -1,3 +1,5 @@
+with WL.String_Sets;
+
 with Carthage.Galaxy;
 
 with Carthage.Managers.Assets;
@@ -243,6 +245,9 @@ package body Carthage.Managers.Houses is
    overriding procedure Initialize
      (Manager : in out Noble_House_Manager_Record)
    is
+
+      Goal_Planets : WL.String_Sets.Set;
+
       procedure Add_Visit_Goal
         (Planet : Carthage.Planets.Planet_Type);
 
@@ -256,8 +261,10 @@ package body Carthage.Managers.Houses is
       begin
          if not Planet.Explored_By (Manager.House)
            and then not Planet.Seen_By (Manager.House)
+           and then not Goal_Planets.Contains (Planet.Identifier)
          then
             Manager.House.Log ("adding goal to visit " & Planet.Name);
+            Goal_Planets.Insert (Planet.Identifier);
          end if;
       end Add_Visit_Goal;
 
