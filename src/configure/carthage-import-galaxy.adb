@@ -702,7 +702,7 @@ package body Carthage.Import.Galaxy is
                          (Asset.Owner, Planet, Tile));
       begin
          if In_Space then
-            Stack.Update.Add_Asset (Asset);
+            Asset.Move_To (Stack);
          else
             declare
                use type Carthage.Stacks.Asset_Count;
@@ -717,7 +717,7 @@ package body Carthage.Import.Galaxy is
                   end if;
                end if;
             end;
-            Stack.Update.Add_Asset (Asset);
+            Asset.Move_To (Stack);
             if not Tile.Has_Stacks then
                Tile.Update.Add_Stack (Stack);
             end if;

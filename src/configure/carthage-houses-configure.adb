@@ -482,15 +482,17 @@ package body Carthage.Houses.Configure is
                                  Asset_Config.Get ("count", 1);
                   Unit       : constant Carthage.Units.Unit_Type :=
                                  Carthage.Units.Get (Unit_Name);
-                  Update     : constant Carthage.Stacks.Updateable_Reference :=
-                                 Stack.Update;
                begin
                   for I in 1 .. Unit_Count loop
-                     Update.Add_Asset
-                       (Carthage.Assets.Create.New_Asset
-                          (Unit    => Unit,
-                           Owner   => House,
-                           XP      => Carthage.Assets.Expert));
+                     declare
+                        Asset : constant Carthage.Assets.Asset_Type :=
+                                  Carthage.Assets.Create.New_Asset
+                                    (Unit    => Unit,
+                                     Owner   => House,
+                                     XP      => Carthage.Assets.Expert);
+                     begin
+                        Asset.Move_To (Stack);
+                     end;
                   end loop;
                end;
             end loop;
