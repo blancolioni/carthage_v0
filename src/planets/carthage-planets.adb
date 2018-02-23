@@ -500,9 +500,12 @@ package body Carthage.Planets is
 
       procedure Check (Stack : Carthage.Stacks.Stack_Type) is
          use type Carthage.Houses.House_Type;
+         use type Carthage.Tiles.Tile_Type;
       begin
          if Stack.Planet.Identifier = Planet.Identifier
            and then (Owner = null or else Stack.Owner = Owner)
+           and then Stack.Tile /= null
+           and then not Stack.Is_Empty
          then
             Process (Stack);
          end if;
