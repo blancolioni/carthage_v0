@@ -79,6 +79,9 @@ package Carthage.Assets is
 
    type Asset_Container_Interface is limited interface;
 
+   type Asset_Container_Type is
+     access constant Asset_Container_Interface'Class;
+
    function Is_Full
      (Container : Asset_Container_Interface)
       return Boolean
@@ -131,7 +134,7 @@ package Carthage.Assets is
 
    function Container
      (Asset : Asset_Record'Class)
-      return access constant Asset_Container_Interface'Class;
+      return Asset_Container_Type;
 
    procedure Move_To
      (Asset     : not null access constant Asset_Record'Class;
@@ -143,7 +146,7 @@ private
      new Carthage.Objects.Root_Named_Object
      and Carthage.Resources.Stock_Interface with
       record
-         Container   : access constant Asset_Container_Interface'Class;
+         Container   : Asset_Container_Type;
          Owner       : Carthage.Houses.House_Type;
          Unit        : Carthage.Units.Unit_Type;
          Health      : Health_Type := Health_Type'Last;
@@ -207,7 +210,7 @@ private
 
    function Container
      (Asset : Asset_Record'Class)
-      return access constant Asset_Container_Interface'Class
+      return Asset_Container_Type
    is (Asset.Container);
 
    type Updateable_Reference (Item : not null access Asset_Record'Class) is
