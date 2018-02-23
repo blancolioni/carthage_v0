@@ -185,6 +185,26 @@ package body Carthage.UI is
 
       end Load_Icons;
 
+      function Church_Portrait_Name_Fn
+        (Index      : Natural)
+         return String
+      is ("church" & Integer'Image ((-Index) - 1));
+
+      function House_Portrait_Name_Fn
+        (Index      : Natural)
+         return String
+      is ("house" & Integer'Image ((-Index) - 1));
+
+      function League_Portrait_Name_Fn
+        (Index      : Natural)
+         return String
+      is ("league" & Integer'Image ((-Index) - 1));
+
+      function Vau_Portrait_Name_Fn
+        (Index      : Natural)
+         return String
+      is ("vau" & Integer'Image ((-Index) - 1));
+
       function Resource_Name_Fn
         (Index      : Natural)
          return String
@@ -240,6 +260,19 @@ package body Carthage.UI is
       Load_Icons ("efsunit", 32, 32, Unit_Name_Fn'Access);
       Load_Icons ("cargo", 34, 29, Resource_Name_Fn'Access);
 
+      if False then
+         Ada.Text_IO.Put_Line ("loading portraits ...");
+         Load_Icons
+           ("portrait", 250, 200, House_Portrait_Name_Fn'Access);
+         Load_Icons
+           ("ptratchu", 250, 200, Church_Portrait_Name_Fn'Access);
+         Load_Icons
+           ("ptratlea", 250, 200, League_Portrait_Name_Fn'Access);
+         Load_Icons
+           ("ptratvau", 250, 200, Vau_Portrait_Name_Fn'Access);
+      end if;
+
+      Ada.Text_IO.Put_Line ("done");
    end Load_Resources;
 
    ---------------------
