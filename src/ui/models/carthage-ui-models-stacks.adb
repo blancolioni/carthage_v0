@@ -92,7 +92,7 @@ package body Carthage.UI.Models.Stacks is
               (Rec.Left + Rec.Width - 12, Rec.Top + Rec.Height - 8,
                12, 8, Lui.Colours.Black, True);
             Renderer.Draw_String
-              (Rec.Left + Rec.Width - 10, Rec.Top + Rec.Height - 8, 8,
+              (Rec.Left + Rec.Width - 10, Rec.Top + Rec.Height, 8,
                Lui.Colours.White, Size_Text);
          end;
       end loop;
