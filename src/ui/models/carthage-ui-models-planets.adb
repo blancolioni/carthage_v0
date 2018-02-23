@@ -94,6 +94,15 @@ package body Carthage.UI.Models.Planets is
      array (Carthage.Resources.Resource_Index range <>)
      of Resource_Layout_Record;
 
+   type Hex_Layout_Record is
+      record
+         Rec : Layout_Rectangle;
+         Tile : Carthage.Tiles.Tile_Type;
+      end record;
+
+   package Hex_Layout_Lists is
+     new Ada.Containers.Doubly_Linked_Lists (Hex_Layout_Record);
+
    type Root_Planet_Model is
      new Root_Carthage_Model with
       record
@@ -112,10 +121,12 @@ package body Carthage.UI.Models.Planets is
          Mini_Map_Layout       : Layout_Rectangle;
          Selected_Stack_Layout : Layout_Rectangle;
          Resource_Layout       : access Resource_Layout_Array;
+         Hex_Layout            : Hex_Layout_Lists.List;
          Sidebar_Icon_Size     : Positive;
          Show_Hex_Coords       : Boolean;
          Show_Cubic_Coords     : Boolean;
          Show_Move_Cost        : Boolean;
+         Hex_Layout_Changed    : Boolean := True;
       end record;
 
    overriding function Handle_Update
@@ -167,6 +178,11 @@ package body Carthage.UI.Models.Planets is
      (Model : in out Root_Planet_Model;
       DX, DY : Integer)
    is null;
+
+   function Get_Tile
+     (Model : Root_Planet_Model'Class;
+      X, Y  : Integer)
+      return Carthage.Tiles.Tile_Type;
 
    procedure Scan_Screen_Tiles
      (Model   : Root_Planet_Model'Class;
@@ -302,6 +318,36 @@ package body Carthage.UI.Models.Planets is
       X := Screen_X;
       Y := Screen_Y;
    end Get_Screen_Tile_Centre;
+
+   --------------
+   -- Get_Tile --
+   --------------
+
+   function Get_Tile
+     (Model : Root_Planet_Model'Class;
+      X, Y  : Integer)
+      return Carthage.Tiles.Tile_Type
+   is
+      use Carthage.Tiles;
+      Best_Tile : Tile_Type := null;
+      Nearest   : Natural := 0;
+   begin
+      for Hex of Model.Hex_Layout loop
+         if Contains (Hex.Rec, X, Y) then
+            declare
+               CX : constant Integer := Hex.Rec.X + Hex.Rec.Width / 2;
+               CY : constant Integer := Hex.Rec.Y + Hex.Rec.Height / 2;
+               D  : constant Natural := (X - CX) ** 2 + (Y - CY) ** 2;
+            begin
+               if Best_Tile = null or else D < Nearest then
+                  Best_Tile := Hex.Tile;
+                  Nearest := D;
+               end if;
+            end;
+         end if;
+      end loop;
+      return Best_Tile;
+   end Get_Tile;
 
    -----------------
    -- Load_Layout --
@@ -571,6 +617,12 @@ package body Carthage.UI.Models.Planets is
             Color    : Carthage.Colours.Colour_Type)
          is
             use type Carthage.Colours.Colour_Element;
+            Rec : constant Layout_Rectangle :=
+                    Layout_Rectangle'
+                      (X      => Screen_X - Tile_Width / 2,
+                       Y      => Screen_Y - Tile_Width / 2,
+                       Width  => Tile_Width,
+                       Height => Tile_Height);
          begin
             case Element is
                when Background_Hex_Tile =>
@@ -583,24 +635,28 @@ package body Carthage.UI.Models.Planets is
                   end if;
 
                   Renderer.Draw_Image
-                    (Screen_X - Tile_Width / 2,
-                     Screen_Y - Tile_Height / 2,
-                     Tile_Width, Tile_Height,
+                    (Rec.X, Rec.Y, Rec.Width, Rec.Height,
                      Resource);
+
+                  if Model.Hex_Layout_Changed then
+                     Model.Hex_Layout.Append
+                       (Hex_Layout_Record'
+                          (Rec  => Rec,
+                           Tile => Tile));
+                  end if;
 
                when Hex_Tile =>
                   pragma Assert
                     (Renderer.Have_Resource (Resource));
 
                   Renderer.Draw_Image
-                    (Screen_X - Tile_Width / 2,
-                     Screen_Y - Tile_Height / 2,
-                     Tile_Width, Tile_Height,
+                    (Rec.X, Rec.Y, Rec.Width, Rec.Height,
                      Resource);
             end case;
          end Draw;
 
       begin
+
          Carthage.UI.Maps.Get_Tile_Layers
            (Model.Planet, Model.House, Tile.Position, Layers);
 
@@ -784,6 +840,7 @@ package body Carthage.UI.Models.Planets is
 
       case Planet_Model_Layer (Renderer.Current_Render_Layer) is
          when Static_UI_Layer =>
+
             for Index in Model.Resource_Layout'Range loop
                declare
                   Rec : Layout_Rectangle renames
@@ -801,7 +858,13 @@ package body Carthage.UI.Models.Planets is
 
          when Base_Layer =>
 
+            if Model.Hex_Layout_Changed then
+               Model.Hex_Layout.Clear;
+            end if;
+
             Model.Scan_Screen_Tiles (Draw_Base_Layer_Tile'Access);
+
+            Model.Hex_Layout_Changed := False;
 
          when Unit_Layer =>
 
@@ -964,6 +1027,7 @@ package body Carthage.UI.Models.Planets is
    begin
       Root_Carthage_Model (Item).Resize (Width, Height);
       Item.Load_Layout;
+      Item.Hex_Layout_Changed := True;
    end Resize;
 
    -----------------------
@@ -983,8 +1047,8 @@ package body Carthage.UI.Models.Planets is
 
       Tiles_Across : constant Positive :=
                        Model.Map_Pixel_Width / Column_Width + 1;
-      Tiles_Down   : constant Positive :=
-                       Model.Map_Pixel_Height / Tile_Height + 1;
+      Tiles_Down   : constant Natural :=
+                       Model.Map_Pixel_Height / Tile_Height;
 
       Left         : constant Integer :=
                        Integer'Max
@@ -1001,26 +1065,7 @@ package body Carthage.UI.Models.Planets is
                        Integer'Min
                          (Top + Tiles_Down - 1, 2 * Planet_Height);
 
-      procedure Draw (Tile : Carthage.Tiles.Tile_Type);
-
-      ----------
-      -- Draw --
-      ----------
-
-      procedure Draw (Tile : Carthage.Tiles.Tile_Type) is
-         Position : constant Tile_Position := Tile.Position;
-         Screen_X : Integer;
-         Screen_Y : Integer;
-      begin
-         Model.Get_Screen_Tile_Centre (Position, Screen_X, Screen_Y);
-         Process (Tile, Screen_X, Screen_Y);
-      end Draw;
-
    begin
-
-      if False then
-         Model.Planet.Scan_Tiles (Draw'Access);
-      end if;
 
       for Y in Top .. Bottom loop
          if Y in 1 .. Planet_Height then
@@ -1121,6 +1166,7 @@ package body Carthage.UI.Models.Planets is
    is
    begin
       Model.Centre := Centre;
+      Model.Hex_Layout_Changed := True;
    end Set_Centre;
 
    -------------
@@ -1135,18 +1181,24 @@ package body Carthage.UI.Models.Planets is
    begin
       if Contains (Model.Main_Map_Layout, X, Y) then
          declare
+            use type Carthage.Tiles.Tile_Type;
+            Tile : constant Carthage.Tiles.Tile_Type :=
+                     Model.Get_Tile (X, Y);
             Zoomed_Size  : constant Natural :=
                              Zoomed_Tile_Size (Model.Current_Zoom);
             Tile_Height  : constant Natural := Zoomed_Size;
             Column_Width : constant Natural := Zoomed_Size;
             Row_Height   : constant Natural := Tile_Height + 1;
-
+            Local_X      : constant Natural := X - Model.Main_Map_Layout.X;
+            Local_Y      : constant Natural := Y - Model.Main_Map_Layout.Y;
             Map_X        : Integer :=
                              Integer (Model.Centre.X)
-                             + (X - Model.Width / 2) / Column_Width;
+                             + (Local_X - Model.Main_Map_Layout.Width / 2)
+                             / Column_Width - 1;
             Map_Y        : constant Integer :=
                              Integer (Model.Centre.Y)
-                             + (Y - Model.Height / 2) / Row_Height;
+                             + (Local_Y - Model.Main_Map_Layout.Height / 2)
+                             / Row_Height;
          begin
             while Map_X < 1 loop
                Map_X := Map_X + Planet_Width;
@@ -1154,7 +1206,9 @@ package body Carthage.UI.Models.Planets is
             while Map_X > Planet_Width loop
                Map_X := Map_X - Planet_Width;
             end loop;
-            if Map_Y in 1 .. Planet_Height then
+            if Tile /= null then
+               return X'Img & Y'Img & " " & Tile.Description;
+            elsif Map_Y in 1 .. Planet_Height then
                return X'Img & Y'Img & " "
                  & Model.Planet.Tile ((Tile_X (Map_X), Tile_Y (Map_Y)))
                  .Description;
@@ -1245,6 +1299,7 @@ package body Carthage.UI.Models.Planets is
                end if;
             end;
          end if;
+         Model.Hex_Layout_Changed := True;
          Model.Needs_Render := (others => True);
       end if;
    end Zoom;
