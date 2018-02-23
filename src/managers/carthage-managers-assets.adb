@@ -151,9 +151,8 @@ package body Carthage.Managers.Assets is
                                         (Stack.Owner, Stack.Planet,
                                          Stack.Tile);
                      begin
-                        Stack.Update.Remove_Asset (Asset);
-                        New_Stack.Update.Add_Asset (Asset);
                         New_Stack.Update.Set_Manager (Manager);
+                        Asset.Move_To (New_Stack);
                         Manager.Stacks.Append
                           ((New_Stack, others => <>));
                         Stack_Cursor := Manager.Stacks.Last;

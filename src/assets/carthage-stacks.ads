@@ -28,7 +28,29 @@ package Carthage.Stacks is
    subtype Asset_Index is Asset_Count range 1 .. Asset_Count'Last;
 
    type Stack_Record is
-     new Carthage.Objects.Root_Named_Object with private;
+     new Carthage.Objects.Root_Named_Object
+     and Carthage.Assets.Asset_Container_Interface
+   with private;
+
+   overriding function Is_Empty (Stack : Stack_Record) return Boolean;
+   overriding function Is_Full (Stack : Stack_Record) return Boolean;
+
+   overriding function Has_Asset
+     (Stack : Stack_Record;
+      Asset : Carthage.Assets.Asset_Type)
+      return Boolean;
+
+   overriding procedure Add_Asset
+     (To    : in out Stack_Record;
+      Asset : Carthage.Assets.Asset_Type);
+
+   overriding procedure Remove_Asset
+     (From  : in out Stack_Record;
+      Asset : Carthage.Assets.Asset_Type);
+
+   overriding function First_Asset
+     (Stack : Stack_Record)
+      return Carthage.Assets.Asset_Type;
 
    function Description
      (Item : Stack_Record)
@@ -79,7 +101,7 @@ package Carthage.Stacks is
      (Stack : Stack_Record)
       return Carthage.Tiles.Tile_Type;
 
-   function Owner
+   overriding function Owner
      (Stack : Stack_Record)
       return Carthage.Houses.House_Type;
 
@@ -140,7 +162,6 @@ package Carthage.Stacks is
      (Stack : Stack_Record'Class)
       return Natural;
 
-   function Is_Empty (Stack : Stack_Record) return Boolean;
    function Count (Stack : Stack_Record) return Asset_Count;
    function Asset (Stack : Stack_Record;
                    Index : Asset_Index)
@@ -153,25 +174,6 @@ package Carthage.Stacks is
 
    procedure Remove_Dead_Assets
      (Stack : in out Stack_Record);
-
-   function Has_Asset
-     (Stack : Stack_Record;
-      Asset : Carthage.Assets.Asset_Type)
-      return Boolean;
-
-   procedure Add_Asset
-     (To    : in out Stack_Record;
-      Asset : Carthage.Assets.Asset_Type)
-     with Pre => To.Count < Maximum_Stack_Size
-     and then Carthage.Houses."=" (To.Owner, Asset.Owner)
-     and then not To.Has_Asset (Asset),
-     Post => To.Has_Asset (Asset);
-
-   procedure Remove_Asset
-     (From  : in out Stack_Record;
-      Asset : Carthage.Assets.Asset_Type)
-     with Pre => From.Has_Asset (Asset),
-     Post => not From.Has_Asset (Asset);
 
    procedure Set_Manager
      (Stack : in out Stack_Record;
@@ -229,7 +231,8 @@ private
      new Ada.Containers.Indefinite_Holders (Array_Of_Positions);
 
    type Stack_Record is
-     new Carthage.Objects.Root_Named_Object with
+     new Carthage.Objects.Root_Named_Object
+     and Carthage.Assets.Asset_Container_Interface with
       record
          Owner              : Carthage.Houses.House_Type;
          Planet             : Carthage.Planets.Planet_Type;
@@ -248,6 +251,11 @@ private
    overriding function Object_Database
      (Item : Stack_Record)
       return Memor.Memor_Database;
+
+   overriding function Variable_Reference
+     (Stack : not null access constant Stack_Record)
+      return access Carthage.Assets.Asset_Container_Interface'Class
+   is (Stack.Update.Item);
 
    function Description
      (Item : Stack_Record)
@@ -289,7 +297,7 @@ private
       return Boolean
    is (not Stack.Has_Tile);
 
-   function Owner
+   overriding function Owner
      (Stack : Stack_Record)
       return Carthage.Houses.House_Type
    is (Stack.Owner);
@@ -315,13 +323,21 @@ private
       return Boolean
    is (Stack.Movement_Cost (Tile) > 0);
 
-   function Is_Empty (Stack : Stack_Record) return Boolean
+   overriding function Is_Empty (Stack : Stack_Record) return Boolean
    is (Stack.Count = 0);
+
+   overriding function Is_Full (Stack : Stack_Record) return Boolean
+   is (Stack.Count = Maximum_Stack_Size);
 
    function Count (Stack : Stack_Record) return Asset_Count
    is (Stack.Count);
 
-   function Has_Asset (Stack : Stack_Record;
+   overriding function First_Asset
+     (Stack : Stack_Record)
+      return Carthage.Assets.Asset_Type
+   is (Stack.Assets (1));
+
+   overriding function Has_Asset (Stack : Stack_Record;
                        Asset : Carthage.Assets.Asset_Type)
                        return Boolean
    is (for some X of Stack.Assets (1 .. Stack.Count) =>

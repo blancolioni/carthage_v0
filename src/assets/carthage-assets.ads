@@ -77,12 +77,69 @@ package Carthage.Assets is
      (Item : not null access constant Asset_Record'Class)
       return Updateable_Reference;
 
+   type Asset_Container_Interface is limited interface;
+
+   function Is_Full
+     (Container : Asset_Container_Interface)
+      return Boolean
+      is abstract;
+
+   function Is_Empty
+     (Container : Asset_Container_Interface)
+      return Boolean
+      is abstract;
+
+   function First_Asset
+     (Container : Asset_Container_Interface)
+      return Asset_Type
+   is abstract
+     with Pre'Class => not Container.Is_Empty;
+
+   function Owner
+     (Container : Asset_Container_Interface)
+      return Carthage.Houses.House_Type
+   is abstract
+     with Post'Class => Carthage.Houses."/=" (Owner'Result, null);
+
+   function Has_Asset
+     (Container : Asset_Container_Interface;
+      Asset     : Carthage.Assets.Asset_Type)
+      return Boolean
+      is abstract
+     with Post'Class => not Has_Asset'Result or else not Container.Is_Empty;
+
+   procedure Add_Asset
+     (Container : in out Asset_Container_Interface;
+      Asset     : Carthage.Assets.Asset_Type)
+     is abstract
+     with Pre'Class => not Container.Is_Full
+     and then Carthage.Houses."=" (Container.Owner, Asset.Owner)
+     and then not Container.Has_Asset (Asset),
+     Post'class => Container.Has_Asset (Asset);
+
+   procedure Remove_Asset
+     (Container : in out Asset_Container_Interface;
+      Asset     : Carthage.Assets.Asset_Type)
+     is abstract
+     with Pre'class => Container.Has_Asset (Asset),
+     Post'Class => not Container.Has_Asset (Asset);
+
+   function Variable_Reference
+     (Container : not null access constant Asset_Container_Interface)
+      return access Asset_Container_Interface'Class
+      is abstract;
+
+   procedure Move_To
+     (Asset     : not null access constant Asset_Record'Class;
+      Container : not null access constant Asset_Container_Interface'Class);
+
 private
 
    type Asset_Record is
      new Carthage.Objects.Root_Named_Object
      and Carthage.Resources.Stock_Interface with
       record
+         Container   : access constant Asset_Container_Interface'Class;
          Owner       : Carthage.Houses.House_Type;
          Unit        : Carthage.Units.Unit_Type;
          Health      : Health_Type := Health_Type'Last;

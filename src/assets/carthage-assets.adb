@@ -16,6 +16,25 @@ package body Carthage.Assets is
       end if;
    end Damage;
 
+   -------------
+   -- Move_To --
+   -------------
+
+   procedure Move_To
+     (Asset     : not null access constant Asset_Record'Class;
+      Container : not null access constant Asset_Container_Interface'Class)
+   is
+   begin
+      if Asset.Container /= null then
+         Asset.Container.Variable_Reference.Remove_Asset (Asset_Type (Asset));
+      end if;
+
+      Asset.Update.Container := Container;
+
+      Asset.Container.Variable_Reference.Add_Asset (Asset_Type (Asset));
+
+   end Move_To;
+
    ------------------
    -- Set_Quantity --
    ------------------

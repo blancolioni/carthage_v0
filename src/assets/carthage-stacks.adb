@@ -9,7 +9,7 @@ package body Carthage.Stacks is
    -- Add_Asset --
    ---------------
 
-   procedure Add_Asset
+   overriding procedure Add_Asset
      (To    : in out Stack_Record;
       Asset : Carthage.Assets.Asset_Type)
    is
@@ -168,7 +168,7 @@ package body Carthage.Stacks is
    -- Remove_Asset --
    ------------------
 
-   procedure Remove_Asset
+   overriding procedure Remove_Asset
      (From  : in out Stack_Record;
       Asset : Carthage.Assets.Asset_Type)
    is
