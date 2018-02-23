@@ -248,7 +248,7 @@ package body Carthage.Updates is
                   Tile.Update.Set_Currently_Visible_To (Stack.Owner);
                end;
             end loop;
-         elsif Stack.In_Space
+         elsif Stack.Is_Orbiting
            and then Stack.Count > 0
              and then not Stack.Planet.Seen_By (Stack.Owner)
          then

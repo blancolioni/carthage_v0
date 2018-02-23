@@ -92,6 +92,11 @@ package Carthage.Assets is
       return Boolean
       is abstract;
 
+   function Is_Orbiting
+     (Container : Asset_Container_Interface)
+      return Boolean
+      is abstract;
+
    function First_Asset
      (Container : Asset_Container_Interface)
       return Asset_Type

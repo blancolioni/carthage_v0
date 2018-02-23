@@ -93,7 +93,7 @@ package Carthage.Stacks is
      (Stack : Stack_Record)
       return Boolean;
 
-   function In_Space
+   overriding function Is_Orbiting
      (Stack : Stack_Record)
       return Boolean;
 
@@ -261,7 +261,7 @@ private
      (Item : Stack_Record)
       return String
    is (Item.Owner.Name & " stack size" & Asset_Count'Image (Item.Count)
-       & (if Item.In_Space
+       & (if Item.Is_Orbiting
           then " orbiting " & Item.Planet.Name
           else " at " & Carthage.Tiles.Position_Image (Item.Tile.Position)
           & " on " & Item.Planet.Name));
@@ -292,7 +292,7 @@ private
       return Boolean
    is (Carthage.Tiles."/=" (Stack.Tile, null));
 
-   function In_Space
+   overriding function Is_Orbiting
      (Stack : Stack_Record)
       return Boolean
    is (not Stack.Has_Tile);
