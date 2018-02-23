@@ -154,6 +154,9 @@ private
          Experience  : Asset_Experience := Asset_Experience'First;
          Movement    : Natural := 0;
          Stock       : Carthage.Resources.Stock_Record;
+         Jumping     : Boolean := False;
+         Launching   : Boolean := False;
+         Landing     : Boolean := False;
       end record;
 
    overriding function Object_Database

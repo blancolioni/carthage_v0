@@ -1,3 +1,4 @@
+with Carthage.Assets.Moves;
 with Carthage.Galaxy;
 with Carthage.Stacks.Create;
 with Carthage.Stacks.Updates;
@@ -338,9 +339,15 @@ package body Carthage.Managers.Assets is
                declare
                   Asset        : constant Carthage.Assets.Asset_Type :=
                                    Manager.Assets (Asset_Cursor).Asset;
+                  Planet       : constant Carthage.Planets.Planet_Type :=
+                                   Carthage.Stacks.Stack_Type
+                                     (Asset.Container)
+                                     .Planet;
                begin
                   Asset.Log ("assigned to recon of "
                              & Asset_Goal.Planet.Name);
+                  Carthage.Assets.Moves.Start_Jump
+                    (Asset, Planet, Asset_Goal.Planet);
                   return True;
                end;
             end;
