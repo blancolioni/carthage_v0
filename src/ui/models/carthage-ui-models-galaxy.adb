@@ -65,7 +65,7 @@ package body Carthage.UI.Models.Galaxy is
          Zooming_In         : Boolean := False;
          Zooming_Out        : Boolean := False;
          Zoom_Start         : Ada.Calendar.Time;
-         Zoom_Progress      : Float := 1.0;
+         Zoom_Level         : Float := 0.0;
          Selected_Planet    : Carthage.Planets.Planet_Type;
       end record;
 
@@ -146,6 +146,21 @@ package body Carthage.UI.Models.Galaxy is
      (Planet : Carthage.Planets.Planet_Type)
       return String;
 
+   function Interpolate
+     (Model           : Root_Galaxy_Model'Class;
+      Zoomed_Out : Float;
+      Zoomed_In  : Float)
+      return Float
+   is (Zoomed_Out * Model.Zoom_Level + Zoomed_In * (1.0 - Model.Zoom_Level));
+
+   function Zoomed_Size
+     (Model           : Root_Galaxy_Model'Class;
+      Zoomed_Out_Size : Integer;
+      Zoomed_In_Size  : Integer)
+      return Integer
+   is (Integer (Model.Interpolate (Float (Zoomed_Out_Size),
+                                   Float (Zoomed_In_Size))));
+
    procedure Start_Zoom_In
      (Model  : in out Root_Galaxy_Model'Class;
       Target : Carthage.Planets.Planet_Type);
@@ -192,7 +207,7 @@ package body Carthage.UI.Models.Galaxy is
    begin
       Model.Zooming_In := False;
       Model.Zooming_Out := False;
-      Model.Zoom_Progress := 1.0;
+      Model.Zoom_Level := 1.0;
    end Clear_Zoom;
 
    --------------------
@@ -384,20 +399,9 @@ package body Carthage.UI.Models.Galaxy is
                          (Float (Y) - Float (Model.Selected_Planet.Y))
                          * 3.0 + 0.5;
          begin
-            if Model.Zooming_In then
-               Local_X :=
-                 Model.Zoom_Progress * Zoomed_X
-                   + (1.0 - Model.Zoom_Progress) * Local_X;
-               Local_Y :=
-                 Model.Zoom_Progress * Zoomed_Y
-                   + (1.0 - Model.Zoom_Progress) * Local_Y;
-            elsif Model.Zooming_Out then
-               Local_X :=
-                 Model.Zoom_Progress * Local_X
-                   + (1.0 - Model.Zoom_Progress) * Zoomed_X;
-               Local_Y :=
-                 Model.Zoom_Progress * Local_Y
-                   + (1.0 - Model.Zoom_Progress) * Zoomed_Y;
+            if Model.Zooming_In or else Model.Zooming_Out then
+               Local_X := Model.Interpolate (Local_X, Zoomed_X);
+               Local_Y := Model.Interpolate (Local_Y, Zoomed_Y);
             else
                Local_X := Zoomed_X;
                Local_Y := Zoomed_Y;
@@ -555,7 +559,8 @@ package body Carthage.UI.Models.Galaxy is
             Index := Natural'Min (Index + 1, Orbital_Stack_Index'Last);
             if not Stack.Is_Empty then
                declare
-                  Icon_Size  : constant := 48;
+                  Icon_Size  : constant Natural :=
+                                 Model.Zoomed_Size (16, 48);
                   Left       : constant Integer :=
                                  (case Orbital_Stack_Index (Index) is
                                      when 1 | 4 | 6 =>
@@ -598,9 +603,13 @@ package body Carthage.UI.Models.Galaxy is
          declare
             use Ada.Calendar;
          begin
-            Model.Zoom_Progress :=
+            Model.Zoom_Level :=
               Float (Clock - Model.Zoom_Start) / Float (Zoom_Duration);
-            if Model.Zoom_Progress >= 1.0 then
+            if Model.Zooming_In then
+               Model.Zoom_Level := 1.0 - Model.Zoom_Level;
+            end if;
+
+            if Model.Zoom_Level not in 0.0 .. 1.0 then
                if Model.Zooming_In then
                   Model.Zoomed_To_System := True;
                   System_Radius := Zoomed_In_Radius;
@@ -619,17 +628,9 @@ package body Carthage.UI.Models.Galaxy is
                end if;
                Model.Clear_Zoom;
             else
-               if Model.Zooming_In then
-                  System_Radius :=
-                    Natural (Float (Zoomed_In_Radius) * Model.Zoom_Progress
-                             + Float (Zoomed_Out_Radius)
-                             * (1.0 - Model.Zoom_Progress));
-               else
-                  System_Radius :=
-                    Natural (Float (Zoomed_Out_Radius) * Model.Zoom_Progress
-                             + Float (Zoomed_In_Radius)
-                             * (1.0 - Model.Zoom_Progress));
-               end if;
+               System_Radius :=
+                 Model.Zoomed_Size
+                   (Zoomed_Out_Radius, Zoomed_In_Radius);
             end if;
          end;
       end if;
@@ -821,7 +822,7 @@ package body Carthage.UI.Models.Galaxy is
       Model.Zooming_In := True;
       Model.Zooming_Out := False;
       Model.Zoom_Start := Ada.Calendar.Clock;
-      Model.Zoom_Progress := 1.0 - Model.Zoom_Progress;
+      Model.Zoom_Level := 0.0;
       Model.Selected_Planet := Target;
    end Start_Zoom_In;
 
@@ -836,7 +837,7 @@ package body Carthage.UI.Models.Galaxy is
       Model.Zooming_In := False;
       Model.Zooming_Out := True;
       Model.Zoomed_To_System := False;
-      Model.Zoom_Progress := 1.0 - Model.Zoom_Progress;
+      Model.Zoom_Level := 1.0;
       Model.Zoom_Start := Ada.Calendar.Clock;
       Model.Rendered_Stacks.Clear;
    end Start_Zoom_Out;
