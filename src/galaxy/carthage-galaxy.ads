@@ -17,6 +17,10 @@ package Carthage.Galaxy is
      (Planet_1, Planet_2 : Carthage.Planets.Planet_Type)
       return Natural;
 
+   function Jump_Route
+     (Planet_1, Planet_2 : Carthage.Planets.Planet_Type)
+      return Carthage.Planets.Array_Of_Planets;
+
 private
 
    function Index_Of (Planet : Carthage.Planets.Planet_Type) return Positive
