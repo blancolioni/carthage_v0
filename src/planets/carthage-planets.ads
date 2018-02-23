@@ -277,6 +277,8 @@ package Carthage.Planets is
      (Item : not null access constant Planet_Record'Class)
       return Updateable_Reference;
 
+   type Array_Of_Planets is array (Positive range <>) of Planet_Type;
+
 private
 
    Orbital_Stack_Count : constant := 8;
