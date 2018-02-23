@@ -147,19 +147,22 @@ package body Carthage.UI.Models.Galaxy is
       return String;
 
    function Interpolate
-     (Model           : Root_Galaxy_Model'Class;
+     (Model      : Root_Galaxy_Model'Class;
       Zoomed_Out : Float;
       Zoomed_In  : Float)
       return Float
-   is (Zoomed_Out * Model.Zoom_Level + Zoomed_In * (1.0 - Model.Zoom_Level));
+   is (Zoomed_In * Model.Zoom_Level + Zoomed_Out * (1.0 - Model.Zoom_Level));
 
    function Zoomed_Size
      (Model           : Root_Galaxy_Model'Class;
       Zoomed_Out_Size : Integer;
       Zoomed_In_Size  : Integer)
       return Integer
-   is (Integer (Model.Interpolate (Float (Zoomed_Out_Size),
-                                   Float (Zoomed_In_Size))));
+   is (if Model.Zooming_In or else Model.Zooming_Out
+       then Integer (Model.Interpolate (Float (Zoomed_In_Size),
+                                        Float (Zoomed_Out_Size)))
+       elsif Model.Zoomed_To_System then Zoomed_In_Size
+       else Zoomed_Out_Size);
 
    procedure Start_Zoom_In
      (Model  : in out Root_Galaxy_Model'Class;
@@ -205,9 +208,9 @@ package body Carthage.UI.Models.Galaxy is
      (Model  : in out Root_Galaxy_Model'Class)
    is
    begin
+      Model.Zoom_Level := (if Model.Zooming_In then 1.0 else 0.0);
       Model.Zooming_In := False;
       Model.Zooming_Out := False;
-      Model.Zoom_Level := 1.0;
    end Clear_Zoom;
 
    --------------------
@@ -400,8 +403,8 @@ package body Carthage.UI.Models.Galaxy is
                          * 3.0 + 0.5;
          begin
             if Model.Zooming_In or else Model.Zooming_Out then
-               Local_X := Model.Interpolate (Local_X, Zoomed_X);
-               Local_Y := Model.Interpolate (Local_Y, Zoomed_Y);
+               Local_X := Model.Interpolate (Zoomed_X, Local_X);
+               Local_Y := Model.Interpolate (Zoomed_Y, Local_Y);
             else
                Local_X := Zoomed_X;
                Local_Y := Zoomed_Y;
@@ -530,6 +533,11 @@ package body Carthage.UI.Models.Galaxy is
                          then Zoomed_In_Radius
                          else Zoomed_Out_Radius);
 
+      Reload_Stacks : constant Boolean := True;
+--                          Model.Rendered_Stacks.Is_Empty
+--                              or else Model.Zooming_In
+--                                  or else Model.Zooming_Out;
+
       procedure Load_Orbital_Stacks
         (Planet : Carthage.Planets.Planet_Type;
          X, Y   : Integer);
@@ -545,6 +553,9 @@ package body Carthage.UI.Models.Galaxy is
          Index : Natural := 0;
          subtype Orbital_Stack_Index is Integer range 1 .. 8;
 
+         Icon_Size  : constant Natural :=
+                        Model.Zoomed_Size (32, 48);
+
          procedure Load_Stack (House : Carthage.Houses.House_Type);
 
          ----------------
@@ -559,24 +570,22 @@ package body Carthage.UI.Models.Galaxy is
             Index := Natural'Min (Index + 1, Orbital_Stack_Index'Last);
             if not Stack.Is_Empty then
                declare
-                  Icon_Size  : constant Natural :=
-                                 Model.Zoomed_Size (16, 48);
                   Left       : constant Integer :=
                                  (case Orbital_Stack_Index (Index) is
                                      when 1 | 4 | 6 =>
-                                        X - System_Radius * 3 / 2 - Icon_Size,
+                                        X - System_Radius * 4 / 3 - Icon_Size,
                                      when 3 | 5 | 8 =>
-                                        X + System_Radius * 3 / 2,
+                                        X + System_Radius * 4 / 3,
                                      when 2 | 7     =>
                                         X - Icon_Size / 2);
                   Top        : constant Integer :=
                                  (case Orbital_Stack_Index (Index) is
                                      when 1 | 2 | 3 =>
-                                        Y - System_Radius * 3 / 2 - Icon_Size,
+                                        Y - System_Radius * 4 / 3 - Icon_Size,
                                      when 4 | 5    =>
                                         Y - Icon_Size / 2,
                                      when 6 | 7 | 8 =>
-                                        Y + System_Radius * 3 / 2);
+                                        Y + System_Radius * 4 / 3);
                begin
                   Model.Rendered_Stacks.Add_Stack
                     (Stack  => Stack,
@@ -613,15 +622,6 @@ package body Carthage.UI.Models.Galaxy is
                if Model.Zooming_In then
                   Model.Zoomed_To_System := True;
                   System_Radius := Zoomed_In_Radius;
-                  declare
-                     Screen_X, Screen_Y : Integer;
-                  begin
-                     Model.Get_Screen_Position
-                       (Model.Selected_Planet.X, Model.Selected_Planet.Y,
-                        Screen_X, Screen_Y);
-                     Load_Orbital_Stacks
-                       (Model.Selected_Planet, Screen_X, Screen_Y);
-                  end;
                else
                   Model.Zoomed_To_System := False;
                   System_Radius := Zoomed_Out_Radius;
@@ -637,6 +637,11 @@ package body Carthage.UI.Models.Galaxy is
 
       if Renderer.Current_Render_Layer = 1 then
          for Star_Pass in Boolean loop
+
+            if Star_Pass and then Reload_Stacks then
+               Model.Rendered_Stacks.Clear;
+            end if;
+
             for System of Model.Rendered_Planets loop
                declare
                   use type Carthage.Planets.Planet_Type;
@@ -655,6 +660,12 @@ package body Carthage.UI.Models.Galaxy is
                     or else (Screen_X in 1 .. Model.Width
                              and then Screen_Y in 1 .. Model.Height)
                   then
+
+                     if Reload_Stacks then
+                        Load_Orbital_Stacks
+                          (System.Planet, Screen_X, Screen_Y);
+                     end if;
+
                      if Star_Pass then
                         Renderer.Draw_Image
                           (X        => Screen_X - System_Radius,
@@ -698,13 +709,6 @@ package body Carthage.UI.Models.Galaxy is
                            end if;
                         end;
 
---                          if Model.Zoomed_To_System
---                            and then System.Planet = Model.Selected_Planet
---                          then
---                             Draw_Orbital_Stacks
---                               (System, Screen_X, Screen_Y);
---                          end if;
-
                      else
 
                         for Connection of System.Connections loop
@@ -734,11 +738,14 @@ package body Carthage.UI.Models.Galaxy is
                   end if;
                end;
             end loop;
-         end loop;
 
-         if Model.Zoomed_To_System then
-            Model.Rendered_Stacks.Render (Model, Renderer);
-         end if;
+            if Star_Pass then
+               if True or else Model.Zoomed_To_System then
+                  Model.Rendered_Stacks.Render (Model, Renderer);
+               end if;
+            end if;
+
+         end loop;
 
       end if;
 
