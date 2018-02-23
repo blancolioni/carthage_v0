@@ -49,11 +49,6 @@ package body Carthage.Updates is
       procedure Set_Planet_Owner
         (Palace : Carthage.Cities.City_Type);
 
-      procedure Reveal_Planet
-        (Planet : Carthage.Planets.Planet_Type;
-         House    : Carthage.Houses.House_Type;
-         Explored : Boolean);
-
       ---------------------
       -- Add_Planet_Maps --
       ---------------------
@@ -73,7 +68,7 @@ package body Carthage.Updates is
                         else raise Constraint_Error with
                           "no such planet: " & Id);
          begin
-            Reveal_Planet (Planet, House, True);
+            Planet.Update.Set_Explored_By (House);
          end Add_Planet;
 
       begin
@@ -165,40 +160,6 @@ package body Carthage.Updates is
          Planet.Update.Clear_Visibility;
       end Reset_Planet_State;
 
-      -------------------
-      -- Reveal_Planet --
-      -------------------
-
-      procedure Reveal_Planet
-        (Planet   : Carthage.Planets.Planet_Type;
-         House    : Carthage.Houses.House_Type;
-         Explored : Boolean)
-      is
-         Tiles : Carthage.Planets.Surface_Tiles;
-      begin
-         if Explored then
-            House.Log (Planet.Name & ": fully explored");
-            Planet.Update.Set_Explored_By (House);
-         else
-            House.Log (Planet.Name & ": map revealed");
-            Planet.Update.Set_Seen_By (House);
-         end if;
-
-         Planet.Get_Tiles (Tiles);
-         for I in 1 .. Carthage.Planets.Tile_Count (Tiles) loop
-            declare
-               Tile : constant Carthage.Tiles.Tile_Type :=
-                        Carthage.Planets.Get_Tile (Tiles, I);
-            begin
-               if Explored then
-                  Tile.Update.Set_Explored_By (House);
-               else
-                  Tile.Update.Set_Seen_By (House);
-               end if;
-            end;
-         end loop;
-      end Reveal_Planet;
-
       ----------------------
       -- Set_Planet_Owner --
       ----------------------
@@ -252,7 +213,7 @@ package body Carthage.Updates is
            and then Stack.Count > 0
              and then not Stack.Planet.Seen_By (Stack.Owner)
          then
-            Reveal_Planet (Stack.Planet, Stack.Owner, False);
+            Stack.Planet.Update.Set_Seen_By (Stack.Owner);
          end if;
       end Stack_Look;
 

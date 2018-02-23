@@ -359,6 +359,35 @@ package body Carthage.Planets is
       end loop;
    end Remove_Tiles;
 
+   -------------------
+   -- Reveal_Planet --
+   -------------------
+
+   procedure Reveal_Planet
+     (Planet   : Carthage.Planets.Planet_Record'Class;
+      House    : Carthage.Houses.House_Type;
+      Explored : Boolean)
+   is
+
+      procedure Reveal_Tile (Tile : Carthage.Tiles.Tile_Type);
+
+      -----------------
+      -- Reveal_Tile --
+      -----------------
+
+      procedure Reveal_Tile (Tile : Carthage.Tiles.Tile_Type) is
+      begin
+         if Explored then
+            Tile.Update.Set_Explored_By (House);
+         else
+            Tile.Update.Set_Seen_By (House);
+         end if;
+      end Reveal_Tile;
+
+   begin
+      Planet.Scan_Tiles (Reveal_Tile'Access);
+   end Reveal_Planet;
+
    ---------------
    -- Road_Cost --
    ---------------
@@ -537,7 +566,10 @@ package body Carthage.Planets is
       House  : Carthage.Houses.House_Type)
    is
    begin
-      Carthage.Houses.Insert (Planet.Explored, House);
+      if not Planet.Explored_By (House) then
+         Carthage.Houses.Insert (Planet.Explored, House);
+         Planet.Reveal_Planet (House, True);
+      end if;
    end Set_Explored_By;
 
    ---------------
@@ -561,7 +593,10 @@ package body Carthage.Planets is
       House  : Carthage.Houses.House_Type)
    is
    begin
-      Carthage.Houses.Insert (Planet.Seen, House);
+      if not Planet.Seen_By (House) then
+         Carthage.Houses.Insert (Planet.Seen, House);
+         Planet.Reveal_Planet (House, False);
+      end if;
    end Set_Seen_By;
 
    -----------

@@ -320,6 +320,11 @@ private
      (Item : Planet_Record)
       return Memor.Memor_Database;
 
+   procedure Reveal_Planet
+     (Planet   : Carthage.Planets.Planet_Record'Class;
+      House    : Carthage.Houses.House_Type;
+      Explored : Boolean);
+
    overriding function Local_Text_Class
      (Item : Planet_Record)
       return String
