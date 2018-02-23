@@ -338,14 +338,32 @@ package body Carthage.Managers.Assets is
 
                declare
                   Asset        : constant Carthage.Assets.Asset_Type :=
-                                   Manager.Assets (Asset_Cursor).Asset;
+                                   Managed_Asset_List.Element
+                                     (Asset_Cursor).Asset;
                   Planet       : constant Carthage.Planets.Planet_Type :=
                                    Carthage.Stacks.Stack_Type
                                      (Asset.Container)
                                      .Planet;
+                  procedure Set_Goal
+                    (Item : in out Managed_Asset_Record);
+
+                  --------------
+                  -- Set_Goal --
+                  --------------
+
+                  procedure Set_Goal
+                    (Item : in out Managed_Asset_Record)
+                  is
+                  begin
+                     Item.Goal.Replace_Element (Asset_Goal);
+                  end Set_Goal;
+
                begin
                   Asset.Log ("assigned to recon of "
                              & Asset_Goal.Planet.Name);
+                  Manager.Assets.Update_Element
+                    (Asset_Cursor,
+                     Set_Goal'Access);
                   Carthage.Assets.Moves.Start_Jump
                     (Asset, Planet, Asset_Goal.Planet);
                   return True;
