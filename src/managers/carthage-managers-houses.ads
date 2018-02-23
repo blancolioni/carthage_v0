@@ -80,7 +80,6 @@ private
      and Carthage.Houses.House_Manager_Interface
      and Carthage.Stacks.Asset_Meta_Manager_Interface with
       record
-         House        : Carthage.Houses.House_Type;
          Planets      : Managed_Planet_Maps.Map;
          Space_Assets : Manager_Type;
       end record;

@@ -4,11 +4,18 @@ private with Carthage.Updates;
 with Carthage.Goals;
 with Carthage.Resources;
 
+with Carthage.Houses;
+
 package Carthage.Managers is
 
    type Root_Manager_Type is abstract tagged private;
 
    type Manager_Type is access all Root_Manager_Type'Class;
+
+   function Description
+     (Manager : Root_Manager_Type)
+      return String
+   is ("manager");
 
    procedure Initialize
      (Manager : in out Root_Manager_Type)
@@ -65,6 +72,7 @@ private
 
    type Root_Manager_Type is abstract tagged
       record
+         House     : Carthage.Houses.House_Type;
          Goals     : Goal_Queues.Heap;
          Resources : Carthage.Resources.Stock_Record;
       end record;

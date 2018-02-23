@@ -120,7 +120,6 @@ private
       record
          Meta_Manager : access
            Carthage.Stacks.Asset_Meta_Manager_Interface'Class;
-         House        : Carthage.Houses.House_Type;
          Assets       : Managed_Asset_List.List;
          Spotters     : Asset_Classification_List.List;
          Movers       : Asset_Classification_List.List;
@@ -145,6 +144,10 @@ private
 --
    overriding procedure Initialize
      (Manager : in out Root_Asset_Manager_Record);
+
+   overriding function Update
+     (Manager : not null access Root_Asset_Manager_Record)
+      return Duration;
 
    overriding procedure Get_Resource_Requirements
      (Manager : in out Root_Asset_Manager_Record;

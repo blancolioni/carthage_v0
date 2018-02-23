@@ -59,7 +59,6 @@ package body Carthage.Managers.Cities is
      new Root_Manager_Type
      and Carthage.Cities.City_Manager_Interface with
       record
-         House         : Carthage.Houses.House_Type;
          Planet        : Carthage.Planets.Planet_Type;
          Group         : City_Trade_Group;
          City          : Carthage.Cities.City_Type;

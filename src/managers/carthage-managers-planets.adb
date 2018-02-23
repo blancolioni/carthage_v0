@@ -86,7 +86,6 @@ package body Carthage.Managers.Planets is
       record
          Owned                : Boolean;
          Active               : Boolean;
-         House                : Carthage.Houses.House_Type;
          Planet               : Carthage.Planets.Planet_Type;
          City_Managers        : City_Manager_Maps.Map;
          Ground_Asset_Manager : Manager_Type;
@@ -491,7 +490,6 @@ package body Carthage.Managers.Planets is
                if Manager.Ground_Asset_Manager
                  .Have_Immediate_Capacity (Goal)
                then
-                  Manager.House.Log ("  adding goal: " & Goal.Show);
                   Manager.Ground_Asset_Manager.Add_Goal (Goal);
                else
                   exit;

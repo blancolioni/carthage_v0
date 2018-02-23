@@ -15,6 +15,12 @@ package body Carthage.Managers.Assets is
    type Ground_Asset_Manager_Type is
      access all Ground_Asset_Manager_Record'Class;
 
+   overriding function Description
+     (Manager : Ground_Asset_Manager_Record)
+      return String
+   is (Manager.House.Name & " " & Manager.Planet.Name
+       & " ground asset manager");
+
    overriding procedure Load_Assets
      (Manager : in out Ground_Asset_Manager_Record);
 
@@ -38,10 +44,6 @@ package body Carthage.Managers.Assets is
       Goal    : Carthage.Goals.Goal_Record'Class)
       return Boolean;
 
-   overriding function Update
-     (Manager : not null access Ground_Asset_Manager_Record)
-      return Duration;
-
    type Space_Asset_Manager_Record is
      new Root_Asset_Manager_Record with
       record
@@ -50,6 +52,12 @@ package body Carthage.Managers.Assets is
 
    type Space_Asset_Manager_Type is
      access all Space_Asset_Manager_Record'Class;
+
+   overriding function Description
+     (Manager : Space_Asset_Manager_Record)
+      return String
+   is (Manager.House.Name
+       & " space asset manager");
 
    overriding function Have_Immediate_Capacity
      (Manager : Space_Asset_Manager_Record;
@@ -63,12 +71,6 @@ package body Carthage.Managers.Assets is
 
    overriding procedure Load_Assets
      (Manager : in out Space_Asset_Manager_Record);
-
-   overriding function Update
-     (Manager : not null access Space_Asset_Manager_Record)
-      return Duration
-   is (Space_Asset_Manager_Record'Class (Manager.all)
-       .Average_Update_Frequency);
 
    ----------------
    -- Check_Goal --
@@ -824,12 +826,13 @@ package body Carthage.Managers.Assets is
    ------------
 
    overriding function Update
-     (Manager : not null access Ground_Asset_Manager_Record)
+     (Manager : not null access Root_Asset_Manager_Record)
       return Duration
    is
    begin
-      Manager.Check_Goals;
-      return Manager.Average_Update_Frequency;
+      Root_Asset_Manager_Record'Class (Manager.all).Check_Goals;
+      return Root_Asset_Manager_Record'Class (Manager.all)
+        .Average_Update_Frequency;
    end Update;
 
 end Carthage.Managers.Assets;
