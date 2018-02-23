@@ -291,6 +291,19 @@ package body Carthage.Updates is
       Update_Queue.Insert (Next_Event, Update_Holders.To_Holder (Item));
    end Queue;
 
+   -----------
+   -- Queue --
+   -----------
+
+   procedure Queue
+     (Item        : Update_Interface'Class;
+      Event_Delay : Duration)
+   is
+      use Carthage.Calendar;
+   begin
+      Queue (Item, Clock + Event_Delay);
+   end Queue;
+
    ---------------------------
    -- Set_Time_Acceleration --
    ---------------------------

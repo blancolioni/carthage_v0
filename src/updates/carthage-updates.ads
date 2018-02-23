@@ -19,4 +19,8 @@ package Carthage.Updates is
      (Item       : Update_Interface'Class;
       Next_Event : Carthage.Calendar.Time);
 
+   procedure Queue
+     (Item        : Update_Interface'Class;
+      Event_Delay : Duration);
+
 end Carthage.Updates;
