@@ -1,3 +1,5 @@
+with Carthage.Galaxy;
+
 with Carthage.Managers.Assets;
 with Carthage.Managers.Planets;
 
@@ -241,14 +243,38 @@ package body Carthage.Managers.Houses is
    overriding procedure Initialize
      (Manager : in out Noble_House_Manager_Record)
    is
+      procedure Add_Visit_Goal
+        (Planet : Carthage.Planets.Planet_Type);
+
+      --------------------
+      -- Add_Visit_Goal --
+      --------------------
+
+      procedure Add_Visit_Goal
+        (Planet : Carthage.Planets.Planet_Type)
+      is
+      begin
+         if not Planet.Explored_By (Manager.House)
+           and then not Planet.Seen_By (Manager.House)
+         then
+            Manager.House.Log ("adding goal to visit " & Planet.Name);
+         end if;
+      end Add_Visit_Goal;
+
    begin
       House_Manager_Record (Manager).Initialize;
 
       for Info of Manager.Planets loop
          declare
+            use type Carthage.Houses.House_Type;
             Planet : constant Carthage.Planets.Planet_Type :=
                        Info.Planet;
          begin
+            if Planet.Owner = Manager.House then
+               Carthage.Galaxy.Scan_Connections
+                 (Planet, Add_Visit_Goal'Access);
+            end if;
+
             if Planet.Explored_By (Manager.House) then
                null;
 --              elsif Planet.Seen_By (Manager.House) then
