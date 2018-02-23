@@ -301,13 +301,18 @@ package body Carthage.Managers.Assets is
             begin
                if Managed_Asset.Goal.Is_Empty then
                   declare
+                     Asset : constant Carthage.Assets.Asset_Type :=
+                               Managed_Asset.Asset;
                      Current  : constant Carthage.Planets.Planet_Type :=
                                   Carthage.Stacks.Stack_Type
-                                    (Managed_Asset.Asset.Container)
-                                    .Planet;
+                                    (Asset.Container).Planet;
+                     Launch_Cost : constant Natural :=
+                                     (if Asset.Container.Is_Orbiting
+                                      then 0 else 1);
                      Distance : constant Natural :=
                                   Carthage.Galaxy.Jump_Count
-                                    (Current, Target);
+                                    (Current, Target)
+                                    + Launch_Cost;
                   begin
                      if not Managed_Asset_List.Has_Element (Best_Asset)
                        or else Distance < Best_Distance
