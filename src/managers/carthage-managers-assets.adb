@@ -1,3 +1,4 @@
+with Carthage.Galaxy;
 with Carthage.Stacks.Create;
 with Carthage.Stacks.Updates;
 
@@ -52,6 +53,11 @@ package body Carthage.Managers.Assets is
 
    overriding function Have_Immediate_Capacity
      (Manager : Space_Asset_Manager_Record;
+      Goal    : Carthage.Goals.Goal_Record'Class)
+      return Boolean;
+
+   overriding function Check_Goal
+     (Manager : not null access Space_Asset_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
       return Boolean;
 
@@ -254,6 +260,91 @@ package body Carthage.Managers.Assets is
                end if;
             end;
 
+      end case;
+   end Check_Goal;
+
+   ----------------
+   -- Check_Goal --
+   ----------------
+
+   overriding function Check_Goal
+     (Manager : not null access Space_Asset_Manager_Record;
+      Goal    : Carthage.Goals.Goal_Record'Class)
+      return Boolean
+   is
+      Asset_Goal : Asset_Manager_Goal renames Asset_Manager_Goal (Goal);
+
+      function Best_Available
+        (Target : Carthage.Planets.Planet_Type)
+         return Managed_Asset_List.Cursor;
+
+      --------------------
+      -- Best_Available --
+      --------------------
+
+      function Best_Available
+        (Target : Carthage.Planets.Planet_Type)
+         return Managed_Asset_List.Cursor
+      is
+         Best_Asset    : Managed_Asset_List.Cursor :=
+                           Managed_Asset_List.No_Element;
+         Best_Distance : Natural := Natural'Last;
+
+      begin
+         for Cursor in Manager.Assets.Iterate loop
+            declare
+               Managed_Asset : Managed_Asset_Record renames
+                                 Manager.Assets (Cursor);
+            begin
+               if Managed_Asset.Goal.Is_Empty then
+                  declare
+                     Current  : constant Carthage.Planets.Planet_Type :=
+                                  Carthage.Stacks.Stack_Type
+                                    (Managed_Asset.Asset.Container)
+                                    .Planet;
+                     Distance : constant Natural :=
+                                  Carthage.Galaxy.Jump_Count
+                                    (Current, Target);
+                  begin
+                     if not Managed_Asset_List.Has_Element (Best_Asset)
+                       or else Distance < Best_Distance
+                     then
+                        Best_Asset := Cursor;
+                        Best_Distance := Distance;
+                     end if;
+                  end;
+               end if;
+            end;
+         end loop;
+         return Best_Asset;
+      end Best_Available;
+
+   begin
+      case Asset_Goal.Class is
+         when None =>
+            return True;
+         when Recon =>
+            declare
+               use type Carthage.Stacks.Asset_Count;
+               Asset_Cursor : constant Managed_Asset_List.Cursor :=
+                                Best_Available (Asset_Goal.Planet);
+            begin
+               if not Managed_Asset_List.Has_Element (Asset_Cursor) then
+                  return False;
+               end if;
+
+               declare
+                  Asset        : constant Carthage.Assets.Asset_Type :=
+                                   Manager.Assets (Asset_Cursor).Asset;
+               begin
+                  Asset.Log ("assigned to recon of "
+                             & Asset_Goal.Planet.Name);
+                  return True;
+               end;
+            end;
+
+         when Capture =>
+            return True;
       end case;
    end Check_Goal;
 

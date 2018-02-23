@@ -13,6 +13,10 @@ package Carthage.Galaxy is
      (Planet_1, Planet_2 : Carthage.Planets.Planet_Type)
       return Boolean;
 
+   function Jump_Count
+     (Planet_1, Planet_2 : Carthage.Planets.Planet_Type)
+      return Natural;
+
 private
 
    function Index_Of (Planet : Carthage.Planets.Planet_Type) return Positive
@@ -33,5 +37,12 @@ private
      (Planet_1, Planet_2 : Carthage.Planets.Planet_Type)
       return Boolean
    is (Graph.Connected (Index_Of (Planet_1), Index_Of (Planet_2)));
+
+   function Jump_Count
+     (Planet_1, Planet_2 : Carthage.Planets.Planet_Type)
+      return Natural
+   is (Graph.Path_Vertices
+       (Graph.Shortest_Path (Index_Of (Planet_1), Index_Of (Planet_2)))
+         'Length);
 
 end Carthage.Galaxy;

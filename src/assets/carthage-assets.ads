@@ -129,6 +129,10 @@ package Carthage.Assets is
       return access Asset_Container_Interface'Class
       is abstract;
 
+   function Container
+     (Asset : Asset_Record'Class)
+      return access constant Asset_Container_Interface'Class;
+
    procedure Move_To
      (Asset     : not null access constant Asset_Record'Class;
       Container : not null access constant Asset_Container_Interface'Class);
@@ -200,6 +204,11 @@ private
      (Asset : Asset_Record)
       return Boolean
    is (Asset.Health > 0);
+
+   function Container
+     (Asset : Asset_Record'Class)
+      return access constant Asset_Container_Interface'Class
+   is (Asset.Container);
 
    type Updateable_Reference (Item : not null access Asset_Record'Class) is
       record
