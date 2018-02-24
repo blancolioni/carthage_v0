@@ -14,17 +14,22 @@ package body Carthage.Managers.Houses is
      new House_Manager_Record with null record;
 
    overriding procedure Initialize
-     (Manager : in out Noble_House_Manager_Record);
+     (Manager : not null access Noble_House_Manager_Record);
 
    overriding function Planet_Manager
-     (Manager : Noble_House_Manager_Record;
+     (Manager : not null access Noble_House_Manager_Record;
       Planet  : Carthage.Planets.Planet_Type)
       return Manager_Type
    is (Carthage.Managers.Planets.Create_Active_Planet_Manager
-       (Manager.House, Planet));
+       (Manager.House, Planet, Manager));
 
-   --     overriding procedure Check_Goals
-   --       (Manager : in out Noble_House_Manager_Record);
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Noble_House_Manager_Record;
+      Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class);
+
+     --     overriding procedure Check_Goals
+     --       (Manager : in out Noble_House_Manager_Record);
 
    type League_House_Manager_Record is
      new House_Manager_Record with null record;
@@ -171,7 +176,7 @@ package body Carthage.Managers.Houses is
       Manager.House := House;
       Manager.Space_Assets :=
         Carthage.Managers.Assets.Space_Asset_Manager
-          (Manager, Manager.House);
+          (Stack_Meta_Manager_Access (Manager), Manager.House);
 
       House.Update.Set_House_Manager (Manager);
       Manager.Initialize;
@@ -183,7 +188,7 @@ package body Carthage.Managers.Houses is
    ----------------
 
    overriding procedure Initialize
-     (Manager : in out House_Manager_Record)
+     (Manager : not null access House_Manager_Record)
    is
       procedure Add_Planet_Info
         (Planet : Carthage.Planets.Planet_Type);
@@ -198,13 +203,14 @@ package body Carthage.Managers.Houses is
       procedure Add_Planet_Info
         (Planet : Carthage.Planets.Planet_Type)
       is
+
       begin
          Manager.Planets.Insert
            (Planet.Identifier,
             Managed_Planet_Record'
               (Planet         => Planet,
                Planet_Manager =>
-                 House_Manager_Record'Class (Manager)
+                 House_Manager_Type (Manager)
                .Planet_Manager (Planet)));
       end Add_Planet_Info;
 
@@ -243,7 +249,7 @@ package body Carthage.Managers.Houses is
    ----------------
 
    overriding procedure Initialize
-     (Manager : in out Noble_House_Manager_Record)
+     (Manager : not null access Noble_House_Manager_Record)
    is
 
       Goal_Planets : WL.String_Sets.Set;
@@ -280,7 +286,7 @@ package body Carthage.Managers.Houses is
       end Add_Visit_Goal;
 
    begin
-      House_Manager_Record (Manager).Initialize;
+      House_Manager_Record (Manager.all)'Access.Initialize;
 
       for Info of Manager.Planets loop
          declare
@@ -304,18 +310,43 @@ package body Carthage.Managers.Houses is
       end loop;
    end Initialize;
 
+   ------------------------
+   -- On_Hostile_Spotted --
+   ------------------------
+
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Noble_House_Manager_Record;
+      Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is
+   begin
+      if Spotter.Is_Orbiting then
+         null;
+      else
+         if not Manager.Hostiles.Contains (Hostile.Identifier) then
+            Manager.House.Log
+              (Spotter.Identifier & " spotted " & Hostile.Identifier);
+
+            Manager.Planets.Element (Spotter.Planet.Identifier).Planet_Manager
+              .On_Hostile_Spotted (Spotter, Hostile);
+            Manager.Hostiles.Insert
+              (Hostile.Identifier, Carthage.Stacks.Stack_Type (Hostile));
+         end if;
+      end if;
+   end On_Hostile_Spotted;
+
    --------------------
    -- Planet_Manager --
    --------------------
 
    function Planet_Manager
-     (Manager : House_Manager_Record;
+     (Manager : not null access House_Manager_Record;
       Planet  : Carthage.Planets.Planet_Type)
       return Manager_Type
    is
    begin
       return Carthage.Managers.Planets.Create_Passive_Planet_Manager
-        (Manager.House, Planet);
+        (Manager.House, Planet, Manager);
    end Planet_Manager;
 
    ------------

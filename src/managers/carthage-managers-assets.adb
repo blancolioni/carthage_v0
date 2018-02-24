@@ -31,6 +31,12 @@ package body Carthage.Managers.Assets is
       Hostile : not null access constant Carthage.Stacks.Stack_Record'Class;
       Stop    : out Boolean);
 
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Ground_Asset_Manager_Record;
+      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is null;
+
    overriding procedure On_Stack_Removed
      (Manager : in out Ground_Asset_Manager_Record;
       Stack   : not null access constant Carthage.Stacks.Stack_Record'Class);
@@ -72,6 +78,19 @@ package body Carthage.Managers.Assets is
 
    overriding procedure Load_Assets
      (Manager : in out Space_Asset_Manager_Record);
+
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Space_Asset_Manager_Record;
+      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Stop    : out Boolean)
+   is null;
+
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Space_Asset_Manager_Record;
+      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is null;
 
    ----------------
    -- Check_Goal --
@@ -198,6 +217,9 @@ package body Carthage.Managers.Assets is
                Required_Str  : constant Natural :=
                                  Asset_Goal.Parameters.Strength;
             begin
+               Manager.House.Log ("checking capture goal; required strength"
+                                  & Natural'Image (Required_Str));
+
                for Position in Manager.Stacks.Iterate loop
                   declare
                      use type Carthage.Tiles.Tile_Type;
@@ -221,6 +243,8 @@ package body Carthage.Managers.Assets is
                                    and then Str >= Required_Str
                                    and then Str * 2 / 3 > Current_Str)
                         then
+                           Stack.Log
+                             ("strength" & Str'Img & "; distance" & D'Img);
                            declare
                               Path : constant Array_Of_Positions :=
                                        Stack.Find_Path
@@ -230,6 +254,8 @@ package body Carthage.Managers.Assets is
                                  Closest_Stack := Position;
                                  Smallest_D := D;
                                  Current_Str := Str;
+                              else
+                                 Stack.Log ("no path");
                               end if;
                            end;
                         end if;
@@ -256,6 +282,7 @@ package body Carthage.Managers.Assets is
                        (Asset_Goal);
                      Manager.Stacks (Closest_Stack).Stack.Update.Move_To_Tile
                        (Asset_Goal.Tile);
+                     Carthage.Stacks.Updates.Start_Update (Stack);
                   end;
                   return True;
                else
@@ -411,8 +438,7 @@ package body Carthage.Managers.Assets is
    --------------------------
 
    function Ground_Asset_Manager
-     (Meta_Manager : not null access
-        Carthage.Stacks.Asset_Meta_Manager_Interface'Class;
+     (Meta_Manager : Stack_Meta_Manager_Access;
       House        : Carthage.Houses.House_Type;
       Planet       : Carthage.Planets.Planet_Type)
       return Manager_Type
@@ -519,7 +545,7 @@ package body Carthage.Managers.Assets is
    ----------------
 
    overriding procedure Initialize
-     (Manager : in out Root_Asset_Manager_Record)
+     (Manager : not null access Root_Asset_Manager_Record)
    is
 
       procedure Add_Asset_Classification
@@ -567,7 +593,7 @@ package body Carthage.Managers.Assets is
 
    begin
 
-      Root_Asset_Manager_Record'Class (Manager).Load_Assets;
+      Root_Asset_Manager_Record'Class (Manager.all).Load_Assets;
 
       declare
          use Carthage.Assets;
@@ -775,8 +801,7 @@ package body Carthage.Managers.Assets is
    -------------------------
 
    function Space_Asset_Manager
-     (Meta_Manager : not null access
-        Carthage.Stacks.Asset_Meta_Manager_Interface'Class;
+     (Meta_Manager : Stack_Meta_Manager_Access;
       House        : Carthage.Houses.House_Type)
       return Manager_Type
    is

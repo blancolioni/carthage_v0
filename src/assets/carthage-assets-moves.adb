@@ -39,7 +39,9 @@ package body Carthage.Assets.Moves is
       Stack  : constant Carthage.Stacks.Stack_Type :=
                  Planet.Orbital_Stack (Upd.Asset.Owner);
    begin
+      Upd.Asset.Log ("jumping to " & Planet.Name);
       Upd.Asset.Move_To (Stack);
+      Planet.Update.Set_Seen_By (Stack.Owner);
       if Route'Length > 1 then
          Start_Jump (Upd.Asset, Route (Route'First), Route (Route'First + 1));
       end if;
@@ -55,8 +57,9 @@ package body Carthage.Assets.Moves is
       Destination : Carthage.Planets.Planet_Type)
    is
       Delay_Duration : constant Duration :=
-                         Carthage.Calendar.Hours (4)
-                         + Duration (WL.Random.Random_Number (1, 7200));
+                         Carthage.Calendar.Hours (12)
+                         + Duration (WL.Random.Random_Number
+                                     (1, 12 * 3600));
       Route          : constant Carthage.Planets.Array_Of_Planets :=
                          Carthage.Galaxy.Jump_Route (Start, Destination);
       Update         : constant Jump_Update :=

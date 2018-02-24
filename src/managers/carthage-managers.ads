@@ -5,10 +5,15 @@ with Carthage.Goals;
 with Carthage.Resources;
 
 with Carthage.Houses;
+with Carthage.Stacks;
 
 package Carthage.Managers is
 
-   type Root_Manager_Type is abstract tagged private;
+   type Stack_Meta_Manager_Access is
+     access all Carthage.Stacks.Asset_Meta_Manager_Interface'Class;
+
+   type Root_Manager_Type is
+     abstract new Carthage.Stacks.Asset_Meta_Manager_Interface with private;
 
    type Manager_Type is access all Root_Manager_Type'Class;
 
@@ -18,7 +23,7 @@ package Carthage.Managers is
    is ("manager");
 
    procedure Initialize
-     (Manager : in out Root_Manager_Type)
+     (Manager : not null access Root_Manager_Type)
    is null;
 
    function Have_Immediate_Capacity
@@ -70,7 +75,8 @@ private
         "<"          => Carthage.Goals."<",
         "="          => Carthage.Goals."=");
 
-   type Root_Manager_Type is abstract tagged
+   type Root_Manager_Type is
+     abstract new Carthage.Stacks.Asset_Meta_Manager_Interface with
       record
          House     : Carthage.Houses.House_Type;
          Goals     : Goal_Queues.Heap;

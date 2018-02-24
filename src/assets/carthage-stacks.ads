@@ -61,7 +61,7 @@ package Carthage.Stacks is
       Stack   : not null access constant Stack_Record'Class;
       Hostile : not null access constant Stack_Record'Class;
       Stop    : out Boolean)
-   is null;
+   is abstract;
 
    procedure On_Movement_Ended
      (Manager : in out Stack_Manager_Interface;
@@ -201,7 +201,7 @@ package Carthage.Stacks is
      (Manager : in out Asset_Meta_Manager_Interface;
       Spotter : not null access constant Stack_Record'Class;
       Hostile : not null access constant Stack_Record'Class)
-   is null;
+   is abstract;
 
 private
 

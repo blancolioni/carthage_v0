@@ -6,7 +6,6 @@ with WL.String_Maps;
 with Carthage.Calendar;
 
 with Carthage.Cities;
-with Carthage.Stacks;
 with Carthage.Tiles;
 
 with Carthage.Managers.Assets;
@@ -81,8 +80,7 @@ package body Carthage.Managers.Planets is
      new WL.String_Maps (Manager_Type);
 
    type Planet_Manager_Record is
-     new Root_Manager_Type
-     and Carthage.Stacks.Asset_Meta_Manager_Interface with
+     new Root_Manager_Type with
       record
          Owned                : Boolean;
          Active               : Boolean;
@@ -109,8 +107,7 @@ package body Carthage.Managers.Planets is
    overriding procedure On_Hostile_Spotted
      (Manager : in out Planet_Manager_Record;
       Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
-      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
-   is null;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class);
 
    overriding function Average_Update_Frequency
      (Manager : Planet_Manager_Record)
@@ -118,7 +115,7 @@ package body Carthage.Managers.Planets is
    is (Carthage.Calendar.Days (1));
 
    overriding procedure Initialize
-     (Manager : in out Planet_Manager_Record);
+     (Manager : not null access Planet_Manager_Record);
 
    overriding function Update
      (Manager : not null access Planet_Manager_Record)
@@ -130,20 +127,23 @@ package body Carthage.Managers.Planets is
    function Create_Planet_Manager
      (House  : Carthage.Houses.House_Type;
       Planet : Carthage.Planets.Planet_Type;
+      Meta   : Stack_Meta_Manager_Access;
       Active : Boolean)
       return Manager_Type;
 
    function Create_Active_Planet_Manager
      (House  : Carthage.Houses.House_Type;
-      Planet : Carthage.Planets.Planet_Type)
+      Planet : Carthage.Planets.Planet_Type;
+      Meta   : Stack_Meta_Manager_Access)
       return Manager_Type
-   is (Create_Planet_Manager (House, Planet, True));
+   is (Create_Planet_Manager (House, Planet, Meta, True));
 
    function Create_Passive_Planet_Manager
      (House  : Carthage.Houses.House_Type;
-      Planet : Carthage.Planets.Planet_Type)
+      Planet : Carthage.Planets.Planet_Type;
+      Meta   : Stack_Meta_Manager_Access)
       return Manager_Type
-   is (Create_Planet_Manager (House, Planet, False));
+   is (Create_Planet_Manager (House, Planet, Meta, False));
 
    ---------------------------
    -- Create_Planet_Manager --
@@ -152,6 +152,7 @@ package body Carthage.Managers.Planets is
    function Create_Planet_Manager
      (House  : Carthage.Houses.House_Type;
       Planet : Carthage.Planets.Planet_Type;
+      Meta   : Stack_Meta_Manager_Access;
       Active : Boolean)
       return Manager_Type
    is
@@ -191,7 +192,7 @@ package body Carthage.Managers.Planets is
 
       Manager.Ground_Asset_Manager :=
         Carthage.Managers.Assets.Ground_Asset_Manager
-          (Manager, House, Planet);
+          (Meta, House, Planet);
 
       Manager.Initialize;
       Add_Manager (Manager);
@@ -204,7 +205,7 @@ package body Carthage.Managers.Planets is
    ----------------
 
    overriding procedure Initialize
-     (Manager : in out Planet_Manager_Record)
+     (Manager : not null access Planet_Manager_Record)
    is
       use type Carthage.Houses.House_Type;
 
@@ -430,6 +431,26 @@ package body Carthage.Managers.Planets is
       end if;
 
    end Initialize;
+
+   ------------------------
+   -- On_Hostile_Spotted --
+   ------------------------
+
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out Planet_Manager_Record;
+      Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is
+      pragma Unreferenced (Spotter);
+      Goal : constant Carthage.Goals.Goal_Record'Class :=
+               Carthage.Managers.Assets.Tile_Capture_Goal
+                 (Hostile.Tile, Hostile.Total_Strength);
+   begin
+      Manager.House.Log
+        (Manager.Ground_Asset_Manager.Description
+         & ": adding goal: " & Goal.Show);
+      Manager.Ground_Asset_Manager.Add_Goal (Goal);
+   end On_Hostile_Spotted;
 
    ---------------------------
    -- Scan_Unexplored_Tiles --

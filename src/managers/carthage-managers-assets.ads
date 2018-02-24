@@ -14,15 +14,13 @@ with Carthage.Tiles;
 package Carthage.Managers.Assets is
 
    function Ground_Asset_Manager
-     (Meta_Manager : not null access
-        Carthage.Stacks.Asset_Meta_Manager_Interface'Class;
+     (Meta_Manager : Stack_Meta_Manager_Access;
       House        : Carthage.Houses.House_Type;
       Planet       : Carthage.Planets.Planet_Type)
       return Manager_Type;
 
    function Space_Asset_Manager
-     (Meta_Manager : not null access
-        Carthage.Stacks.Asset_Meta_Manager_Interface'Class;
+     (Meta_Manager : Stack_Meta_Manager_Access;
       House        : Carthage.Houses.House_Type)
       return Manager_Type;
 
@@ -118,8 +116,7 @@ private
      abstract new Root_Manager_Type
      and Carthage.Stacks.Stack_Manager_Interface with
       record
-         Meta_Manager : access
-           Carthage.Stacks.Asset_Meta_Manager_Interface'Class;
+         Meta_Manager : Stack_Meta_Manager_Access;
          Assets       : Managed_Asset_List.List;
          Spotters     : Asset_Classification_List.List;
          Movers       : Asset_Classification_List.List;
@@ -143,7 +140,7 @@ private
 --        is abstract;
 --
    overriding procedure Initialize
-     (Manager : in out Root_Asset_Manager_Record);
+     (Manager : not null access Root_Asset_Manager_Record);
 
    overriding function Update
      (Manager : not null access Root_Asset_Manager_Record)

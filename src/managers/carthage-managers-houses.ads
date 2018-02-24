@@ -1,6 +1,4 @@
-private with Ada.Containers.Indefinite_Hashed_Maps;
-private with Ada.Strings.Fixed.Equal_Case_Insensitive;
-private with Ada.Strings.Fixed.Hash_Case_Insensitive;
+private with WL.String_Maps;
 
 with Carthage.Calendar;
 
@@ -46,11 +44,10 @@ private
       end record;
 
    package Managed_Planet_Maps is
-     new Ada.Containers.Indefinite_Hashed_Maps
-       (Key_Type        => String,
-        Element_Type    => Managed_Planet_Record,
-        Hash            => Ada.Strings.Fixed.Hash_Case_Insensitive,
-        Equivalent_Keys => Ada.Strings.Fixed.Equal_Case_Insensitive);
+     new WL.String_Maps (Managed_Planet_Record);
+
+   package Known_Hostiles_Maps is
+     new WL.String_Maps (Carthage.Stacks.Stack_Type, Carthage.Stacks."=");
 
    type Goal_Class is (None, Explore_Surface, Planet_Scan, Capture_Planet);
 
@@ -81,11 +78,12 @@ private
      and Carthage.Stacks.Asset_Meta_Manager_Interface with
       record
          Planets      : Managed_Planet_Maps.Map;
+         Hostiles     : Known_Hostiles_Maps.Map;
          Space_Assets : Manager_Type;
       end record;
 
    overriding procedure Initialize
-     (Manager : in out House_Manager_Record);
+     (Manager : not null access House_Manager_Record);
 
    overriding function Update
      (Manager : not null access House_Manager_Record)
@@ -96,8 +94,14 @@ private
       return Duration
    is (Carthage.Calendar.Days (10));
 
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out House_Manager_Record;
+      Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is null;
+
    function Planet_Manager
-     (Manager : House_Manager_Record;
+     (Manager : not null access House_Manager_Record;
       Planet  : Carthage.Planets.Planet_Type)
       return Manager_Type;
 

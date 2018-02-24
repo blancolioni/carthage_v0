@@ -74,13 +74,19 @@ package body Carthage.Managers.Cities is
 
    type City_Manager_Type is access all City_Manager_Record'Class;
 
+   overriding procedure On_Hostile_Spotted
+     (Manager : in out City_Manager_Record;
+      Spotter : not null access constant Carthage.Stacks.Stack_Record'Class;
+      Hostile : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is null;
+
    overriding function Average_Update_Frequency
      (Manager : City_Manager_Record)
       return Duration
    is (Carthage.Calendar.Days (1));
 
    overriding procedure Initialize
-     (Manager : in out City_Manager_Record);
+     (Manager : not null access City_Manager_Record);
 
    overriding function Update
      (Manager : not null access City_Manager_Record)
@@ -203,7 +209,7 @@ package body Carthage.Managers.Cities is
    ----------------
 
    overriding procedure Initialize
-     (Manager : in out City_Manager_Record)
+     (Manager : not null access City_Manager_Record)
    is
    begin
       Manager.Create_Resource_Network;
