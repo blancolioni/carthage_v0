@@ -169,6 +169,10 @@ private
      new Ada.Containers.Vectors
        (Positive, Carthage.Assets.Asset_Type, Carthage.Assets."=");
 
+   package Stack_Vectors is
+     new Ada.Containers.Vectors
+       (Positive, Carthage.Stacks.Stack_Type, Carthage.Stacks."=");
+
    type Battle_Record is
       record
          Active    : Boolean;
@@ -178,6 +182,7 @@ private
          Tile      : Carthage.Tiles.Tile_Type;
          Attackers : Asset_Vectors.Vector;
          Defenders : Asset_Vectors.Vector;
+         Stacks    : Stack_Vectors.Vector;
       end record;
 
    function Attacker

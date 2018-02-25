@@ -1,6 +1,8 @@
 with WL.Random;
 
+with Carthage.Calendar;
 with Carthage.Logging;
+with Carthage.Updates;
 
 package body Carthage.Combat is
 
@@ -28,6 +30,50 @@ package body Carthage.Combat is
 
    procedure Resolve
      (Attack : in out Attack_Record);
+
+   type Battle_Update is
+     new Carthage.Updates.Update_Interface with
+      record
+         Battle_Index : Positive;
+      end record;
+
+   overriding procedure Activate
+     (Upd : Battle_Update);
+
+   --------------
+   -- Activate --
+   --------------
+
+   overriding procedure Activate
+     (Upd : Battle_Update)
+   is
+      Battle : Battle_Record renames Current_Battles (Upd.Battle_Index);
+   begin
+      if not Battle.Active then
+         return;
+      end if;
+
+      Attacker (Battle).Log ("attacking " & Defender (Battle).Name);
+      for Weapon in Carthage.Units.Weapon_Category loop
+         declare
+            Round : constant Carthage.Combat.Attack_Record_Array :=
+                      Carthage.Combat.Attack_Round (Battle, Weapon);
+         begin
+            for Attack of Round loop
+               Attacker (Battle).Log (Image (Attack));
+            end loop;
+         end;
+      end loop;
+
+      for Stack of Battle.Stacks loop
+         Stack.Update.Remove_Dead_Assets;
+      end loop;
+
+      if Battle.Active then
+         Carthage.Updates.Queue (Upd, Carthage.Calendar.Days (1));
+      end if;
+
+   end Activate;
 
    ---------------
    -- Add_Stack --
@@ -59,6 +105,8 @@ package body Carthage.Combat is
             Battle.Defenders.Append (Stack.Asset (I));
          end if;
       end loop;
+
+      Battle.Stacks.Append (Stack);
 
    end Add_Stack;
 
@@ -240,6 +288,9 @@ package body Carthage.Combat is
       Add_Stack (Battle, Attacker);
       Add_Stack (Battle, Defender);
       Current_Battles.Append (Battle);
+      Carthage.Updates.Queue
+        (Battle_Update'(Battle_Index => Current_Battles.Last_Index),
+         Carthage.Calendar.Days (1));
    end New_Battle;
 
    -------------
