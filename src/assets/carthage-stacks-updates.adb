@@ -61,7 +61,15 @@ package body Carthage.Stacks.Updates is
 
    procedure Execute (Stack : in out Stack_Class) is
 
-      Remaining_Movement : Natural := Stack.Movement;
+      function Match (S : not null access constant
+                        Stack_Record'Class)
+                         return Boolean
+      is (Memor."=" (S.Reference, Stack.Reference));
+
+      Ref         : constant Stack_Type :=
+                      Stack_Type
+                        (Stack.Tile.Find_Stack
+                           (Match'Access));
 
       procedure Check_Hostile
         (Tile        : Carthage.Tiles.Tile_Type;
@@ -71,6 +79,34 @@ package body Carthage.Stacks.Updates is
       procedure Move
         (To   : Tile_Position;
          Stop : out Boolean);
+
+      procedure Attack
+        (Hostile : Carthage.Stacks.Stack_Type);
+
+      ------------
+      -- Attack --
+      ------------
+
+      procedure Attack
+        (Hostile : Carthage.Stacks.Stack_Type)
+      is
+      begin
+         Stack.Log
+           ("strength"
+            & Natural'Image (Stack.Total_Strength)
+            & " at " & Stack.Tile.Description
+            & " attacking hostile " & Hostile.Identifier
+            & " strength"
+            & Natural'Image (Hostile.Total_Strength)
+            & " in target tile " & Hostile.Tile.Description);
+
+         Carthage.Combat.New_Battle
+           (Ref, Hostile, Stack.Planet, Stack.Tile);
+      end Attack;
+
+      -------------------
+      -- Check_Hostile --
+      -------------------
 
       procedure Check_Hostile
         (Tile        : Carthage.Tiles.Tile_Type;
@@ -119,15 +155,6 @@ package body Carthage.Stacks.Updates is
 
          Cost : constant Natural := Stack.Movement_Cost (Tile);
 
-         function Match (S : not null access constant
-                           Stack_Record'Class)
-                            return Boolean
-         is (Memor."=" (S.Reference, Stack.Reference));
-
-         Ref         : constant Stack_Type :=
-                         Stack_Type
-                           (Stack.Tile.Find_Stack
-                              (Match'Access));
          Hostile     : Carthage.Stacks.Stack_Type;
          Has_Hostile : Boolean;
       begin
@@ -143,18 +170,7 @@ package body Carthage.Stacks.Updates is
          Check_Hostile (Tile, Has_Hostile, Hostile);
 
          if Has_Hostile then
-            Stack.Log
-              ("strength"
-               & Natural'Image (Stack.Total_Strength)
-               & " at " & Stack.Tile.Description
-               & " attacking hostile " & Hostile.Identifier
-               & " strength"
-               & Natural'Image (Hostile.Total_Strength)
-               & " in target tile " & Tile.Description);
-
-            Carthage.Combat.New_Battle
-              (Ref, Hostile, Stack.Planet, Stack.Tile);
-
+            Attack (Hostile);
             Stop := True;
             return;
          end if;
@@ -209,11 +225,6 @@ package body Carthage.Stacks.Updates is
             end loop;
          end;
 
-         if Cost >= Remaining_Movement then
-            Remaining_Movement := 0;
-         else
-            Remaining_Movement := Remaining_Movement - Cost;
-         end if;
       end Move;
 
    begin
@@ -228,19 +239,35 @@ package body Carthage.Stacks.Updates is
             Move (Path (Path_Index), Stop);
             Path_Index := Path_Index + 1;
 
-            if Stop
-              or else Path_Index >= Path'Last
-            then
+            if Stop then
                Stack.Log ("stopping at " & Stack.Tile.Description);
+               Stack.Current_Path_Index := 0;
+               Stack.Current_Path.Clear;
+            elsif Path_Index > Path'Last then
+               Stack.Log ("end of path at " & Stack.Tile.Description);
                Stack.Current_Path_Index := 0;
                Stack.Current_Path.Clear;
             else
                Stack.Log ("waypoint at " & Stack.Tile.Description);
                Stack.Current_Path_Index := Path_Index;
-               Stack.Next_Tile_Cost :=
-                 Stack.Movement_Cost
-                   (Stack.Planet.Tile
-                      (Path (Path_Index)));
+
+               declare
+                  Next_Tile : constant Carthage.Tiles.Tile_Type :=
+                                Stack.Planet.Tile (Path (Path_Index));
+                  Has_Hostile : Boolean;
+                  Hostile     : Carthage.Stacks.Stack_Type;
+               begin
+                  Check_Hostile (Next_Tile, Has_Hostile, Hostile);
+                  if Has_Hostile then
+                     Attack (Hostile);
+                     Stop := True;
+                  else
+                     Stack.Next_Tile_Cost :=
+                       Stack.Movement_Cost
+                         (Stack.Planet.Tile
+                            (Path (Path_Index)));
+                  end if;
+               end;
             end if;
          end;
       end if;
