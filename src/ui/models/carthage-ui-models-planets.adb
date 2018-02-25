@@ -770,6 +770,7 @@ package body Carthage.UI.Models.Planets is
       begin
          if (Wizard_Mode or else Tile.Currently_Visible_To (Model.House))
            and then Tile.Has_Stacks
+           and then not Tile.First_Stack.Is_Empty
          then
             declare
                Left       : Integer :=
