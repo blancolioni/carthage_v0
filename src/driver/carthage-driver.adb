@@ -74,19 +74,17 @@ begin
       Carthage.UI.Set_Wizard_Mode (True);
    end if;
 
-   if Carthage.Options.Update then
+   if Carthage.Options.Gtk_UI then
+      Carthage.Updates.Set_Time_Acceleration (4.0 * 3600.0);
+      Carthage.UI.Gtk_UI.Start
+        (Carthage.Houses.Get (Carthage.Options.House));
+   else
       for I in 1 .. Natural'Max (Carthage.Options.Update_Count, 1) loop
          for J in 1 .. 24 loop
             Carthage.Updates.Update;
             Carthage.Calendar.Advance (Carthage.Calendar.Hours (1));
          end loop;
       end loop;
-   end if;
-
-   if Carthage.Options.Gtk_UI then
-      Carthage.Updates.Set_Time_Acceleration (4.0 * 3600.0);
-      Carthage.UI.Gtk_UI.Start
-        (Carthage.Houses.Get (Carthage.Options.House));
    end if;
 
    Carthage.Logging.Stop_Logging;
