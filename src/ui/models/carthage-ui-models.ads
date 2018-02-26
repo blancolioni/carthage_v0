@@ -1,6 +1,4 @@
 private with Lui.Colours;
-private with Lui.Rendering;
-
 private with Carthage.Colours;
 
 with Lui.Models;
@@ -9,35 +7,23 @@ with Carthage.Houses;
 
 package Carthage.UI.Models is
 
-   type Root_Carthage_Model is
-     abstract new Lui.Models.Root_Object_Model with private;
-
-   procedure Reload
-     (Model : in out Root_Carthage_Model)
-   is null;
-
-   type Carthage_Model is access all Root_Carthage_Model'Class;
-
    function Top_Model
      (House : not null access constant Carthage.Houses.House_Class)
-     return Carthage_Model;
+     return Lui.Models.Object_Model;
 
 private
 
-   type Root_Carthage_Model is
-     abstract new Lui.Models.Root_Object_Model with
+   type Layout_Rectangle is
       record
-         House  : Carthage.Houses.House_Type;
-         Wizard : Boolean := False;
+         X, Y, Width, Height : Integer;
       end record;
 
-   overriding procedure Before_Render
-     (Model    : in out Root_Carthage_Model;
-      Renderer : in out Lui.Rendering.Root_Renderer'Class);
-
-   overriding procedure After_Render
-     (Model    : in out Root_Carthage_Model;
-      Renderer : in out Lui.Rendering.Root_Renderer'Class);
+   function Contains
+     (Rectangle : Layout_Rectangle;
+      X, Y      : Integer)
+      return Boolean
+   is (X in Rectangle.X .. Rectangle.X + Rectangle.Width - 1
+       and then Y in Rectangle.Y .. Rectangle.Y + Rectangle.Height - 1);
 
    function To_Lui_Colour
      (Colour : Carthage.Colours.Colour_Type)
@@ -51,14 +37,11 @@ private
    function Get_Model
      (House : not null access constant Carthage.Houses.House_Record'Class;
       Key   : String)
-      return Carthage_Model
+      return Lui.Models.Object_Model
      with Pre => Have_Model (House, Key);
 
-   procedure Set_Model
-     (House : not null access constant Carthage.Houses.House_Record'Class;
-      Key   : String;
-      Model : not null access Root_Carthage_Model'Class)
-     with Pre => not Have_Model (House, Key),
-     Post => Have_Model (House, Key);
+   procedure Save_Model
+     (Model    : not null access Lui.Models.Root_Object_Model'Class;
+      Class_Id : String);
 
 end Carthage.UI.Models;

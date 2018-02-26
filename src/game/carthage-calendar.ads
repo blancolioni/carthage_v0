@@ -2,7 +2,7 @@ package Carthage.Calendar is
 
    type Time is private;
 
-   subtype Year_Number  is Integer range 1 .. 5001;
+   subtype Year_Number  is Integer range 1 .. 6001;
    subtype Month_Number is Integer range 1 .. 12;
    subtype Day_Number   is Integer range 1 .. 30;
 

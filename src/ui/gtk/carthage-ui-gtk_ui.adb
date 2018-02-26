@@ -379,9 +379,7 @@ package body Carthage.UI.Gtk_UI is
 
          Lui.Gtk_UI.Start
            (Main => UI,
-            Top  =>
-              Lui.Models.Object_Model
-                (Carthage.UI.Models.Top_Model (House)));
+            Top  => Carthage.UI.Models.Top_Model (House));
       end;
 
       Gtk.Main.Main;

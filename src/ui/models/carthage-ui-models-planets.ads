@@ -6,6 +6,6 @@ private package Carthage.UI.Models.Planets is
    function Planet_Model
      (House  : Carthage.Houses.House_Type;
       Planet : Carthage.Planets.Planet_Type)
-      return Carthage_Model;
+      return Lui.Models.Object_Model;
 
 end Carthage.UI.Models.Planets;

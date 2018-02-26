@@ -13,6 +13,7 @@ with Carthage.Houses;
 with Carthage.Planets;
 with Carthage.Stacks;
 
+with Carthage.UI.Models.Top;
 with Carthage.UI.Models.Planets;
 with Carthage.UI.Models.Stacks;
 
@@ -27,6 +28,8 @@ package body Carthage.UI.Models.Galaxy is
    Zoomed_In_Radius  : constant := 60;
 
    Have_Bitmaps     : Boolean := False;
+
+   Model_Class_Id : constant String := "galaxy";
 
    procedure Load_Bitmaps
      (Renderer : in out Lui.Rendering.Root_Renderer'Class);
@@ -54,7 +57,7 @@ package body Carthage.UI.Models.Galaxy is
      new Ada.Containers.Vectors (Positive, Rendered_Planet);
 
    type Root_Galaxy_Model is
-     new Root_Carthage_Model with
+     new Carthage.UI.Models.Top.Root_Carthage_Model with
       record
          Show_Capital_Names : Boolean := True;
          Show_System_Names  : Boolean := False;
@@ -67,6 +70,7 @@ package body Carthage.UI.Models.Galaxy is
          Zoom_Start         : Ada.Calendar.Time;
          Zoom_Level         : Float := 0.0;
          Selected_Planet    : Carthage.Planets.Planet_Type;
+         Main_Window        : Layout_Rectangle;
       end record;
 
    overriding function Handle_Update
@@ -74,9 +78,11 @@ package body Carthage.UI.Models.Galaxy is
       return Boolean
    is (Model.Needs_Render);
 
-   overriding procedure Render
+   overriding procedure Render_Main_Window
      (Model    : in out Root_Galaxy_Model;
-      Renderer : in out Lui.Rendering.Root_Renderer'Class);
+      Renderer  : in out Lui.Rendering.Root_Renderer'Class;
+      Layer     : Lui.Render_Layer;
+      Rectangle : Layout_Rectangle);
 
    overriding procedure On_Model_Removed
      (Model : in out Root_Galaxy_Model;
@@ -106,8 +112,8 @@ package body Carthage.UI.Models.Galaxy is
      (Model : in out Root_Galaxy_Model)
    is null;
 
-   overriding procedure Reload
-     (Model : in out Root_Galaxy_Model);
+   procedure Load
+     (Model : in out Root_Galaxy_Model'Class);
 
    procedure Get_Screen_Position
      (Model              : Root_Galaxy_Model'Class;
@@ -265,17 +271,13 @@ package body Carthage.UI.Models.Galaxy is
      (Model : in out Root_Galaxy_Model'Class)
    is
    begin
-      Model.Initialise
-        ("Galaxy",
-         Last_Render_Layer => 3);
-
       Model.Drag_Rotation_Behaviour;
 
       Model.Set_Eye_Position (0.0, 0.0, 2.2);
       Model.Show_Capital_Names := True;
       Model.Show_System_Names := True;
 
-      Model.Reload;
+      Model.Load;
 
    end Create_Model;
 
@@ -360,22 +362,22 @@ package body Carthage.UI.Models.Galaxy is
 
    function Galaxy_Model
      (House : not null access constant Carthage.Houses.House_Class)
-      return Carthage_Model
+      return Lui.Models.Object_Model
    is
       use Lui.Models;
 
    begin
-      if not Have_Model (House, "galaxy") then
+      if not Have_Model (House, Model_Class_Id) then
          declare
             Model : constant Galaxy_Model_Access :=
                       new Root_Galaxy_Model;
          begin
+            Model.Initialize_Model (House, Model_Class_Id, 1);
             Model.Create_Model;
-            Set_Model (House, "galaxy", Model);
          end;
       end if;
 
-      return Get_Model (House, "galaxy");
+      return Get_Model (House, Model_Class_Id);
    end Galaxy_Model;
 
    -------------------------
@@ -412,10 +414,65 @@ package body Carthage.UI.Models.Galaxy is
          end;
       end if;
 
-      Screen_X := Integer (Local_X * Float (Model.Width));
-      Screen_Y := Integer (Local_Y * Float (Model.Height));
+      Screen_X := Model.Main_Window.X
+        + Integer (Local_X * Float (Model.Main_Window.Width));
+      Screen_Y := Model.Main_Window.Y
+        + Integer (Local_Y * Float (Model.Height));
 
    end Get_Screen_Position;
+
+   ----------
+   -- Load --
+   ----------
+
+   procedure Load
+     (Model : in out Root_Galaxy_Model'Class)
+   is
+      procedure Append (Planet : Carthage.Planets.Planet_Type);
+
+      ------------
+      -- Append --
+      ------------
+
+      procedure Append (Planet : Carthage.Planets.Planet_Type) is
+         Resource : constant String := Find_Image_Resource (Planet);
+         Rec      : Rendered_Planet :=
+                      Rendered_Planet'
+                        (Index       => Planet.Index,
+                         Planet      => Planet,
+                         Name        =>
+                           Ada.Strings.Unbounded.To_Unbounded_String
+                             (Planet.Name),
+                         Image       =>
+                           Ada.Strings.Unbounded.To_Unbounded_String
+                             (Resource),
+                         Colour      => Lui.Colours.White,
+                         Colony      => False,
+                         Capital     => False,
+                         Connections => <>);
+
+         procedure Add_Connection (To : Carthage.Planets.Planet_Type);
+
+         --------------------
+         -- Add_Connection --
+         --------------------
+
+         procedure Add_Connection (To : Carthage.Planets.Planet_Type) is
+         begin
+            Rec.Connections.Append
+              (To.Index);
+         end Add_Connection;
+
+      begin
+         Carthage.Galaxy.Scan_Connections
+           (Planet, Add_Connection'Access);
+         Model.Rendered_Planets.Append (Rec);
+      end Append;
+
+   begin
+      Model.Rendered_Planets.Clear;
+      Carthage.Planets.Scan (Append'Access);
+   end Load;
 
    ------------------
    -- Load_Bitmaps --
@@ -466,67 +523,16 @@ package body Carthage.UI.Models.Galaxy is
    end On_Key_Press;
 
    ------------
-   -- Reload --
-   ------------
-
-   overriding procedure Reload
-     (Model : in out Root_Galaxy_Model)
-   is
-      procedure Append (Planet : Carthage.Planets.Planet_Type);
-
-      ------------
-      -- Append --
-      ------------
-
-      procedure Append (Planet : Carthage.Planets.Planet_Type) is
-         Resource : constant String := Find_Image_Resource (Planet);
-         Rec    : Rendered_Planet :=
-                    Rendered_Planet'
-                      (Index       => Planet.Index,
-                       Planet      => Planet,
-                       Name        =>
-                         Ada.Strings.Unbounded.To_Unbounded_String
-                           (Planet.Name),
-                       Image       =>
-                         Ada.Strings.Unbounded.To_Unbounded_String
-                           (Resource),
-                       Colour      => Lui.Colours.White,
-                       Colony      => False,
-                       Capital     => False,
-                       Connections => <>);
-
-         procedure Add_Connection (To : Carthage.Planets.Planet_Type);
-
-         --------------------
-         -- Add_Connection --
-         --------------------
-
-         procedure Add_Connection (To : Carthage.Planets.Planet_Type) is
-         begin
-            Rec.Connections.Append
-              (To.Index);
-         end Add_Connection;
-
-      begin
-         Carthage.Galaxy.Scan_Connections
-           (Planet, Add_Connection'Access);
-         Model.Rendered_Planets.Append (Rec);
-      end Append;
-
-   begin
-      Model.Rendered_Planets.Clear;
-      Carthage.Planets.Scan (Append'Access);
-   end Reload;
-
-   ------------
    -- Render --
    ------------
 
-   overriding procedure Render
-     (Model    : in out Root_Galaxy_Model;
-      Renderer : in out Lui.Rendering.Root_Renderer'Class)
+   overriding procedure Render_Main_Window
+     (Model     : in out Root_Galaxy_Model;
+      Renderer  : in out Lui.Rendering.Root_Renderer'Class;
+      Layer     : Lui.Render_Layer;
+      Rectangle : Layout_Rectangle)
    is
-      use type Lui.Rendering.Render_Layer;
+      use type Lui.Render_Layer;
 
       System_Radius : Natural :=
                         (if Model.Zoomed_To_System
@@ -608,6 +614,8 @@ package body Carthage.UI.Models.Galaxy is
          Load_Bitmaps (Renderer);
       end if;
 
+      Model.Main_Window := Rectangle;
+
       if Model.Zooming_In or else Model.Zooming_Out then
          declare
             use Ada.Calendar;
@@ -635,7 +643,7 @@ package body Carthage.UI.Models.Galaxy is
          end;
       end if;
 
-      if Renderer.Current_Render_Layer = 1 then
+      if Layer = 1 then
          for Star_Pass in Boolean loop
 
             if Star_Pass and then Reload_Stacks then
@@ -753,7 +761,7 @@ package body Carthage.UI.Models.Galaxy is
 
 --      Carthage.Updates.End_Render;
 
-   end Render;
+   end Render_Main_Window;
 
    ---------------
    -- Select_XY --

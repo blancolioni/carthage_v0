@@ -21,7 +21,7 @@ package Carthage.UI.Models.Stacks is
 
    procedure Render
      (List     : Rendered_Stack_List'Class;
-      Model    : Root_Carthage_Model'Class;
+      Model    : Lui.Models.Root_Object_Model'Class;
       Renderer : in out Lui.Rendering.Root_Renderer'Class);
 
    function Find_Stack

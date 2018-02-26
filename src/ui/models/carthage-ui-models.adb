@@ -1,10 +1,11 @@
 with WL.String_Maps;
 
-with Carthage.UI.Models.Galaxy;
+with Carthage.UI.Models.Top;
 
 package body Carthage.UI.Models is
 
-   package Model_Maps is new WL.String_Maps (Carthage_Model);
+   package Model_Maps is
+     new WL.String_Maps (Lui.Models.Object_Model, Lui.Models."=");
 
    Model_Map : Model_Maps.Map;
 
@@ -12,19 +13,19 @@ package body Carthage.UI.Models is
    -- After_Render --
    ------------------
 
-   overriding procedure After_Render
-     (Model    : in out Root_Carthage_Model;
-      Renderer : in out Lui.Rendering.Root_Renderer'Class)
-   is null;
+--     overriding procedure After_Render
+--       (Model    : in out Root_Carthage_Model;
+--        Renderer : in out Lui.Rendering.Root_Renderer'Class)
+--     is null;
 
    -------------------
    -- Before_Render --
    -------------------
 
-   overriding procedure Before_Render
-     (Model    : in out Root_Carthage_Model;
-      Renderer : in out Lui.Rendering.Root_Renderer'Class)
-   is null;
+--     overriding procedure Before_Render
+--       (Model    : in out Root_Carthage_Model;
+--        Renderer : in out Lui.Rendering.Root_Renderer'Class)
+--     is null;
 
    ---------------
    -- Get_Model --
@@ -33,7 +34,7 @@ package body Carthage.UI.Models is
    function Get_Model
      (House : not null access constant Carthage.Houses.House_Record'Class;
       Key   : String)
-      return Carthage_Model
+      return Lui.Models.Object_Model
    is
    begin
       return Model_Map.Element (House.Identifier & "--" & Key);
@@ -52,20 +53,21 @@ package body Carthage.UI.Models is
       return Model_Map.Contains (House.Identifier & "--" & Key);
    end Have_Model;
 
-   ---------------
-   -- Set_Model --
-   ---------------
+   ----------------
+   -- Save_Model --
+   ----------------
 
-   procedure Set_Model
-     (House : not null access constant Carthage.Houses.House_Record'Class;
-      Key   : String;
-      Model : not null access Root_Carthage_Model'Class)
+   procedure Save_Model
+     (Model    : not null access Lui.Models.Root_Object_Model'Class;
+      Class_Id : String)
    is
+      use Carthage.UI.Models.Top;
+      M : constant Carthage_Model := Carthage_Model (Model);
    begin
-      Model.House := Carthage.Houses.House_Type (House);
       Model_Map.Insert
-        (House.Identifier & "--" & Key, Carthage_Model (Model));
-   end Set_Model;
+        (M.House.Identifier & "--" & Class_Id,
+         Model);
+   end Save_Model;
 
    -------------------
    -- To_Lui_Colour --
@@ -92,7 +94,7 @@ package body Carthage.UI.Models is
 
    function Top_Model
      (House : not null access constant Carthage.Houses.House_Class)
-      return Carthage_Model
+      return Lui.Models.Object_Model
    is
       use type Lui.Models.Object_Model;
    begin
@@ -101,7 +103,7 @@ package body Carthage.UI.Models is
       then
          Model_Map.Insert
            (House.Identifier,
-            Carthage.UI.Models.Galaxy.Galaxy_Model (House));
+            Carthage.UI.Models.Top.Top_Model (House));
       end if;
 
       return Model_Map.Element (House.Identifier);

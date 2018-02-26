@@ -2,8 +2,6 @@ with Ada.Characters.Latin_1;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Strings.Fixed;
 
-with Tropos.Reader;
-
 with Lui.Rendering;
 
 with Hexes;
@@ -15,9 +13,9 @@ with Carthage.Stacks;
 with Carthage.Tiles;
 
 with Carthage.UI.Maps;
+with Carthage.UI.Models.Top;
 
 with Carthage.Options;
-with Carthage.Paths;
 
 package body Carthage.UI.Models.Planets is
 
@@ -29,41 +27,17 @@ package body Carthage.UI.Models.Planets is
    Zoomed_Icon_Size : constant array (Zoom_Level) of Positive :=
                         (64, 48, 32, 32, 24, 16, 8);
 
-   Static_UI_Layer   : constant Lui.Rendering.Render_Layer := 1;
-   Base_Layer        : constant Lui.Rendering.Render_Layer := 2;
-   Unit_Layer        : constant Lui.Rendering.Render_Layer := 3;
-   Path_Layer        : constant Lui.Rendering.Render_Layer := 4;
-   Selection_Layer   : constant Lui.Rendering.Render_Layer := 5;
-   Minimap_Layer     : constant Lui.Rendering.Render_Layer := 6;
-   UI_Layer          : constant Lui.Rendering.Render_Layer := 7;
-   Last_Layer        : constant Lui.Rendering.Render_Layer := UI_Layer;
+   Base_Layer        : constant Lui.Render_Layer := 1;
+   Unit_Layer        : constant Lui.Render_Layer := 2;
+   Path_Layer        : constant Lui.Render_Layer := 3;
+   Selection_Layer   : constant Lui.Render_Layer := 4;
+   Last_Layer        : constant Lui.Render_Layer := Selection_Layer;
 
-   Layout_Config : Tropos.Configuration;
-   Have_Layout   : Boolean := False;
-
-   Resource_Image_Width  : constant := 34;
-   Resource_Image_Height : constant := 29;
-
-   type Layout_Rectangle is
-      record
-         X, Y, Width, Height : Integer;
-      end record;
-
-   function Contains
-     (Rectangle : Layout_Rectangle;
-      X, Y      : Integer)
-      return Boolean
-   is (X in Rectangle.X .. Rectangle.X + Rectangle.Width - 1
-       and then Y in Rectangle.Y .. Rectangle.Y + Rectangle.Height - 1);
-
-   procedure Draw
-     (Rectangle : Layout_Rectangle;
-      Colour    : Lui.Colours.Colour_Type;
-      Filled    : Boolean;
-      Renderer  : in out Lui.Rendering.Root_Renderer'Class);
+--     Resource_Image_Width  : constant := 34;
+--     Resource_Image_Height : constant := 29;
 
    subtype Planet_Model_Layer is
-     Lui.Rendering.Render_Layer range 1 .. Last_Layer;
+     Lui.Render_Layer range 1 .. Last_Layer;
 
    type Rendered_Stack_Icon is
       record
@@ -85,15 +59,6 @@ package body Carthage.UI.Models.Planets is
    package Rendered_Asset_Lists is
      new Ada.Containers.Doubly_Linked_Lists (Rendered_Asset_Icon);
 
-   type Resource_Layout_Record is
-      record
-         Rectangle : Layout_Rectangle;
-      end record;
-
-   type Resource_Layout_Array is
-     array (Carthage.Resources.Resource_Index range <>)
-     of Resource_Layout_Record;
-
    type Hex_Layout_Record is
       record
          Rec : Layout_Rectangle;
@@ -104,29 +69,21 @@ package body Carthage.UI.Models.Planets is
      new Ada.Containers.Doubly_Linked_Lists (Hex_Layout_Record);
 
    type Root_Planet_Model is
-     new Root_Carthage_Model with
+     new Carthage.UI.Models.Top.Root_Carthage_Model with
       record
          Planet                : Carthage.Planets.Planet_Type;
          Centre                : Tile_Position;
          Selected_Stack        : Carthage.Stacks.Stack_Type;
          Rendered_Stacks       : Rendered_Stack_Lists.List;
          Rendered_Assets       : Rendered_Asset_Lists.List;
-         Layout_Loaded         : Boolean := False;
          Needs_Render          : Layer_Flags := (others => True);
          Current_Zoom          : Zoom_Level := 0;
-         Left_Toolbar_Layout   : Layout_Rectangle;
-         Top_Toolbar_Layout    : Layout_Rectangle;
-         Bottom_Toolbar_Layout : Layout_Rectangle;
-         Main_Map_Layout       : Layout_Rectangle;
-         Mini_Map_Layout       : Layout_Rectangle;
-         Selected_Stack_Layout : Layout_Rectangle;
-         Resource_Layout       : access Resource_Layout_Array;
          Hex_Layout            : Hex_Layout_Lists.List;
-         Sidebar_Icon_Size     : Positive;
          Show_Hex_Coords       : Boolean;
          Show_Cubic_Coords     : Boolean;
          Show_Move_Cost        : Boolean;
          Hex_Layout_Changed    : Boolean := True;
+         Map_Rectangle         : Layout_Rectangle;
       end record;
 
    overriding function Handle_Update
@@ -138,9 +95,11 @@ package body Carthage.UI.Models.Planets is
      (Item          : in out Root_Planet_Model;
       Width, Height : Natural);
 
-   overriding procedure Render
+   overriding procedure Render_Main_Window
      (Model    : in out Root_Planet_Model;
-      Renderer : in out Lui.Rendering.Root_Renderer'Class);
+      Renderer : in out Lui.Rendering.Root_Renderer'Class;
+      Layer     : Lui.Render_Layer;
+      Rectangle : Layout_Rectangle);
 
    overriding procedure On_Model_Removed
      (Model : in out Root_Planet_Model;
@@ -170,10 +129,6 @@ package body Carthage.UI.Models.Planets is
      (Model : in out Root_Planet_Model)
    is null;
 
-   overriding procedure Reload
-     (Model : in out Root_Planet_Model)
-   is null;
-
    overriding procedure On_Drag
      (Model : in out Root_Planet_Model;
       DX, DY : Integer)
@@ -189,9 +144,6 @@ package body Carthage.UI.Models.Planets is
       Process : not null access
         procedure (Tile : Carthage.Tiles.Tile_Type;
                    Screen_X, Screen_Y : Integer));
-
-   procedure Load_Layout
-     (Model : in out Root_Planet_Model'Class);
 
    procedure Get_Screen_Tile_Centre
      (Model    : Root_Planet_Model'Class;
@@ -227,20 +179,20 @@ package body Carthage.UI.Models.Planets is
    function Map_Pixel_Width
      (Model : Root_Planet_Model'Class)
       return Natural
-   is (Model.Main_Map_Layout.Width);
+   is (Model.Map_Rectangle.Width);
 
    function Map_Pixel_Height
      (Model : Root_Planet_Model'Class)
       return Natural
-   is (Model.Main_Map_Layout.Height);
+   is (Model.Map_Rectangle.Height);
 
    function Map_Hex_Left
      (Model : Root_Planet_Model'Class)
-      return Tile_X;
+      return Tile_X with Unreferenced;
 
    function Map_Hex_Top
      (Model : Root_Planet_Model'Class)
-      return Tile_Y;
+      return Tile_Y with Unreferenced;
 
    function Map_Hex_Width
      (Model : Root_Planet_Model'Class)
@@ -267,26 +219,6 @@ package body Carthage.UI.Models.Planets is
 
    type Planet_Model_Type is access all Root_Planet_Model'Class;
 
-   ----------
-   -- Draw --
-   ----------
-
-   procedure Draw
-     (Rectangle : Layout_Rectangle;
-      Colour    : Lui.Colours.Colour_Type;
-      Filled    : Boolean;
-      Renderer  : in out Lui.Rendering.Root_Renderer'Class)
-   is
-   begin
-      Renderer.Draw_Rectangle
-        (X      => Rectangle.X,
-         Y      => Rectangle.Y,
-         W      => Rectangle.Width,
-         H      => Rectangle.Height,
-         Colour => Colour,
-         Filled => Filled);
-   end Draw;
-
    ----------------------------
    -- Get_Screen_Tile_Centre --
    ----------------------------
@@ -301,14 +233,14 @@ package body Carthage.UI.Models.Planets is
       Relative_X : constant Integer :=
                      Integer (Position.X) - Integer (Model.Centre.X);
       Screen_Y   : constant Integer :=
-                     Model.Main_Map_Layout.Y
-                       + Model.Main_Map_Layout.Height / 2
+                     Model.Map_Rectangle.Y
+                       + Model.Map_Rectangle.Height / 2
                        + Relative_Y * Model.Row_Height
                        + (if Position.X mod 2 = 1
                           then Model.Row_Height / 2 else 0);
       Screen_X   : constant Integer :=
-                     Model.Main_Map_Layout.X
-                     + Model.Main_Map_Layout.Width / 2
+                     Model.Map_Rectangle.X
+                     + Model.Map_Rectangle.Width / 2
                      + (if abs Relative_X <= Planet_Width / 2
                         then Relative_X * Model.Column_Width
                         elsif Relative_X < 0
@@ -348,90 +280,6 @@ package body Carthage.UI.Models.Planets is
       end loop;
       return Best_Tile;
    end Get_Tile;
-
-   -----------------
-   -- Load_Layout --
-   -----------------
-
-   procedure Load_Layout
-     (Model : in out Root_Planet_Model'Class)
-   is
-      function Rectangle (Name : String) return Layout_Rectangle;
-
-      ---------------
-      -- Rectangle --
-      ---------------
-
-      function Rectangle (Name : String) return Layout_Rectangle is
-         Config : constant Tropos.Configuration :=
-                    Layout_Config.Child (Name);
-         Left   : constant Integer := Config.Get (1);
-         Top    : constant Integer := Config.Get (2);
-         Right  : constant Integer := Config.Get (3);
-         Bottom : constant Integer := Config.Get (4);
-         X1     : constant Integer :=
-                    (if Left < 0 then Model.Width + Left else Left);
-         Y1     : constant Integer :=
-                    (if Top < 0 then Model.Height + Top else Top);
-         X2     : constant Integer :=
-                    (if Left < 0 or else Right < 0
-                     then Model.Width - abs Right else Right);
-         Y2     : constant Integer :=
-                    (if Top < 0 or else Bottom < 0
-                     then Model.Height - abs Bottom else Bottom);
-      begin
-         return Layout_Rectangle'
-           (X      => X1,
-            Y      => Y1,
-            Width  => Integer'Max (X2 - X1, 1),
-            Height => Integer'Max (Y2 - Y1, 1));
-      end Rectangle;
-
-   begin
-      Model.Left_Toolbar_Layout := Rectangle ("left-toolbar");
-      Model.Top_Toolbar_Layout := Rectangle ("top-toolbar");
-      Model.Bottom_Toolbar_Layout := Rectangle ("bottom-toolbar");
-      Model.Mini_Map_Layout := Rectangle ("mini-map");
-      Model.Main_Map_Layout := Rectangle ("main-map");
-      Model.Selected_Stack_Layout := Rectangle ("selected-stack-layout");
-      Model.Sidebar_Icon_Size := Layout_Config.Get ("sidebar-icon-size", 64);
-
-      declare
-         use Carthage.Resources;
-         Next_Index : Resource_Index := 1;
-         Current_X  : Integer := Model.Bottom_Toolbar_Layout.X + 2;
-         Current_Y  : constant Integer := Model.Bottom_Toolbar_Layout.Y + 2;
-
-         procedure Next_Rectangle
-           (Resource : Carthage.Resources.Resource_Type);
-
-         --------------------
-         -- Next_Rectangle --
-         --------------------
-
-         procedure Next_Rectangle
-           (Resource : Carthage.Resources.Resource_Type)
-         is
-         begin
-            Model.Resource_Layout (Resource.Index) :=
-              (Rectangle => (Current_X, Current_Y, 36, 48));
-            Next_Index := Next_Index + 1;
-            Current_X := Current_X + 40;
-         end Next_Rectangle;
-
-      begin
-
-         if Model.Resource_Layout = null then
-            Model.Resource_Layout :=
-              new Resource_Layout_Array
-                (1 .. Carthage.Resources.Last_Index);
-         end if;
-
-         Carthage.Resources.Scan (Next_Rectangle'Access);
-      end;
-
-      Model.Layout_Loaded := True;
-   end Load_Layout;
 
    --------------------
    -- Map_Hex_Height --
@@ -522,26 +370,21 @@ package body Carthage.UI.Models.Planets is
    function Planet_Model
      (House  : Carthage.Houses.House_Type;
       Planet : Carthage.Planets.Planet_Type)
-      return Carthage_Model
+      return Lui.Models.Object_Model
    is
       use Carthage.Houses;
    begin
-      if not Have_Layout then
-         Layout_Config :=
-           Tropos.Reader.Read_Config
-             (Carthage.Paths.Config_File ("ui/layout.txt"));
-         Have_Layout := True;
-      end if;
-
       if not Have_Model (House, Planet.Identifier) then
          declare
             use Carthage.Planets;
             Model : constant Planet_Model_Type := new Root_Planet_Model;
          begin
-            Model.Initialise (Planet.Name, Last_Render_Layer => Last_Layer);
-            Model.Set_Background (Lui.Colours.Black);
+            Model.Initialize_Model
+              (House              => House,
+               Class_Id           => Planet.Identifier,
+               Render_Layer_Count => Last_Layer);
             Model.Planet := Planet;
-            Set_Model (House, Planet.Identifier, Model);
+            Save_Model (Model, Planet.Identifier);
             Model.Show_Hex_Coords := Carthage.Options.Show_Hex_Coordinates;
             Model.Show_Cubic_Coords :=
               Carthage.Options.Show_Cubic_Coordinates;
@@ -564,9 +407,11 @@ package body Carthage.UI.Models.Planets is
    -- Render --
    ------------
 
-   overriding procedure Render
+   overriding procedure Render_Main_Window
      (Model    : in out Root_Planet_Model;
-      Renderer : in out Lui.Rendering.Root_Renderer'Class)
+      Renderer : in out Lui.Rendering.Root_Renderer'Class;
+      Layer     : Lui.Render_Layer;
+      Rectangle : Layout_Rectangle)
    is
       use Carthage.Planets;
       use type Carthage.Stacks.Stack_Type;
@@ -587,8 +432,8 @@ package body Carthage.UI.Models.Planets is
         (Tile               : Carthage.Tiles.Tile_Type;
          Screen_X, Screen_Y : Integer);
 
-      procedure Draw_Stack_Icons
-        (Stack : Carthage.Stacks.Stack_Type);
+--        procedure Draw_Stack_Icons
+--          (Stack : Carthage.Stacks.Stack_Type);
 
       --------------------------
       -- Draw_Base_Layer_Tile --
@@ -717,47 +562,47 @@ package body Carthage.UI.Models.Planets is
       -- Draw_Stack_Icons --
       ----------------------
 
-      procedure Draw_Stack_Icons
-        (Stack : Carthage.Stacks.Stack_Type)
-      is
-         X : Natural := Model.Selected_Stack_Layout.X;
-         Y : Natural := Model.Selected_Stack_Layout.Y;
-         Limit_X : constant Natural :=
-                     X + Model.Selected_Stack_Layout.Width;
-         Background : constant Carthage.Colours.Colour_Type :=
-                        Stack.Owner.Colour;
-         Icon_Size  : constant Positive := Model.Sidebar_Icon_Size;
-      begin
-         Model.Rendered_Assets.Clear;
-
-         for I in 1 .. Stack.Count loop
-            declare
-               Asset      : constant Carthage.Assets.Asset_Type :=
-                              Stack.Asset (I);
-               Resource   : constant String :=
-                              "unit"
-                              & Integer'Image (-(Asset.Unit.Index));
-            begin
-               Renderer.Draw_Rectangle
-                 (X, Y, Icon_Size, Icon_Size,
-                  To_Lui_Colour (Background), True);
-               Renderer.Draw_Image
-                 (X, Y,
-                  Icon_Size, Icon_Size,
-                  Resource);
-               Model.Rendered_Assets.Append
-                 (Rendered_Asset_Icon'
-                    (Asset => Asset,
-                     Rec   => (X, Y, Icon_Size, Icon_Size)));
-            end;
-
-            X := X + Icon_Size + 2;
-            if X + Icon_Size > Limit_X then
-               X := Model.Selected_Stack_Layout.X;
-               Y := Y + Icon_Size + 2;
-            end if;
-         end loop;
-      end Draw_Stack_Icons;
+--        procedure Draw_Stack_Icons
+--          (Stack : Carthage.Stacks.Stack_Type)
+--        is
+--           X : Natural := Model.Selected_Stack_Layout.X;
+--           Y : Natural := Model.Selected_Stack_Layout.Y;
+--           Limit_X : constant Natural :=
+--                       X + Model.Selected_Stack_Layout.Width;
+--           Background : constant Carthage.Colours.Colour_Type :=
+--                          Stack.Owner.Colour;
+--           Icon_Size  : constant Positive := Model.Sidebar_Icon_Size;
+--        begin
+--           Model.Rendered_Assets.Clear;
+--
+--           for I in 1 .. Stack.Count loop
+--              declare
+--                 Asset      : constant Carthage.Assets.Asset_Type :=
+--                                Stack.Asset (I);
+--                 Resource   : constant String :=
+--                                "unit"
+--                                & Integer'Image (-(Asset.Unit.Index));
+--              begin
+--                 Renderer.Draw_Rectangle
+--                   (X, Y, Icon_Size, Icon_Size,
+--                    To_Lui_Colour (Background), True);
+--                 Renderer.Draw_Image
+--                   (X, Y,
+--                    Icon_Size, Icon_Size,
+--                    Resource);
+--                 Model.Rendered_Assets.Append
+--                   (Rendered_Asset_Icon'
+--                      (Asset => Asset,
+--                       Rec   => (X, Y, Icon_Size, Icon_Size)));
+--              end;
+--
+--              X := X + Icon_Size + 2;
+--              if X + Icon_Size > Limit_X then
+--                 X := Model.Selected_Stack_Layout.X;
+--                 Y := Y + Icon_Size + 2;
+--              end if;
+--           end loop;
+--        end Draw_Stack_Icons;
 
       --------------------------
       -- Draw_Unit_Layer_Tile --
@@ -835,27 +680,26 @@ package body Carthage.UI.Models.Planets is
 
    begin
 
-      if not Model.Layout_Loaded then
-         Model.Load_Layout;
-      end if;
+      Model.Map_Rectangle := Rectangle;
 
-      case Planet_Model_Layer (Renderer.Current_Render_Layer) is
-         when Static_UI_Layer =>
+      case Planet_Model_Layer (Layer) is
 
-            for Index in Model.Resource_Layout'Range loop
-               declare
-                  Rec : Layout_Rectangle renames
-                          Model.Resource_Layout (Index).Rectangle;
-               begin
-                  Renderer.Draw_Image
-                    (X        => Rec.X + 1,
-                     Y        => Rec.Y + 1,
-                     W        => Resource_Image_Width,
-                     H        => Resource_Image_Height,
-                     Resource =>
-                       "resource" & Integer'Image (-Integer (Index)));
-               end;
-            end loop;
+--           when Static_UI_Layer =>
+--
+--              for Index in Model.Resource_Layout'Range loop
+--                 declare
+--                    Rec : Layout_Rectangle renames
+--                            Model.Resource_Layout (Index).Rectangle;
+--                 begin
+--                    Renderer.Draw_Image
+--                      (X        => Rec.X + 1,
+--                       Y        => Rec.Y + 1,
+--                       W        => Resource_Image_Width,
+--                       H        => Resource_Image_Height,
+--                       Resource =>
+--                         "resource" & Integer'Image (-Integer (Index)));
+--                 end;
+--              end loop;
 
          when Base_Layer =>
 
@@ -934,88 +778,88 @@ package body Carthage.UI.Models.Planets is
                      Filled => False);
                end if;
             end;
-         when Minimap_Layer =>
-            declare
-               Scale : constant Positive :=
-                         Integer'Max (Model.Left_Toolbar_Layout.Width
-                                      / Planet_Width,
-                                      1);
-
-               procedure Draw_Minimap_Tile
-                 (Tile               : Carthage.Tiles.Tile_Type);
-
-               -----------------------
-               -- Draw_Minimap_Tile --
-               -----------------------
-
-               procedure Draw_Minimap_Tile
-                 (Tile               : Carthage.Tiles.Tile_Type)
-               is
-                  X     : constant Natural :=
-                            Model.Mini_Map_Layout.X
-                            + Natural (Tile.Position.X) * Scale;
-                  Y     : constant Natural :=
-                            Model.Mini_Map_Layout.Y
-                              + Natural (Tile.Position.Y) * Scale;
-                  Color : constant Carthage.Colours.Colour_Type :=
-                            Tile.Base_Terrain.Colour
-                              (Model.Planet.Category_Name);
-               begin
-                  Renderer.Draw_Rectangle
-                    (X      => X,
-                     Y      => Y,
-                     W      => Scale,
-                     H      => Scale,
-                     Colour => To_Lui_Colour (Color),
-                     Filled => True);
-               end Draw_Minimap_Tile;
-
-            begin
-               Draw (Model.Left_Toolbar_Layout, Lui.Colours.Black, True,
-                     Renderer);
-
-               Model.Planet.Scan_Tiles (Draw_Minimap_Tile'Access);
-
-               Renderer.Draw_Rectangle
-                 (X      =>
-                    Model.Mini_Map_Layout.X
-                      + Natural (Model.Map_Hex_Left) * Scale,
-                  Y      =>
-                    Model.Mini_Map_Layout.Y
-                      + Natural (Model.Map_Hex_Top) * Scale,
-                  W      => Natural (Model.Map_Hex_Width) * Scale,
-                  H      => Natural (Model.Map_Hex_Height) * Scale,
-                  Colour => Lui.Colours.White,
-                  Filled => False);
-
-               if Model.Selected_Stack /= null then
-                  Draw_Stack_Icons (Model.Selected_Stack);
-               end if;
-
-            end;
-
-         when UI_Layer =>
-            for Index in Model.Resource_Layout'Range loop
-               declare
-                  Rec : Layout_Rectangle renames
-                          Model.Resource_Layout (Index).Rectangle;
-                  Q   : constant Natural :=
-                          (if Model.Planet.Has_Palace
-                           then Model.Planet.Palace.Whole_Quantity
-                             (Carthage.Resources.Get (Index))
-                           else 0);
-               begin
-                  Renderer.Draw_String
-                    (X      => Rec.X + 1,
-                     Y      => Rec.Y + Resource_Image_Height + 4,
-                     Size   => 12,
-                     Colour => Lui.Colours.To_Colour (98, 207, 62),
-                     Text   => Natural'Image (Q));
-               end;
-            end loop;
+--           when Minimap_Layer =>
+--              declare
+--                 Scale : constant Positive :=
+--                           Integer'Max (Model.Left_Toolbar_Layout.Width
+--                                        / Planet_Width,
+--                                        1);
+--
+--                 procedure Draw_Minimap_Tile
+--                   (Tile               : Carthage.Tiles.Tile_Type);
+--
+--                 -----------------------
+--                 -- Draw_Minimap_Tile --
+--                 -----------------------
+--
+--                 procedure Draw_Minimap_Tile
+--                   (Tile               : Carthage.Tiles.Tile_Type)
+--                 is
+--                    X     : constant Natural :=
+--                              Model.Mini_Map_Layout.X
+--                              + Natural (Tile.Position.X) * Scale;
+--                    Y     : constant Natural :=
+--                              Model.Mini_Map_Layout.Y
+--                                + Natural (Tile.Position.Y) * Scale;
+--                    Color : constant Carthage.Colours.Colour_Type :=
+--                              Tile.Base_Terrain.Colour
+--                                (Model.Planet.Category_Name);
+--                 begin
+--                    Renderer.Draw_Rectangle
+--                      (X      => X,
+--                       Y      => Y,
+--                       W      => Scale,
+--                       H      => Scale,
+--                       Colour => To_Lui_Colour (Color),
+--                       Filled => True);
+--                 end Draw_Minimap_Tile;
+--
+--              begin
+--                 Draw (Model.Left_Toolbar_Layout, Lui.Colours.Black, True,
+--                       Renderer);
+--
+--                 Model.Planet.Scan_Tiles (Draw_Minimap_Tile'Access);
+--
+--                 Renderer.Draw_Rectangle
+--                   (X      =>
+--                      Model.Mini_Map_Layout.X
+--                        + Natural (Model.Map_Hex_Left) * Scale,
+--                    Y      =>
+--                      Model.Mini_Map_Layout.Y
+--                        + Natural (Model.Map_Hex_Top) * Scale,
+--                    W      => Natural (Model.Map_Hex_Width) * Scale,
+--                    H      => Natural (Model.Map_Hex_Height) * Scale,
+--                    Colour => Lui.Colours.White,
+--                    Filled => False);
+--
+--                 if Model.Selected_Stack /= null then
+--                    Draw_Stack_Icons (Model.Selected_Stack);
+--                 end if;
+--
+--              end;
+--
+--           when UI_Layer =>
+--              for Index in Model.Resource_Layout'Range loop
+--                 declare
+--                    Rec : Layout_Rectangle renames
+--                            Model.Resource_Layout (Index).Rectangle;
+--                    Q   : constant Natural :=
+--                            (if Model.Planet.Has_Palace
+--                             then Model.Planet.Palace.Whole_Quantity
+--                               (Carthage.Resources.Get (Index))
+--                             else 0);
+--                 begin
+--                    Renderer.Draw_String
+--                      (X      => Rec.X + 1,
+--                       Y      => Rec.Y + Resource_Image_Height + 4,
+--                       Size   => 12,
+--                       Colour => Lui.Colours.To_Colour (98, 207, 62),
+--                       Text   => Natural'Image (Q));
+--                 end;
+--              end loop;
       end case;
       Model.Needs_Render := (others => False);
-   end Render;
+   end Render_Main_Window;
 
    ------------
    -- Resize --
@@ -1026,8 +870,8 @@ package body Carthage.UI.Models.Planets is
       Width, Height : Natural)
    is
    begin
-      Root_Carthage_Model (Item).Resize (Width, Height);
-      Item.Load_Layout;
+      Carthage.UI.Models.Top.Root_Carthage_Model (Item)
+        .Resize (Width, Height);
       Item.Hex_Layout_Changed := True;
    end Resize;
 
@@ -1113,7 +957,7 @@ package body Carthage.UI.Models.Planets is
       X, Y  : Natural)
    is
    begin
-      if Contains (Model.Main_Map_Layout, X, Y) then
+      if Contains (Model.Map_Rectangle, X, Y) then
          for Rendered_Stack of Model.Rendered_Stacks loop
             if X in Rendered_Stack.Left .. Rendered_Stack.Right
               and then Y in Rendered_Stack.Top .. Rendered_Stack.Bottom
@@ -1123,37 +967,37 @@ package body Carthage.UI.Models.Planets is
                exit;
             end if;
          end loop;
-      elsif Contains (Model.Mini_Map_Layout, X, Y) then
-         declare
-            Zoomed_Size  : constant Natural :=
-                             Zoomed_Tile_Size (Model.Current_Zoom);
-            Tile_Height  : constant Natural := Zoomed_Size;
-            Column_Width : constant Natural := Zoomed_Size;
-
-            Tiles_Across : constant Positive :=
-                             Model.Map_Pixel_Width / Column_Width + 1;
-            Tiles_Down   : constant Positive :=
-                             Model.Map_Pixel_Height / Tile_Height + 1;
-            Scale        : constant Positive :=
-                         Integer'Max (Model.Left_Toolbar_Layout.Width
-                                      / Planet_Width,
-                                      1);
-            Centre_X : Integer := (X - Model.Mini_Map_Layout.X) / Scale + 1;
-            Centre_Y : Integer := (Y - Model.Mini_Map_Layout.Y) / Scale + 1;
-         begin
-            Centre_X := Integer'Max (Centre_X, Tiles_Across / 2);
-            Centre_Y := Integer'Max (Centre_Y, Tiles_Down / 2);
-            Centre_X := Integer'Min
-              (Centre_X, Planet_Width - Tiles_Across / 2 + 1);
-            Centre_Y := Integer'Min
-              (Centre_Y, Planet_Height - Tiles_Down / 2 + 1);
-            Centre_X := Integer'Max (Centre_X, 1);
-            Centre_Y := Integer'Max (Centre_Y, 1);
-            Centre_X := Integer'Min (Centre_X, Planet_Width);
-            Centre_Y := Integer'Min (Centre_Y, Planet_Height);
-            Model.Set_Centre ((Tile_X (Centre_X), Tile_Y (Centre_Y)));
-            Model.Queue_Render;
-         end;
+--        elsif Contains (Model.Mini_Map_Layout, X, Y) then
+--           declare
+--              Zoomed_Size  : constant Natural :=
+--                               Zoomed_Tile_Size (Model.Current_Zoom);
+--              Tile_Height  : constant Natural := Zoomed_Size;
+--              Column_Width : constant Natural := Zoomed_Size;
+--
+--              Tiles_Across : constant Positive :=
+--                               Model.Map_Pixel_Width / Column_Width + 1;
+--              Tiles_Down   : constant Positive :=
+--                               Model.Map_Pixel_Height / Tile_Height + 1;
+--              Scale        : constant Positive :=
+--                           Integer'Max (Model.Left_Toolbar_Layout.Width
+--                                        / Planet_Width,
+--                                        1);
+--           Centre_X : Integer := (X - Model.Mini_Map_Layout.X) / Scale + 1;
+--           Centre_Y : Integer := (Y - Model.Mini_Map_Layout.Y) / Scale + 1;
+--           begin
+--              Centre_X := Integer'Max (Centre_X, Tiles_Across / 2);
+--              Centre_Y := Integer'Max (Centre_Y, Tiles_Down / 2);
+--              Centre_X := Integer'Min
+--                (Centre_X, Planet_Width - Tiles_Across / 2 + 1);
+--              Centre_Y := Integer'Min
+--                (Centre_Y, Planet_Height - Tiles_Down / 2 + 1);
+--              Centre_X := Integer'Max (Centre_X, 1);
+--              Centre_Y := Integer'Max (Centre_Y, 1);
+--              Centre_X := Integer'Min (Centre_X, Planet_Width);
+--              Centre_Y := Integer'Min (Centre_Y, Planet_Height);
+--              Model.Set_Centre ((Tile_X (Centre_X), Tile_Y (Centre_Y)));
+--              Model.Queue_Render;
+--           end;
       end if;
    end Select_XY;
 
@@ -1180,57 +1024,32 @@ package body Carthage.UI.Models.Planets is
       return String
    is
    begin
-      if Contains (Model.Main_Map_Layout, X, Y) then
+      if Contains (Model.Map_Rectangle, X, Y) then
          declare
             use type Carthage.Tiles.Tile_Type;
             Tile : constant Carthage.Tiles.Tile_Type :=
                      Model.Get_Tile (X, Y);
-            Zoomed_Size  : constant Natural :=
-                             Zoomed_Tile_Size (Model.Current_Zoom);
-            Tile_Height  : constant Natural := Zoomed_Size;
-            Column_Width : constant Natural := Zoomed_Size;
-            Row_Height   : constant Natural := Tile_Height + 1;
-            Local_X      : constant Natural := X - Model.Main_Map_Layout.X;
-            Local_Y      : constant Natural := Y - Model.Main_Map_Layout.Y;
-            Map_X        : Integer :=
-                             Integer (Model.Centre.X)
-                             + (Local_X - Model.Main_Map_Layout.Width / 2)
-                             / Column_Width - 1;
-            Map_Y        : constant Integer :=
-                             Integer (Model.Centre.Y)
-                             + (Local_Y - Model.Main_Map_Layout.Height / 2)
-                             / Row_Height;
          begin
-            while Map_X < 1 loop
-               Map_X := Map_X + Planet_Width;
-            end loop;
-            while Map_X > Planet_Width loop
-               Map_X := Map_X - Planet_Width;
-            end loop;
             if Tile /= null then
                return X'Img & Y'Img & " " & Tile.Description;
-            elsif Map_Y in 1 .. Planet_Height then
-               return X'Img & Y'Img & " "
-                 & Model.Planet.Tile ((Tile_X (Map_X), Tile_Y (Map_Y)))
-                 .Description;
             else
                return "";
             end if;
          end;
-      elsif Contains (Model.Selected_Stack_Layout, X, Y) then
-         for Info of Model.Rendered_Assets loop
-            if Contains (Info.Rec, X, Y) then
-               return Info.Asset.Unit.Name;
-            end if;
-         end loop;
-         return "";
-      elsif Contains (Model.Bottom_Toolbar_Layout, X, Y) then
-         for Index in Model.Resource_Layout'Range loop
-            if Contains (Model.Resource_Layout (Index).Rectangle, X, Y) then
-               return Carthage.Resources.Get (Index).Name;
-            end if;
-         end loop;
-         return "";
+--        elsif Contains (Model.Selected_Stack_Layout, X, Y) then
+--           for Info of Model.Rendered_Assets loop
+--              if Contains (Info.Rec, X, Y) then
+--                 return Info.Asset.Unit.Name;
+--              end if;
+--           end loop;
+--           return "";
+--        elsif Contains (Model.Bottom_Toolbar_Layout, X, Y) then
+--         for Index in Model.Resource_Layout'Range loop
+--           if Contains (Model.Resource_Layout (Index).Rectangle, X, Y) then
+--                 return Carthage.Resources.Get (Index).Name;
+--              end if;
+--           end loop;
+--           return "";
       else
          return "";
       end if;
@@ -1253,7 +1072,7 @@ package body Carthage.UI.Models.Planets is
       if New_Zoom in Zoom_Level then
          Model.Current_Zoom := New_Zoom;
 
-         if Contains (Model.Main_Map_Layout, X, Y)
+         if Contains (Model.Map_Rectangle, X, Y)
            and then Z > 0
          then
             declare
