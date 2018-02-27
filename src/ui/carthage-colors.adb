@@ -1,4 +1,4 @@
-package body Carthage.Colours is
+package body Carthage.Colors is
 
    ---------------
    -- Configure --
@@ -6,7 +6,7 @@ package body Carthage.Colours is
 
    function Configure
      (Config : Tropos.Configuration)
-      return Colour_Type
+      return Color_Type
    is
       function Hex_Digit (Ch : Character) return Natural
       is (if Ch in '0' .. '9'
@@ -17,11 +17,11 @@ package body Carthage.Colours is
           then Character'Pos (Ch) - Character'Pos ('a') + 10
           else 0);
 
-      function Hex_To_Element (Ch : Character) return Colour_Element
-      is (Colour_Element (Float (Hex_Digit (Ch)) / 16.0));
+      function Hex_To_Element (Ch : Character) return Color_Element
+      is (Color_Element (Float (Hex_Digit (Ch)) / 16.0));
 
-      function Hex_To_Element (S : String) return Colour_Element
-      is (Colour_Element
+      function Hex_To_Element (S : String) return Color_Element
+      is (Color_Element
           (Float
            (Hex_Digit (S (S'First)) * 16
             + Hex_Digit (S (S'First + 1))) / 256.0));
@@ -29,8 +29,8 @@ package body Carthage.Colours is
    begin
       if Config.Contains ("color") then
          return Configure (Config.Child ("color"));
-      elsif Config.Contains ("colour") then
-         return Configure (Config.Child ("colour"));
+      elsif Config.Contains ("Color") then
+         return Configure (Config.Child ("Color"));
       elsif Config.Child_Count = 1 then
          declare
             Hex_Name : constant String := Config.Value;
@@ -80,13 +80,13 @@ package body Carthage.Colours is
             B : constant Float := Config.Get (3);
          begin
             if R > 1.0 or else G > 1.0 or else B > 1.0 then
-               return (Red   => Colour_Element (R / 255.0),
-                       Green => Colour_Element (G / 255.0),
-                       Blue  => Colour_Element (B / 255.0),
-                       Alpha => Colour_Element (1.0));
+               return (Red   => Color_Element (R / 255.0),
+                       Green => Color_Element (G / 255.0),
+                       Blue  => Color_Element (B / 255.0),
+                       Alpha => Color_Element (1.0));
             else
-               return (Colour_Element (R), Colour_Element (G),
-                       Colour_Element (B), 1.0);
+               return (Color_Element (R), Color_Element (G),
+                       Color_Element (B), 1.0);
             end if;
          end;
       else
@@ -96,12 +96,12 @@ package body Carthage.Colours is
             B : constant Float := Config.Get ("b", 0.0);
             A : constant Float := Config.Get ("a", 255.0);
          begin
-            return (Red   => Colour_Element (R / 255.0),
-                    Green => Colour_Element (G / 255.0),
-                    Blue  => Colour_Element (B / 255.0),
-                    Alpha => Colour_Element (A / 255.0));
+            return (Red   => Color_Element (R / 255.0),
+                    Green => Color_Element (G / 255.0),
+                    Blue  => Color_Element (B / 255.0),
+                    Alpha => Color_Element (A / 255.0));
          end;
       end if;
    end Configure;
 
-end Carthage.Colours;
+end Carthage.Colors;

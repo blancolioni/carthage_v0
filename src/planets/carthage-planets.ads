@@ -7,7 +7,7 @@ with Hexes;
 
 private with Hexes.Grids;
 
-with Carthage.Colours;
+with Carthage.Colors;
 
 with Carthage.Objects.Localised;
 
@@ -65,10 +65,10 @@ package Carthage.Planets is
       Position : Tile_Position)
       return Natural;
 
-   function Terrain_Colour
+   function Terrain_Color
      (Planet   : Planet_Record;
       Position : Tile_Position)
-      return Carthage.Colours.Colour_Type;
+      return Carthage.Colors.Color_Type;
 
    function Neighbours
      (Planet   : Planet_Record;
@@ -403,11 +403,11 @@ private
       return String
    is (if Planet.Megacity then "city" else Planet.Category.Identifier);
 
-   function Terrain_Colour
+   function Terrain_Color
      (Planet   : Planet_Record;
       Position : Tile_Position)
-      return Carthage.Colours.Colour_Type
-   is (Planet.Tile (Position).Terrain (1).Colour (Planet.Category_Name));
+      return Carthage.Colors.Color_Type
+   is (Planet.Tile (Position).Terrain (1).Color (Planet.Category_Name));
 
    function Seen_By
      (Planet : Planet_Record;

@@ -27,4 +27,6 @@ package Carthage is
    type Health_Type is range 0 .. 100;
    type Loyalty_Type is range 0 .. 100;
 
+   subtype Carthage_Float is Float range Float'First .. Float'Last;
+
 end Carthage;

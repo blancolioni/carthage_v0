@@ -22,7 +22,7 @@ with Lui.Rendering;
 with Lui.Gtk_UI;
 
 with Carthage.Paths;
-with Carthage.UI.Models;
+with Carthage.UI.Models.Top;
 
 with Carthage.Calendar;
 with Carthage.Updates;
@@ -379,7 +379,9 @@ package body Carthage.UI.Gtk_UI is
 
          Lui.Gtk_UI.Start
            (Main => UI,
-            Top  => Carthage.UI.Models.Top_Model (House));
+            Top  =>
+              Lui.Models.Object_Model
+                (Carthage.UI.Models.Top.Create_Top_Model (House)));
       end;
 
       Gtk.Main.Main;

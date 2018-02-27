@@ -2,7 +2,7 @@ private with WL.String_Maps;
 
 private with Memor.Database;
 
-with Carthage.Colours;
+with Carthage.Colors;
 with Carthage.Objects.Localised;
 
 package Carthage.Terrain is
@@ -18,10 +18,10 @@ package Carthage.Terrain is
      (Terrain : Terrain_Record)
       return Boolean;
 
-   function Colour
+   function Color
      (Terrain  : Terrain_Record;
       Category : String)
-      return Carthage.Colours.Colour_Type;
+      return Carthage.Colors.Color_Type;
 
    function Road_Cost
      (Terrain  : Terrain_Record;
@@ -45,7 +45,7 @@ private
 
    type Terrain_Category_Info is
       record
-         Colour : Carthage.Colours.Colour_Type;
+         Color : Carthage.Colors.Color_Type;
          Road_Cost : Natural;
       end record;
 
@@ -91,11 +91,11 @@ private
       return Boolean
    is (Terrain.Ocean);
 
-   function Colour
+   function Color
      (Terrain  : Terrain_Record;
       Category : String)
-      return Carthage.Colours.Colour_Type
-   is (Terrain.Cat_Info.Element (Category).Colour);
+      return Carthage.Colors.Color_Type
+   is (Terrain.Cat_Info.Element (Category).Color);
 
    function Road_Cost
      (Terrain  : Terrain_Record;

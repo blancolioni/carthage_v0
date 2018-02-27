@@ -2,7 +2,7 @@ with WL.Images;
 
 with Tropos;
 
-with Carthage.Colours;
+with Carthage.Colors;
 
 package Carthage.Import is
 
@@ -29,9 +29,9 @@ package Carthage.Import is
       On_Load          : not null access
         procedure (Image : WL.Images.Image_Type'Class));
 
-   function Palette_Colour
+   function Palette_Color
      (Palette_Index : Natural)
-      return Carthage.Colours.Colour_Type;
+      return Carthage.Colors.Color_Type;
 
    procedure Scan_Settings
      (Settings : String;

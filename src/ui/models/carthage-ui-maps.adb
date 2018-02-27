@@ -84,10 +84,10 @@ package body Carthage.UI.Maps is
 
    function Make_Background_Resource
      (Resource_Name : String;
-      Colour        : Carthage.Colours.Colour_Type)
+      Color        : Carthage.Colors.Color_Type)
       return Layer_Element
    is (Resource_Name'Length, Background_Hex_Tile,
-       Resource_Name, Colour);
+       Resource_Name, Color);
 
    function Make_Hex_Tile_Resource
      (Resource_Name : String)
@@ -460,7 +460,7 @@ package body Carthage.UI.Maps is
       Process : not null access
         procedure (Element : Layer_Element_Type;
                    Resource_Name : String;
-                   Color : Carthage.Colours.Colour_Type))
+                   Color : Carthage.Colors.Color_Type))
    is
    begin
       for Element of Layers.List loop

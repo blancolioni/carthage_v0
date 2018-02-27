@@ -20,11 +20,11 @@ package body Carthage.UI is
    ---------------------------
 
    function Create_Background_Hex
-     (Background_Color : Carthage.Colours.Colour_Type)
+     (Background_Color : Carthage.Colors.Color_Type)
       return WL.Images.Image_Type'Class
    is
       use WL.Images;
-      use type Carthage.Colours.Colour_Element;
+      use type Carthage.Colors.Color_Element;
       Color : constant Image_Color :=
                 (Red   => Color_Element (Background_Color.Red * 255.0),
                  Green => Color_Element (Background_Color.Green * 255.0),

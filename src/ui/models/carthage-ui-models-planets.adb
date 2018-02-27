@@ -450,7 +450,7 @@ package body Carthage.UI.Models.Planets is
          procedure Draw
            (Element  : Layer_Element_Type;
             Resource : String;
-            Color    : Carthage.Colours.Colour_Type);
+            Color    : Carthage.Colors.Color_Type);
 
          ----------
          -- Draw --
@@ -459,9 +459,9 @@ package body Carthage.UI.Models.Planets is
          procedure Draw
            (Element  : Layer_Element_Type;
             Resource : String;
-            Color    : Carthage.Colours.Colour_Type)
+            Color    : Carthage.Colors.Color_Type)
          is
-            use type Carthage.Colours.Colour_Element;
+            use type Carthage.Colors.Color_Element;
             Rec : constant Layout_Rectangle :=
                     Layout_Rectangle'
                       (X      => Screen_X - Tile_Width / 2,
@@ -512,7 +512,7 @@ package body Carthage.UI.Models.Planets is
               (X      => Screen_X - Tile_Width / 2,
                Y      => Screen_Y,
                Size   => 8,
-               Colour => Lui.Colours.Black,
+               Color => Lui.Colors.Black,
                Text   => Carthage.Tiles.Position_Image (Tile.Position));
          end if;
 
@@ -526,19 +526,19 @@ package body Carthage.UI.Models.Planets is
                  (X      => Screen_X + Tile_Width / 4 - 6,
                   Y      => Screen_Y,
                   Size   => 12,
-                  Colour => Lui.Colours.Black,
+                  Color => Lui.Colors.Black,
                   Text   => Coordinate_Type'Image (Cube_X (Cubic)));
                Renderer.Draw_String
                  (X      => Screen_X - Tile_Width / 4 - 6,
                   Y      => Screen_Y - Tile_Height / 2 + 4,
                   Size   => 12,
-                  Colour => Lui.Colours.Black,
+                  Color => Lui.Colors.Black,
                   Text   => Coordinate_Type'Image (Cube_Y (Cubic)));
                Renderer.Draw_String
                  (X      => Screen_X - Tile_Width / 4 - 6,
                   Y      => Screen_Y + Tile_Height / 2 - 16,
                   Size   => 12,
-                  Colour => Lui.Colours.Black,
+                  Color => Lui.Colors.Black,
                   Text   => Coordinate_Type'Image (Cube_Z (Cubic)));
             end;
          end if;
@@ -550,7 +550,7 @@ package body Carthage.UI.Models.Planets is
               (X      => Screen_X,
                Y      => Screen_Y,
                Size   => 12,
-               Colour => Lui.Colours.Black,
+               Color => Lui.Colors.Black,
                Text   =>
                  Natural'Image
                    (Model.Selected_Stack.Movement_Cost (Tile)));
@@ -569,8 +569,8 @@ package body Carthage.UI.Models.Planets is
 --           Y : Natural := Model.Selected_Stack_Layout.Y;
 --           Limit_X : constant Natural :=
 --                       X + Model.Selected_Stack_Layout.Width;
---           Background : constant Carthage.Colours.Colour_Type :=
---                          Stack.Owner.Colour;
+--           Background : constant Carthage.Colors.Color_Type :=
+--                          Stack.Owner.Color;
 --           Icon_Size  : constant Positive := Model.Sidebar_Icon_Size;
 --        begin
 --           Model.Rendered_Assets.Clear;
@@ -585,7 +585,7 @@ package body Carthage.UI.Models.Planets is
 --              begin
 --                 Renderer.Draw_Rectangle
 --                   (X, Y, Icon_Size, Icon_Size,
---                    To_Lui_Colour (Background), True);
+--                    To_Lui_Color (Background), True);
 --                 Renderer.Draw_Image
 --                   (X, Y,
 --                    Icon_Size, Icon_Size,
@@ -627,8 +627,8 @@ package body Carthage.UI.Models.Planets is
                Bottom     : Integer := Top + Icon_Size;
                Stack      : constant Carthage.Stacks.Stack_Type :=
                               Tile.First_Stack;
-               Background : Carthage.Colours.Colour_Type :=
-                              Stack.Owner.Colour;
+               Background : Carthage.Colors.Color_Type :=
+                              Stack.Owner.Color;
                Resource   : constant String :=
                               "unit"
                               & Integer'Image (-(Stack.Asset (1).Unit.Index));
@@ -665,15 +665,15 @@ package body Carthage.UI.Models.Planets is
 
                Renderer.Draw_Rectangle
                  (Left, Top, Icon_Size, Icon_Size,
-                  To_Lui_Colour (Background), True);
+                  To_Lui_Color (Background), True);
                Renderer.Draw_Image
                  (Left, Top, Icon_Size, Icon_Size, Resource);
                Renderer.Draw_Rectangle
                  (Left + Icon_Size - 12, Top + Icon_Size - 8,
-                  12, 8, Lui.Colours.Black, True);
+                  12, 8, Lui.Colors.Black, True);
                Renderer.Draw_String
                  (Left + Icon_Size - 10, Top + Icon_Size, 8,
-                  Lui.Colours.White, Size);
+                  Lui.Colors.White, Size);
             end;
          end if;
       end Draw_Unit_Layer_Tile;
@@ -726,10 +726,10 @@ package body Carthage.UI.Models.Planets is
                                  Model.Selected_Stack.Current_Movement;
                   X1, Y1     : Integer := 0;
                   Past       : Boolean := True;
-                  Past_Color : constant Lui.Colours.Colour_Type :=
-                                 Lui.Colours.To_Colour (100, 100, 100);
-                  Future_Color : constant Lui.Colours.Colour_Type :=
-                                   Lui.Colours.To_Colour (150, 150, 0);
+                  Past_Color : constant Lui.Colors.Color_Type :=
+                                 Lui.Colors.To_Color (100, 100, 100);
+                  Future_Color : constant Lui.Colors.Color_Type :=
+                                   Lui.Colors.To_Color (150, 150, 0);
                begin
                   for Next of Path loop
                      declare
@@ -739,7 +739,7 @@ package body Carthage.UI.Models.Planets is
                         if X1 /= 0 then
                            Renderer.Draw_Line
                              (X1, Y1, X2, Y2,
-                              Colour     =>
+                              Color     =>
                                 (if Past then Past_Color else Future_Color),
                               Line_Width => 5);
                         end if;
@@ -772,8 +772,8 @@ package body Carthage.UI.Models.Planets is
                        Screen_Y + Model.Tile_Height / 2 - Model.Icon_Size,
                      W      => Model.Icon_Size,
                      H      => Model.Icon_Size,
-                     Colour =>
-                       Lui.Colours.To_Colour
+                     Color =>
+                       Lui.Colors.To_Color
                          (0, 200, 0),
                      Filled => False);
                end if;
@@ -801,8 +801,8 @@ package body Carthage.UI.Models.Planets is
 --                    Y     : constant Natural :=
 --                              Model.Mini_Map_Layout.Y
 --                                + Natural (Tile.Position.Y) * Scale;
---                    Color : constant Carthage.Colours.Colour_Type :=
---                              Tile.Base_Terrain.Colour
+--                    Color : constant Carthage.Colors.Color_Type :=
+--                              Tile.Base_Terrain.Color
 --                                (Model.Planet.Category_Name);
 --                 begin
 --                    Renderer.Draw_Rectangle
@@ -810,12 +810,12 @@ package body Carthage.UI.Models.Planets is
 --                       Y      => Y,
 --                       W      => Scale,
 --                       H      => Scale,
---                       Colour => To_Lui_Colour (Color),
+--                       Color => To_Lui_Color (Color),
 --                       Filled => True);
 --                 end Draw_Minimap_Tile;
 --
 --              begin
---                 Draw (Model.Left_Toolbar_Layout, Lui.Colours.Black, True,
+--                 Draw (Model.Left_Toolbar_Layout, Lui.Colors.Black, True,
 --                       Renderer);
 --
 --                 Model.Planet.Scan_Tiles (Draw_Minimap_Tile'Access);
@@ -829,7 +829,7 @@ package body Carthage.UI.Models.Planets is
 --                        + Natural (Model.Map_Hex_Top) * Scale,
 --                    W      => Natural (Model.Map_Hex_Width) * Scale,
 --                    H      => Natural (Model.Map_Hex_Height) * Scale,
---                    Colour => Lui.Colours.White,
+--                    Color => Lui.Colors.White,
 --                    Filled => False);
 --
 --                 if Model.Selected_Stack /= null then
@@ -853,7 +853,7 @@ package body Carthage.UI.Models.Planets is
 --                      (X      => Rec.X + 1,
 --                       Y      => Rec.Y + Resource_Image_Height + 4,
 --                       Size   => 12,
---                       Colour => Lui.Colours.To_Colour (98, 207, 62),
+--                       Color => Lui.Colors.To_Color (98, 207, 62),
 --                       Text   => Natural'Image (Q));
 --                 end;
 --              end loop;

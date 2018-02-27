@@ -226,7 +226,7 @@ package body Carthage.Import is
       Reader : Bitmaps.Bitmap_Image_Reader;
       Config : Tropos.Configuration;
    begin
-      Reader.Read (Carthage.Paths.Config_File ("ui/bincolours.bmp"),
+      Reader.Read (Carthage.Paths.Config_File ("ui/binColors.bmp"),
                    Image);
       for I in Word_8 loop
          Palette (I) := Image.Color (Pixel_X_Range (I mod 16 + 1),
@@ -314,12 +314,12 @@ package body Carthage.Import is
    end Import_Terrain_Cost;
 
    --------------------
-   -- Palette_Colour --
+   -- Palette_Color --
    --------------------
 
-   function Palette_Colour
+   function Palette_Color
      (Palette_Index : Natural)
-      return Carthage.Colours.Colour_Type
+      return Carthage.Colors.Color_Type
    is
    begin
       if not Have_Palette then
@@ -327,23 +327,23 @@ package body Carthage.Import is
       end if;
 
       declare
-         Colour : constant WL.Images.Image_Color :=
+         Color : constant WL.Images.Image_Color :=
                     Palette (Word_8 (Palette_Index));
       begin
          return (Red   =>
-                   Carthage.Colours.Colour_Element
-                     (Float (Colour.Red) / 255.0),
+                   Carthage.Colors.Color_Element
+                     (Float (Color.Red) / 255.0),
                  Green =>
-                   Carthage.Colours.Colour_Element
-                     (Float (Colour.Green) / 255.0),
+                   Carthage.Colors.Color_Element
+                     (Float (Color.Green) / 255.0),
                  Blue  =>
-                   Carthage.Colours.Colour_Element
-                     (Float (Colour.Blue) / 255.0),
+                   Carthage.Colors.Color_Element
+                     (Float (Color.Blue) / 255.0),
                  Alpha =>
-                   Carthage.Colours.Colour_Element
-                     (Float (Colour.Alpha) / 255.0));
+                   Carthage.Colors.Color_Element
+                     (Float (Color.Alpha) / 255.0));
       end;
-   end Palette_Colour;
+   end Palette_Color;
 
    -------------------
    -- Scan_Settings --

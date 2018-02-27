@@ -82,7 +82,7 @@ package body Carthage.Configure is
      (Config : Tropos.Configuration);
 
    procedure Import_Terrain
-     (Colour_Config      : Tropos.Configuration;
+     (Color_Config      : Tropos.Configuration;
       Road_Cost_Config   : Tropos.Configuration;
       Move_Cost_Config   : Tropos.Configuration);
 
@@ -683,11 +683,11 @@ package body Carthage.Configure is
    --------------------
 
    procedure Import_Terrain
-     (Colour_Config      : Tropos.Configuration;
+     (Color_Config      : Tropos.Configuration;
       Road_Cost_Config   : Tropos.Configuration;
       Move_Cost_Config   : Tropos.Configuration)
    is
-      Output : array (1 .. Colour_Config.Child (1).Child_Count / 2)
+      Output : array (1 .. Color_Config.Child (1).Child_Count / 2)
         of Tropos.Configuration;
 
       procedure Set_World_Settings
@@ -724,14 +724,14 @@ package body Carthage.Configure is
          Output (I) :=
            Tropos.New_Config
              (To_Carthage_Id
-                (Colour_Config.Child (1).Get (I * 2 - 1),
+                (Color_Config.Child (1).Get (I * 2 - 1),
                  Space_Substitute => '_'));
          pragma Assert
-           (String'(Colour_Config.Child (1).Get (I * 2 - 1))
+           (String'(Color_Config.Child (1).Get (I * 2 - 1))
               = Road_Cost_Config.Child (1).Get (I * 2 - 1));
          Set_World_Settings
-           (Output (I), "colours",
-            Colour_Config.Child (1).Get (I * 2));
+           (Output (I), "Colors",
+            Color_Config.Child (1).Get (I * 2));
          Set_World_Settings
            (Output (I), "road-cost",
             Road_Cost_Config.Child (1).Get (I * 2));
@@ -1181,7 +1181,7 @@ package body Carthage.Configure is
          then
             Ada.Text_IO.Put_Line ("  importing fading suns terrain");
             Import_Terrain
-              (Colour_Config    =>
+              (Color_Config    =>
                  Tropos.Reader.Read_Config
                    (Fading_Suns_Data_File ("TERCOLOR")),
                Road_Cost_Config =>

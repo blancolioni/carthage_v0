@@ -2,7 +2,7 @@ private with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 
 with Tropos;
 
-with Carthage.Colours;
+with Carthage.Colors;
 with Carthage.Houses;
 with Carthage.Planets;
 
@@ -24,7 +24,7 @@ package Carthage.UI.Maps is
       Process : not null access
         procedure (Element : Layer_Element_Type;
                    Resource_Name : String;
-                   Color : Carthage.Colours.Colour_Type));
+                   Color : Carthage.Colors.Color_Type));
 
    procedure Configure_Tile_Resources
      (Config : Tropos.Configuration);
@@ -35,7 +35,7 @@ private
       record
          Layer_Element : Layer_Element_Type;
          Resource_Name : String (1 .. Length);
-         Color         : Carthage.Colours.Colour_Type;
+         Color         : Carthage.Colors.Color_Type;
       end record;
 
    package Resource_Name_Lists is

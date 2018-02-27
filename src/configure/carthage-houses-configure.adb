@@ -54,10 +54,10 @@ package body Carthage.Houses.Configure is
          House.Category :=
            House_Category'Value
              (Config.Get ("category"));
-         House.Colour :=
-           (if Config.Contains ("colour")
-            then Carthage.Import.Palette_Colour
-              (Config.Get ("colour"))
+         House.Color :=
+           (if Config.Contains ("Color")
+            then Carthage.Import.Palette_Color
+              (Config.Get ("Color"))
             else (0.5, 0.5, 0.5, 1.0));
 
          declare

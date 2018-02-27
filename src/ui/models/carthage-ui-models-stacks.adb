@@ -66,8 +66,8 @@ package body Carthage.UI.Models.Stacks is
          declare
             House      : constant Carthage.Houses.House_Type :=
                            Rec.Stack.Owner;
-            Background : Carthage.Colours.Colour_Type :=
-                           House.Colour;
+            Background : Carthage.Colors.Color_Type :=
+                           House.Color;
             Resource   : constant String :=
                            (if Rec.Stack.Is_Empty then ""
                             else Asset_Resource (Rec.Stack.Asset (1)));
@@ -83,17 +83,17 @@ package body Carthage.UI.Models.Stacks is
 
             Renderer.Draw_Rectangle
               (Rec.Left, Rec.Top, Rec.Width, Rec.Height,
-               To_Lui_Colour (Background), True);
+               To_Lui_Color (Background), True);
             if not Rec.Stack.Is_Empty then
                Renderer.Draw_Image
                  (Rec.Left, Rec.Top, Icon_Size, Icon_Size, Resource);
             end if;
             Renderer.Draw_Rectangle
               (Rec.Left + Rec.Width - 12, Rec.Top + Rec.Height - 8,
-               12, 8, Lui.Colours.Black, True);
+               12, 8, Lui.Colors.Black, True);
             Renderer.Draw_String
               (Rec.Left + Rec.Width - 10, Rec.Top + Rec.Height, 8,
-               Lui.Colours.White, Size_Text);
+               Lui.Colors.White, Size_Text);
          end;
       end loop;
    end Render;

@@ -1,7 +1,5 @@
 with WL.String_Maps;
 
-with Carthage.UI.Models.Top;
-
 package body Carthage.UI.Models is
 
    package Model_Maps is
@@ -61,7 +59,6 @@ package body Carthage.UI.Models is
      (Model    : not null access Lui.Models.Root_Object_Model'Class;
       Class_Id : String)
    is
-      use Carthage.UI.Models.Top;
       M : constant Carthage_Model := Carthage_Model (Model);
    begin
       Model_Map.Insert
@@ -70,43 +67,22 @@ package body Carthage.UI.Models is
    end Save_Model;
 
    -------------------
-   -- To_Lui_Colour --
+   -- To_Lui_Color --
    -------------------
 
-   function To_Lui_Colour
-     (Colour : Carthage.Colours.Colour_Type)
-      return Lui.Colours.Colour_Type
+   function To_Lui_Color
+     (Color : Carthage.Colors.Color_Type)
+      return Lui.Colors.Color_Type
    is
-      use Carthage.Colours;
-      use Lui.Colours;
+      use Carthage.Colors;
+      use Lui.Colors;
    begin
       return Apply_Alpha
-        (To_Colour
-           (Red   => Colour_Byte (Colour.Red * 255.0),
-            Green => Colour_Byte (Colour.Green * 255.0),
-            Blue  => Colour_Byte (Colour.Blue * 255.0)),
-         Lui.Unit_Real (Colour.Alpha));
-   end To_Lui_Colour;
-
-   ---------------
-   -- Top_Model --
-   ---------------
-
-   function Top_Model
-     (House : not null access constant Carthage.Houses.House_Class)
-      return Lui.Models.Object_Model
-   is
-      use type Lui.Models.Object_Model;
-   begin
-      if not Model_Map.Contains
-        (House.Identifier)
-      then
-         Model_Map.Insert
-           (House.Identifier,
-            Carthage.UI.Models.Top.Top_Model (House));
-      end if;
-
-      return Model_Map.Element (House.Identifier);
-   end Top_Model;
+        (To_Color
+           (Red   => Color_Byte (Color.Red * 255.0),
+            Green => Color_Byte (Color.Green * 255.0),
+            Blue  => Color_Byte (Color.Blue * 255.0)),
+         Lui.Unit_Real (Color.Alpha));
+   end To_Lui_Color;
 
 end Carthage.UI.Models;

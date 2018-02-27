@@ -3,7 +3,7 @@ private with Memor.Database;
 
 limited with Carthage.Planets;
 
-with Carthage.Colours;
+with Carthage.Colors;
 with Carthage.Objects.Localised;
 
 package Carthage.Houses is
@@ -34,9 +34,9 @@ package Carthage.Houses is
      (House : House_Record)
       return access constant Carthage.Planets.Planet_Record'Class;
 
-   function Colour
+   function Color
      (House : House_Record)
-      return Carthage.Colours.Colour_Type;
+      return Carthage.Colors.Color_Type;
 
    procedure Scan_Known_Planets
      (House : House_Record;
@@ -112,7 +112,7 @@ private
       record
          Category      : House_Category;
          Capital       : access constant Carthage.Planets.Planet_Record'Class;
-         Colour        : Carthage.Colours.Colour_Type;
+         Color        : Carthage.Colors.Color_Type;
          Set_Flag      : House_Set;
          Known_Planets : Planet_Id_Lists.List;
          Manager       : access House_Manager_Interface'Class;
@@ -142,10 +142,10 @@ private
      return Natural
    is (Db.Active_Count);
 
-   function Colour
+   function Color
      (House : House_Record)
-      return Carthage.Colours.Colour_Type
-   is (House.Colour);
+      return Carthage.Colors.Color_Type
+   is (House.Color);
 
    function Category
      (House : House_Record)

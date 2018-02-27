@@ -9,7 +9,7 @@ with Carthage.Import;
 package body Carthage.Worlds.Configure is
 
    Have_Terrain_Config   : Boolean := False;
-   Terrain_Colour_Config : Tropos.Configuration;
+   Terrain_Color_Config : Tropos.Configuration;
 
    procedure Read_Terrain_Config;
 
@@ -175,7 +175,7 @@ package body Carthage.Worlds.Configure is
       if not Have_Terrain_Config then
          Read_Terrain_Config;
          Tropos.Writer.Write_Config
-           (Terrain_Colour_Config, "terrain-config.txt");
+           (Terrain_Color_Config, "terrain-config.txt");
       end if;
 
       Db.Create (Create'Access);
@@ -211,7 +211,7 @@ package body Carthage.Worlds.Configure is
       end To_Id;
 
    begin
-      Terrain_Colour_Config := Tropos.New_Config ("terrain-colour");
+      Terrain_Color_Config := Tropos.New_Config ("terrain-Color");
       for Config of Eofs_Config.Child (1) loop
          if Name then
             Name_Config := Config;
@@ -230,7 +230,7 @@ package body Carthage.Worlds.Configure is
                             (Integer'Image (Stat),
                              Ada.Strings.Left)));
                end loop;
-               Terrain_Colour_Config.Add (Stat_Config);
+               Terrain_Color_Config.Add (Stat_Config);
             end;
          end if;
          Name := not Name;

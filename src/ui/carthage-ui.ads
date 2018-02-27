@@ -1,6 +1,6 @@
 with WL.Images;
 
-with Carthage.Colours;
+with Carthage.Colors;
 
 package Carthage.UI is
 
@@ -10,7 +10,7 @@ package Carthage.UI is
                    Image         : WL.Images.Image_Type'Class));
 
    function Create_Background_Hex
-     (Background_Color : Carthage.Colours.Colour_Type)
+     (Background_Color : Carthage.Colors.Color_Type)
       return WL.Images.Image_Type'Class;
 
    procedure Set_Wizard_Mode

@@ -5,7 +5,7 @@ with Ada.Containers.Vectors;
 with Ada.Directories;
 with Ada.Strings.Unbounded;
 
-with Lui.Colours;
+with Lui.Colors;
 with Lui.Rendering;
 
 with Carthage.Galaxy;
@@ -47,7 +47,7 @@ package body Carthage.UI.Models.Galaxy is
          Planet      : Carthage.Planets.Planet_Type;
          Name        : Ada.Strings.Unbounded.Unbounded_String;
          Image       : Ada.Strings.Unbounded.Unbounded_String;
-         Colour      : Lui.Colours.Colour_Type;
+         Color      : Lui.Colors.Color_Type;
          Capital     : Boolean;
          Colony      : Boolean;
          Connections : Connection_Lists.List;
@@ -180,9 +180,9 @@ package body Carthage.UI.Models.Galaxy is
    procedure Clear_Zoom
      (Model : in out Root_Galaxy_Model'Class);
 
-   --     Unexplored_Colour : constant Lui.Colours.Colour_Type :=
+   --     Unexplored_Color : constant Lui.Colors.Color_Type :=
 --                           (0.5, 0.5, 0.5, 0.6);
---     Border_Colour     : constant Lui.Colours.Colour_Type :=
+--     Border_Color     : constant Lui.Colors.Color_Type :=
 --                           (1.0, 1.0, 1.0, 1.0);
 
    type Galaxy_Model_Access is access all Root_Galaxy_Model'Class;
@@ -299,12 +299,12 @@ package body Carthage.UI.Models.Galaxy is
 --        A_Owner  : constant Carthage.Houses.House_Type := A_System.Owner;
 --        B_Owner  : constant Carthage.Houses.House_Type := B_System.Owner;
 --
---        Link_Colour    : constant Lui.Colours.Colour_Type :=
+--        Link_Color    : constant Lui.Colors.Color_Type :=
 --                           (if A_Owner /= null and then B_Owner = A_Owner
---                            then A_Owner.Colour
+--                            then A_Owner.Color
 --                            elsif A_Owner = null or else B_Owner = null
---                            then Unexplored_Colour
---                            else Border_Colour);
+--                            then Unexplored_Color
+--                            else Border_Color);
 --        Link_Width     : constant Positive :=
 --                           Natural'Min
 --                             (A_System.Traffic (B_System)
@@ -315,7 +315,7 @@ package body Carthage.UI.Models.Galaxy is
 --     begin
 --        Model.Star_System_Screen (A_System, X1, Y1);
 --        Model.Star_System_Screen (B_System, X2, Y2);
---        Renderer.Draw_Line (X1, Y1, X2, Y2, Link_Colour, Link_Width);
+--        Renderer.Draw_Line (X1, Y1, X2, Y2, Link_Color, Link_Width);
 --     end Draw_Connection;
 
    ------------------
@@ -446,7 +446,7 @@ package body Carthage.UI.Models.Galaxy is
                          Image       =>
                            Ada.Strings.Unbounded.To_Unbounded_String
                              (Resource),
-                         Colour      => Lui.Colours.White,
+                         Color      => Lui.Colors.White,
                          Colony      => False,
                          Capital     => False,
                          Connections => <>);
@@ -688,7 +688,7 @@ package body Carthage.UI.Models.Galaxy is
                              (X          => Screen_X,
                               Y          => Screen_Y,
                               Radius     => System_Radius * 2,
-                              Colour     => System.Colour,
+                              Color     => System.Color,
                               Filled     => False,
                               Line_Width => 2);
 
@@ -707,11 +707,11 @@ package body Carthage.UI.Models.Galaxy is
                                 (X      => Screen_X - 4 * Name'Length,
                                  Y      => Screen_Y + 42,
                                  Size   => 16,
-                                 Colour =>
+                                 Color =>
                                    (if System.Planet.Has_Owner
-                                    then To_Lui_Colour
-                                      (System.Planet.Owner.Colour)
-                                    else Lui.Colours.To_Colour
+                                    then To_Lui_Color
+                                      (System.Planet.Owner.Color)
+                                    else Lui.Colors.To_Color
                                       (100, 100, 100)),
                                  Text   => Name);
                            end if;
@@ -737,8 +737,8 @@ package body Carthage.UI.Models.Galaxy is
                                  Y1         => Screen_Y,
                                  X2         => To_Screen_X,
                                  Y2         => To_Screen_Y,
-                                 Colour     =>
-                                   Lui.Colours.To_Colour (100, 100, 100),
+                                 Color     =>
+                                   Lui.Colors.To_Color (100, 100, 100),
                                  Line_Width => 1);
                            end;
                         end loop;
