@@ -238,6 +238,42 @@ package body Carthage.UI.Models.Top is
       Item.Layout_Loaded := False;
    end Resize;
 
+   -----------------------
+   -- Set_Current_Model --
+   -----------------------
+
+   procedure Set_Current_Model
+     (Top         : not null access Top_Carthage_Model'Class;
+      New_Current : Carthage_Model)
+   is
+      use type Lui.Models.Object_Model;
+   begin
+      if not Top.Layout_Loaded then
+         Top.Load_Layout;
+      end if;
+
+      if Top.Current_Model /= null then
+         Top.Remove_Inline_Model (Top.Current_Model);
+         if Top.Current_Model.Minimap_Model /= null then
+            Top.Remove_Inline_Model (Top.Current_Model.Minimap);
+         end if;
+      end if;
+
+      Top.Current_Model := New_Current;
+
+      Top.Add_Offset_Model
+        (Model         => Top.Current_Model,
+         Left_Offset   => Top.Left_Toolbar_Layout.Width + 10,
+         Top_Offset    => Top.Top_Toolbar_Layout.Height + 10,
+         Right_Offset  => 10,
+         Bottom_Offset => Top.Bottom_Toolbar_Layout.Height + 10);
+
+      --        if Model.Current_Model.Minimap_Model /= null then
+      --           Model.Add_Inline_Model
+      --         (Model.Mini_Map_Layout, Model.Current_Model.Minimap_Model);
+      --        end if;
+   end Set_Current_Model;
+
    -----------------
    -- Show_Galaxy --
    -----------------
@@ -247,36 +283,21 @@ package body Carthage.UI.Models.Top is
    is
       use type Lui.Models.Object_Model;
    begin
-      if not Model.Layout_Loaded then
-         Model.Load_Layout;
-      end if;
-
       if Model.Galaxy_Model = null then
          Model.Galaxy_Model :=
            Carthage.UI.Models.Galaxy.Galaxy_Model
              (Model.House);
       end if;
 
-      if Model.Current_Model /= null then
-         Model.Remove_Inline_Model (Model.Current_Model);
-         if Model.Current_Model.Minimap_Model /= null then
-            Model.Remove_Inline_Model (Model.Current_Model.Minimap);
-         end if;
-      end if;
+      Model.Set_Current_Model (Model.Galaxy_Model);
 
-      Model.Current_Model := Model.Galaxy_Model;
-      Model.Add_Offset_Model
-        (Model         => Model.Galaxy_Model,
-         Left_Offset   => Model.Left_Toolbar_Layout.Width + 10,
-         Top_Offset    => Model.Top_Toolbar_Layout.Height + 10,
-         Right_Offset  => 10,
-         Bottom_Offset => Model.Bottom_Toolbar_Layout.Height + 10);
-
---        if Model.Current_Model.Minimap_Model /= null then
---           Model.Add_Inline_Model
---             (Model.Mini_Map_Layout, Model.Current_Model.Minimap_Model);
---        end if;
    end Show_Galaxy;
+
+   procedure Show_Planet
+     (Model  : not null access Top_Carthage_Model'Class;
+      Planet : not null access constant
+        Carthage.Planets.Planet_Record'Class)
+   is null;
 
    ------------------------
    -- Set_Selected_Stack --

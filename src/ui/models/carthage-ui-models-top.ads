@@ -4,6 +4,7 @@ with WL.String_Maps;
 
 with Lui.Rendering;
 
+with Carthage.Planets;
 with Carthage.Resources;
 with Carthage.Stacks;
 
@@ -45,6 +46,11 @@ package Carthage.UI.Models.Top is
    procedure Show_Galaxy
      (Model : not null access Top_Carthage_Model'Class);
 
+   procedure Show_Planet
+     (Model : not null access Top_Carthage_Model'Class;
+      Planet : not null access constant
+        Carthage.Planets.Planet_Record'Class);
+
 private
 
    type Resource_Layout_Record is
@@ -80,6 +86,10 @@ private
          Current_Model         : Carthage_Model;
          Previous_Update       : Ada.Calendar.Time;
       end record;
+
+   procedure Set_Current_Model
+     (Top         : not null access Top_Carthage_Model'Class;
+      New_Current : Carthage_Model);
 
    function House
      (Model : Top_Carthage_Model'Class)
