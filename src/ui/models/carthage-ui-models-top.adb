@@ -1,8 +1,9 @@
 with Tropos.Reader;
 
 with Carthage.Calendar;
-
 with Carthage.Paths;
+
+with Carthage.Updates;
 
 with Carthage.UI.Models.Galaxy;
 
@@ -288,5 +289,21 @@ package body Carthage.UI.Models.Top is
 --     begin
 --        Model.Stack := Carthage.Stacks.Stack_Type (Stack);
 --     end Set_Selected_Stack;
+
+   ------------
+   -- Update --
+   ------------
+
+   overriding procedure Update
+     (Model    : in out Top_Carthage_Model)
+   is
+      use Carthage.Calendar;
+      Current_Date : constant String := Image (Clock);
+   begin
+      Carthage.Updates.Update;
+      if Image (Clock) /= Current_Date then
+         Model.Set_Changed;
+      end if;
+   end Update;
 
 end Carthage.UI.Models.Top;

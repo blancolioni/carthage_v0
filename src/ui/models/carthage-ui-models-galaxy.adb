@@ -23,7 +23,7 @@ package body Carthage.UI.Models.Galaxy is
    Zoom_Limit    : constant := 5.0;
    Zoom_Duration : constant Duration := 0.8;
 
-   Zoomed_Out_Radius : constant := 30;
+   Zoomed_Out_Radius : constant := 24;
    Zoomed_In_Radius  : constant := 60;
 
    Have_Bitmaps     : Boolean := False;
@@ -68,6 +68,9 @@ package body Carthage.UI.Models.Galaxy is
          Zoom_Level         : Float := 0.0;
          Selected_Planet    : Carthage.Planets.Planet_Type;
       end record;
+
+   overriding procedure Update
+     (Model : in out Root_Galaxy_Model);
 
    overriding procedure Render
      (Model    : in out Root_Galaxy_Model;
@@ -514,11 +517,9 @@ package body Carthage.UI.Models.Galaxy is
    is
       use type Lui.Render_Layer;
 
-      System_Radius : Natural :=
-                        (if Model.Zoomed_To_System
-                         then Zoomed_In_Radius
-                         else Zoomed_Out_Radius);
-
+      System_Radius : constant Natural :=
+                        Model.Zoomed_Size
+                          (Zoomed_Out_Radius, Zoomed_In_Radius);
       Reload_Stacks : constant Boolean := True;
 --                          Model.Rendered_Stacks.Is_Empty
 --                              or else Model.Zooming_In
@@ -594,33 +595,6 @@ package body Carthage.UI.Models.Galaxy is
 
       if not Have_Bitmaps then
          Load_Bitmaps (Renderer);
-      end if;
-
-      if Model.Zooming_In or else Model.Zooming_Out then
-         declare
-            use Ada.Calendar;
-         begin
-            Model.Zoom_Level :=
-              Float (Clock - Model.Zoom_Start) / Float (Zoom_Duration);
-            if Model.Zooming_In then
-               Model.Zoom_Level := 1.0 - Model.Zoom_Level;
-            end if;
-
-            if Model.Zoom_Level not in 0.0 .. 1.0 then
-               if Model.Zooming_In then
-                  Model.Zoomed_To_System := True;
-                  System_Radius := Zoomed_In_Radius;
-               else
-                  Model.Zoomed_To_System := False;
-                  System_Radius := Zoomed_Out_Radius;
-               end if;
-               Model.Clear_Zoom;
-            else
-               System_Radius :=
-                 Model.Zoomed_Size
-                   (Zoomed_Out_Radius, Zoomed_In_Radius);
-            end if;
-         end;
       end if;
 
       if Layer = 1 then
@@ -754,7 +728,8 @@ package body Carthage.UI.Models.Galaxy is
       use Carthage.Planets;
 
       Planet : constant Planet_Type :=
-                 Model.Closest_System (X, Y, 30);
+                 Model.Closest_System
+                   (X, Y, Zoomed_In_Radius);
    begin
       if Planet = null then
          if Model.Zoomed_To_System then
@@ -775,6 +750,8 @@ package body Carthage.UI.Models.Galaxy is
             Model.Start_Zoom_In (Planet);
          end if;
       end if;
+
+      Model.Set_Render_Layer_Changed (1);
 
    end Select_XY;
 
@@ -866,6 +843,38 @@ package body Carthage.UI.Models.Galaxy is
          return "";
       end if;
    end Tooltip;
+
+   ------------
+   -- Update --
+   ------------
+
+   overriding procedure Update
+     (Model : in out Root_Galaxy_Model)
+   is
+   begin
+      if Model.Zooming_In or else Model.Zooming_Out then
+         declare
+            use Ada.Calendar;
+         begin
+            Model.Zoom_Level :=
+              Float (Clock - Model.Zoom_Start) / Float (Zoom_Duration);
+            if Model.Zooming_In then
+               Model.Zoom_Level := 1.0 - Model.Zoom_Level;
+            end if;
+
+            if Model.Zoom_Level not in 0.0 .. 1.0 then
+               if Model.Zooming_In then
+                  Model.Zoomed_To_System := True;
+               else
+                  Model.Zoomed_To_System := False;
+               end if;
+               Model.Clear_Zoom;
+            end if;
+         end;
+         Model.Set_Render_Layer_Changed (1);
+      end if;
+
+   end Update;
 
    ----------
    -- Zoom --

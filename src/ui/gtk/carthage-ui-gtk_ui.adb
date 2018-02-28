@@ -24,7 +24,7 @@ with Lui.Gtk_UI;
 with Carthage.Paths;
 with Carthage.UI.Models.Top;
 
-with Carthage.Calendar;
+--  with Carthage.Calendar;
 with Carthage.Updates;
 
 package body Carthage.UI.Gtk_UI is
@@ -56,8 +56,8 @@ package body Carthage.UI.Gtk_UI is
      (To      : in out Carthage_UI;
       Feature : Lui.Lui_UI_Feature);
 
-   overriding procedure On_Idle
-     (State : in out Carthage_UI);
+--     overriding procedure On_Idle
+--       (State : in out Carthage_UI);
 
    procedure Create_Property_List
      (Tree_View : Gtk.Tree_View.Gtk_Tree_View);
@@ -194,25 +194,25 @@ package body Carthage.UI.Gtk_UI is
    -- On_Idle --
    -------------
 
-   overriding procedure On_Idle
-     (State : in out Carthage_UI)
-   is
-      use Carthage.Calendar;
-      New_Date : constant Time := Clock;
-      pragma Unreferenced (New_Date);
-   begin
-      Carthage.Updates.Update;
---        if New_Date /= State.Date then
---           State.Date := New_Date;
---           State.Date_Label.Set_Label
---             (Carthage.Calendar.Image (State.Date));
---        end if;
-
-      for I in 1 .. State.Models.Count loop
-         State.Models.Model (I).Queue_Render;
-      end loop;
-
-   end On_Idle;
+--     overriding procedure On_Idle
+--       (State : in out Carthage_UI)
+--     is
+--        use Carthage.Calendar;
+--        New_Date : constant Time := Clock;
+--        pragma Unreferenced (New_Date);
+--     begin
+--        Carthage.Updates.Update;
+--  --        if New_Date /= State.Date then
+--  --           State.Date := New_Date;
+--  --           State.Date_Label.Set_Label
+--  --             (Carthage.Calendar.Image (State.Date));
+--  --        end if;
+--
+--        for I in 1 .. State.Models.Count loop
+--           State.Models.Model (I).Queue_Render;
+--        end loop;
+--
+--     end On_Idle;
 
    ----------------------------
    -- On_Step_Button_Clicked --

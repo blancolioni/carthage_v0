@@ -1,3 +1,5 @@
+private with Ada.Calendar;
+
 with WL.String_Maps;
 
 with Lui.Rendering;
@@ -20,6 +22,9 @@ package Carthage.UI.Models.Top is
      (Model    : in out Top_Carthage_Model;
       Renderer : in out Lui.Rendering.Root_Renderer'Class;
       Layer    : Lui.Render_Layer);
+
+   overriding procedure Update
+     (Model    : in out Top_Carthage_Model);
 
    overriding procedure Resize
      (Item : in out Top_Carthage_Model);
@@ -73,6 +78,7 @@ private
          Galaxy_Model          : Carthage_Model;
          Planet_Models         : Model_Maps.Map;
          Current_Model         : Carthage_Model;
+         Previous_Update       : Ada.Calendar.Time;
       end record;
 
    function House
