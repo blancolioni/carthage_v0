@@ -6,6 +6,7 @@ with Carthage.Paths;
 with Carthage.Updates;
 
 with Carthage.UI.Models.Galaxy;
+with Carthage.UI.Models.Planets;
 
 package body Carthage.UI.Models.Top is
 
@@ -293,11 +294,27 @@ package body Carthage.UI.Models.Top is
 
    end Show_Galaxy;
 
+   -----------------
+   -- Show_Planet --
+   -----------------
+
    procedure Show_Planet
      (Model  : not null access Top_Carthage_Model'Class;
       Planet : not null access constant
         Carthage.Planets.Planet_Record'Class)
-   is null;
+   is
+      Planet_Model : Carthage_Model;
+   begin
+      if not Model.Planet_Models.Contains (Planet.Identifier) then
+         Planet_Model :=
+           Carthage.UI.Models.Planets.Planet_Model
+             (Model.House, Carthage.Planets.Planet_Type (Planet));
+      end if;
+
+      Planet_Model := Model.Planet_Models.Element (Planet.Identifier);
+
+      Model.Set_Current_Model (Planet_Model);
+   end Show_Planet;
 
    ------------------------
    -- Set_Selected_Stack --
