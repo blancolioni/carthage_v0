@@ -1,3 +1,5 @@
+with WL.String_Maps;
+
 with Lui.Rendering;
 
 with Carthage.Resources;
@@ -20,8 +22,7 @@ package Carthage.UI.Models.Top is
       Layer    : Lui.Render_Layer);
 
    overriding procedure Resize
-     (Item          : in out Top_Carthage_Model;
-      Width, Height : Natural);
+     (Item : in out Top_Carthage_Model);
 
    procedure Initialize_Model
      (Model : not null access Top_Carthage_Model'Class;
@@ -36,6 +37,9 @@ package Carthage.UI.Models.Top is
      (Model : Top_Carthage_Model'Class)
       return Boolean;
 
+   procedure Show_Galaxy
+     (Model : not null access Top_Carthage_Model'Class);
+
 private
 
    type Resource_Layout_Record is
@@ -46,6 +50,9 @@ private
    type Resource_Layout_Array is
      array (Carthage.Resources.Resource_Index range <>)
      of Resource_Layout_Record;
+
+   package Model_Maps is
+     new WL.String_Maps (Carthage_Model);
 
    type Top_Carthage_Model is
      new Lui.Models.Root_Object_Model with
@@ -63,6 +70,9 @@ private
          Selected_Stack_Layout : Lui.Layout_Rectangle;
          Sidebar_Icon_Size     : Positive := 64;
          Resource_Layout       : access Resource_Layout_Array;
+         Galaxy_Model          : Carthage_Model;
+         Planet_Models         : Model_Maps.Map;
+         Current_Model         : Carthage_Model;
       end record;
 
    function House

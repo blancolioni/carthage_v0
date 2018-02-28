@@ -13,9 +13,8 @@ with Carthage.Houses;
 with Carthage.Planets;
 with Carthage.Stacks;
 
-with Carthage.UI.Models.Top;
-with Carthage.UI.Models.Planets;
-with Carthage.UI.Models.Stacks;
+--  with Carthage.UI.Models.Planets;
+--  with Carthage.UI.Models.Stacks;
 
 with Carthage.Paths;
 
@@ -28,8 +27,6 @@ package body Carthage.UI.Models.Galaxy is
    Zoomed_In_Radius  : constant := 60;
 
    Have_Bitmaps     : Boolean := False;
-
-   Model_Class_Id : constant String := "galaxy";
 
    procedure Load_Bitmaps
      (Renderer : in out Lui.Rendering.Root_Renderer'Class);
@@ -57,12 +54,12 @@ package body Carthage.UI.Models.Galaxy is
      new Ada.Containers.Vectors (Positive, Rendered_Planet);
 
    type Root_Galaxy_Model is
-     new Carthage.UI.Models.Top.Root_Carthage_Model with
+     new Carthage.UI.Models.Root_Carthage_Model with
       record
          Show_Capital_Names : Boolean := True;
          Show_System_Names  : Boolean := False;
          Rendered_Planets   : Rendered_Planet_Vectors.Vector;
-         Rendered_Stacks    : Carthage.UI.Models.Stacks.Rendered_Stack_List;
+--        Rendered_Stacks    : Carthage.UI.Models.Stacks.Rendered_Stack_List;
          Needs_Render       : Boolean := True;
          Zoomed_To_System   : Boolean := False;
          Zooming_In         : Boolean := False;
@@ -70,19 +67,12 @@ package body Carthage.UI.Models.Galaxy is
          Zoom_Start         : Ada.Calendar.Time;
          Zoom_Level         : Float := 0.0;
          Selected_Planet    : Carthage.Planets.Planet_Type;
-         Main_Window        : Layout_Rectangle;
       end record;
 
-   overriding function Handle_Update
-     (Model    : in out Root_Galaxy_Model)
-      return Boolean
-   is (Model.Needs_Render);
-
-   overriding procedure Render_Main_Window
+   overriding procedure Render
      (Model    : in out Root_Galaxy_Model;
       Renderer  : in out Lui.Rendering.Root_Renderer'Class;
-      Layer     : Lui.Render_Layer;
-      Rectangle : Layout_Rectangle);
+      Layer     : Lui.Render_Layer);
 
    overriding procedure On_Model_Removed
      (Model : in out Root_Galaxy_Model;
@@ -362,22 +352,15 @@ package body Carthage.UI.Models.Galaxy is
 
    function Galaxy_Model
      (House : not null access constant Carthage.Houses.House_Class)
-      return Lui.Models.Object_Model
+      return Carthage_Model
    is
-      use Lui.Models;
-
+      Model : constant Galaxy_Model_Access :=
+                new Root_Galaxy_Model;
    begin
-      if not Have_Model (House, Model_Class_Id) then
-         declare
-            Model : constant Galaxy_Model_Access :=
-                      new Root_Galaxy_Model;
-         begin
-            Model.Initialize_Model (House, Model_Class_Id, 1);
-            Model.Create_Model;
-         end;
-      end if;
-
-      return Get_Model (House, Model_Class_Id);
+      Model.Initialise ("galaxy", 1);
+      Model.House := Carthage.Houses.House_Type (House);
+      Model.Create_Model;
+      return Carthage_Model (Model);
    end Galaxy_Model;
 
    -------------------------
@@ -414,10 +397,8 @@ package body Carthage.UI.Models.Galaxy is
          end;
       end if;
 
-      Screen_X := Model.Main_Window.X
-        + Integer (Local_X * Float (Model.Main_Window.Width));
-      Screen_Y := Model.Main_Window.Y
-        + Integer (Local_Y * Float (Model.Height));
+      Screen_X := Integer (Local_X * Float (Model.Width));
+      Screen_Y := Integer (Local_Y * Float (Model.Height));
 
    end Get_Screen_Position;
 
@@ -526,11 +507,10 @@ package body Carthage.UI.Models.Galaxy is
    -- Render --
    ------------
 
-   overriding procedure Render_Main_Window
+   overriding procedure Render
      (Model     : in out Root_Galaxy_Model;
       Renderer  : in out Lui.Rendering.Root_Renderer'Class;
-      Layer     : Lui.Render_Layer;
-      Rectangle : Layout_Rectangle)
+      Layer     : Lui.Render_Layer)
    is
       use type Lui.Render_Layer;
 
@@ -592,13 +572,15 @@ package body Carthage.UI.Models.Galaxy is
                                         Y - Icon_Size / 2,
                                      when 6 | 7 | 8 =>
                                         Y + System_Radius * 4 / 3);
+                  pragma Unreferenced (Left, Top);
                begin
-                  Model.Rendered_Stacks.Add_Stack
-                    (Stack  => Stack,
-                     Left   => Left,
-                     Top    => Top,
-                     Width  => Icon_Size,
-                     Height => Icon_Size);
+                  null;
+--                    Model.Rendered_Stacks.Add_Stack
+--                      (Stack  => Stack,
+--                       Left   => Left,
+--                       Top    => Top,
+--                       Width  => Icon_Size,
+--                       Height => Icon_Size);
                end;
             end if;
          end Load_Stack;
@@ -613,8 +595,6 @@ package body Carthage.UI.Models.Galaxy is
       if not Have_Bitmaps then
          Load_Bitmaps (Renderer);
       end if;
-
-      Model.Main_Window := Rectangle;
 
       if Model.Zooming_In or else Model.Zooming_Out then
          declare
@@ -646,9 +626,9 @@ package body Carthage.UI.Models.Galaxy is
       if Layer = 1 then
          for Star_Pass in Boolean loop
 
-            if Star_Pass and then Reload_Stacks then
-               Model.Rendered_Stacks.Clear;
-            end if;
+--              if Star_Pass and then Reload_Stacks then
+--                 Model.Rendered_Stacks.Clear;
+--              end if;
 
             for System of Model.Rendered_Planets loop
                declare
@@ -675,22 +655,22 @@ package body Carthage.UI.Models.Galaxy is
                      end if;
 
                      if Star_Pass then
-                        Renderer.Draw_Image
-                          (X        => Screen_X - System_Radius,
-                           Y        => Screen_Y - System_Radius,
-                           W        => System_Radius * 2,
-                           H        => System_Radius * 2,
+                        Renderer.Image
+                          (Rec => (X        => Screen_X - System_Radius,
+                                   Y        => Screen_Y - System_Radius,
+                                   Width    => System_Radius * 2,
+                                   Height   => System_Radius * 2),
                            Resource =>
                              Ada.Strings.Unbounded.To_String
                                (System.Image));
                         if System.Colony then
-                           Renderer.Draw_Circle
+                           Renderer.Set_Color (System.Color);
+                           Renderer.Set_Line_Width (2.0);
+                           Renderer.Circle
                              (X          => Screen_X,
                               Y          => Screen_Y,
                               Radius     => System_Radius * 2,
-                              Color     => System.Color,
-                              Filled     => False,
-                              Line_Width => 2);
+                              Filled     => False);
 
                         end if;
 
@@ -703,17 +683,18 @@ package body Carthage.UI.Models.Galaxy is
                              or else (System.Capital
                                       and then Model.Show_Capital_Names)
                            then
-                              Renderer.Draw_String
+                              Renderer.Set_Color
+                                (if System.Planet.Has_Owner
+                                 then To_Lui_Color
+                                   (System.Planet.Owner.Color)
+                                 else Lui.Colors.To_Color
+                                   (100, 100, 100));
+                              Renderer.Set_Font
+                                ("Tahoma", 16.0);
+                              Renderer.Text
                                 (X      => Screen_X - 4 * Name'Length,
                                  Y      => Screen_Y + 42,
-                                 Size   => 16,
-                                 Color =>
-                                   (if System.Planet.Has_Owner
-                                    then To_Lui_Color
-                                      (System.Planet.Owner.Color)
-                                    else Lui.Colors.To_Color
-                                      (100, 100, 100)),
-                                 Text   => Name);
+                                 Value  => Name);
                            end if;
                         end;
 
@@ -732,14 +713,13 @@ package body Carthage.UI.Models.Galaxy is
                            begin
                               Model.Get_Screen_Position
                                 (To_X, To_Y, To_Screen_X, To_Screen_Y);
-                              Renderer.Draw_Line
+                              Renderer.Set_Color (0.4, 0.4, 0.4, 0.8);
+                              Renderer.Set_Line_Width (4.0);
+                              Renderer.Line
                                 (X1         => Screen_X,
                                  Y1         => Screen_Y,
                                  X2         => To_Screen_X,
-                                 Y2         => To_Screen_Y,
-                                 Color     =>
-                                   Lui.Colors.To_Color (100, 100, 100),
-                                 Line_Width => 1);
+                                 Y2         => To_Screen_Y);
                            end;
                         end loop;
                      end if;
@@ -747,11 +727,11 @@ package body Carthage.UI.Models.Galaxy is
                end;
             end loop;
 
-            if Star_Pass then
-               if True or else Model.Zoomed_To_System then
-                  Model.Rendered_Stacks.Render (Model, Renderer);
-               end if;
-            end if;
+--              if Star_Pass then
+--                 if True or else Model.Zoomed_To_System then
+--                    Model.Rendered_Stacks.Render (Model, Renderer);
+--                 end if;
+--              end if;
 
          end loop;
 
@@ -761,7 +741,7 @@ package body Carthage.UI.Models.Galaxy is
 
 --      Carthage.Updates.End_Render;
 
-   end Render_Main_Window;
+   end Render;
 
    ---------------
    -- Select_XY --
@@ -783,9 +763,10 @@ package body Carthage.UI.Models.Galaxy is
       else
          if Model.Zoomed_To_System then
             if Planet = Model.Selected_Planet then
-               Model.Push_Model
-                 (Carthage.UI.Models.Planets.Planet_Model
-                    (Model.House, Planet));
+               null;
+--                 Model.Push_Model
+--                   (Carthage.UI.Models.Planets.Planet_Model
+--                      (Model.House, Planet));
             else
                Model.Selected_Planet := Planet;
                Model.Needs_Render := True;
@@ -854,7 +835,7 @@ package body Carthage.UI.Models.Galaxy is
       Model.Zoomed_To_System := False;
       Model.Zoom_Level := 1.0;
       Model.Zoom_Start := Ada.Calendar.Clock;
-      Model.Rendered_Stacks.Clear;
+--        Model.Rendered_Stacks.Clear;
    end Start_Zoom_Out;
 
    -------------
@@ -869,12 +850,13 @@ package body Carthage.UI.Models.Galaxy is
       use Carthage.Planets, Carthage.Stacks;
       Planet : constant Planet_Type :=
                  Model.Closest_System (X, Y, 30);
-      Stack  : constant Stack_Type :=
-                 Model.Rendered_Stacks.Find_Stack (X, Y);
+--        Stack  : constant Stack_Type := null;
+--                   Model.Rendered_Stacks.Find_Stack (X, Y);
    begin
-      if Stack /= null then
-         return Stack.Owner.Name;
-      elsif Planet /= null then
+--        if Stack /= null then
+--           return Stack.Owner.Name;
+--        elsif Planet /= null then
+      if Planet /= null then
          if Planet.Has_Owner then
             return Planet.Name & " owned by " & Planet.Owner.Full_Name;
          else

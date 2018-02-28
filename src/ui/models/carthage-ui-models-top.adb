@@ -1,10 +1,10 @@
-with Ada.Text_IO;
-
 with Tropos.Reader;
 
 with Carthage.Calendar;
 
 with Carthage.Paths;
+
+with Carthage.UI.Models.Galaxy;
 
 package body Carthage.UI.Models.Top is
 
@@ -218,11 +218,6 @@ package body Carthage.UI.Models.Top is
          Model.Load_Layout;
       end if;
 
-      Ada.Text_IO.Put_Line
-        ("top model render"
-         & Natural'Image (Model.Width)
-         & Natural'Image (Model.Height));
-
       case Top_Model_Render_Layer (Layer) is
          when UI_Layer =>
             Render_Static_UI;
@@ -235,13 +230,52 @@ package body Carthage.UI.Models.Top is
    ------------
 
    overriding procedure Resize
-     (Item          : in out Top_Carthage_Model;
-      Width, Height : Natural)
+     (Item          : in out Top_Carthage_Model)
    is
    begin
-      Lui.Models.Root_Object_Model (Item).Resize (Width, Height);
+      Lui.Models.Root_Object_Model (Item).Resize;
       Item.Layout_Loaded := False;
    end Resize;
+
+   -----------------
+   -- Show_Galaxy --
+   -----------------
+
+   procedure Show_Galaxy
+     (Model : not null access Top_Carthage_Model'Class)
+   is
+      use type Lui.Models.Object_Model;
+   begin
+      if not Model.Layout_Loaded then
+         Model.Load_Layout;
+      end if;
+
+      if Model.Galaxy_Model = null then
+         Model.Galaxy_Model :=
+           Carthage.UI.Models.Galaxy.Galaxy_Model
+             (Model.House);
+      end if;
+
+      if Model.Current_Model /= null then
+         Model.Remove_Inline_Model (Model.Current_Model);
+         if Model.Current_Model.Minimap_Model /= null then
+            Model.Remove_Inline_Model (Model.Current_Model.Minimap);
+         end if;
+      end if;
+
+      Model.Current_Model := Model.Galaxy_Model;
+      Model.Add_Offset_Model
+        (Model         => Model.Galaxy_Model,
+         Left_Offset   => Model.Left_Toolbar_Layout.Width + 10,
+         Top_Offset    => Model.Top_Toolbar_Layout.Height + 10,
+         Right_Offset  => 10,
+         Bottom_Offset => Model.Bottom_Toolbar_Layout.Height + 10);
+
+--        if Model.Current_Model.Minimap_Model /= null then
+--           Model.Add_Inline_Model
+--             (Model.Mini_Map_Layout, Model.Current_Model.Minimap_Model);
+--        end if;
+   end Show_Galaxy;
 
    ------------------------
    -- Set_Selected_Stack --

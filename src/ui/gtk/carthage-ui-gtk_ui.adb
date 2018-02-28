@@ -374,14 +374,17 @@ package body Carthage.UI.Gtk_UI is
                            Models         => Models,
                            Model_Area     => Model_Area,
                            Active_Area    => null);
+         Top        : constant Carthage.UI.Models.Top.Top_Model :=
+                        Carthage.UI.Models.Top.Create_Top_Model (House);
       begin
-         UI.Initialize;
 
+         UI.Initialize;
          Lui.Gtk_UI.Start
            (Main => UI,
-            Top  =>
-              Lui.Models.Object_Model
-                (Carthage.UI.Models.Top.Create_Top_Model (House)));
+            Top  => Lui.Models.Object_Model (Top));
+
+         Top.Show_Galaxy;
+
       end;
 
       Gtk.Main.Main;
