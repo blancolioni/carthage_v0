@@ -16,6 +16,8 @@ with Carthage.Stacks;
 --  with Carthage.UI.Models.Planets;
 --  with Carthage.UI.Models.Stacks;
 
+with Carthage.UI.Models.Top;
+
 with Carthage.Paths;
 
 package body Carthage.UI.Models.Galaxy is
@@ -738,10 +740,9 @@ package body Carthage.UI.Models.Galaxy is
       else
          if Model.Zoomed_To_System then
             if Planet = Model.Selected_Planet then
-               null;
---                 Model.Push_Model
---                   (Carthage.UI.Models.Planets.Planet_Model
---                      (Model.House, Planet));
+               Carthage.UI.Models.Top.Top_Model
+                 (Model.Parent_Model)
+                 .Show_Planet (Planet);
             else
                Model.Selected_Planet := Planet;
                Model.Needs_Render := True;

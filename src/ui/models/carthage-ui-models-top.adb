@@ -309,6 +309,7 @@ package body Carthage.UI.Models.Top is
          Planet_Model :=
            Carthage.UI.Models.Planets.Planet_Model
              (Model.House, Carthage.Planets.Planet_Type (Planet));
+         Model.Planet_Models.Insert (Planet.Identifier, Planet_Model);
       end if;
 
       Planet_Model := Model.Planet_Models.Element (Planet.Identifier);
