@@ -1,4 +1,4 @@
 capital = byzantium-ii
-colour = 20
+color = 20
 category = imperial
 reveal = { byzantium-ii holy-terra leagueheim stigmata }

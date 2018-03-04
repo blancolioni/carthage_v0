@@ -1,2 +1,2 @@
-colour = 20
+color = 20
 category = imperial
