@@ -87,6 +87,10 @@ private
          Previous_Update       : Ada.Calendar.Time;
       end record;
 
+   overriding procedure On_Key_Press
+     (Model : in out Top_Carthage_Model;
+      Key   : Character);
+
    procedure Set_Current_Model
      (Top         : not null access Top_Carthage_Model'Class;
       New_Current : Carthage_Model);

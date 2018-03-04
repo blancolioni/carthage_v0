@@ -176,6 +176,18 @@ package body Carthage.UI.Models.Top is
       Model.Layout_Loaded := True;
    end Load_Layout;
 
+   ------------------
+   -- On_Key_Press --
+   ------------------
+
+   overriding procedure On_Key_Press
+     (Model : in out Top_Carthage_Model;
+      Key   : Character)
+   is
+   begin
+      Model.Current_Model.On_Key_Press (Key);
+   end On_Key_Press;
+
    ------------
    -- Render --
    ------------

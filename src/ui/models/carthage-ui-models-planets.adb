@@ -13,6 +13,7 @@ with Carthage.Stacks;
 with Carthage.Tiles;
 
 with Carthage.UI.Maps;
+with Carthage.UI.Models.Top;
 
 with Carthage.Options;
 
@@ -271,7 +272,9 @@ package body Carthage.UI.Models.Planets is
    is
    begin
       if Key = Ada.Characters.Latin_1.ESC then
-         Model.Pop_Model;
+         Carthage.UI.Models.Top.Top_Model
+           (Model.Parent_Model)
+           .Show_Galaxy;
       end if;
    end On_Key_Press;
 
