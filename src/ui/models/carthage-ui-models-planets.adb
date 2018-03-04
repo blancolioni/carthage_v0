@@ -75,6 +75,9 @@ package body Carthage.UI.Models.Planets is
    overriding procedure Resize
      (Item          : in out Root_Planet_Model);
 
+   overriding procedure Update
+     (Item          : in out Root_Planet_Model);
+
    overriding procedure Render
      (Model    : in out Root_Planet_Model;
       Renderer : in out Lui.Rendering.Root_Renderer'Class;
@@ -933,6 +936,17 @@ package body Carthage.UI.Models.Planets is
 --           return "";
 
    end Tooltip;
+
+   ------------
+   -- Update --
+   ------------
+
+   overriding procedure Update
+     (Item          : in out Root_Planet_Model)
+   is
+   begin
+      Item.Set_Changed;
+   end Update;
 
    ----------
    -- Zoom --
