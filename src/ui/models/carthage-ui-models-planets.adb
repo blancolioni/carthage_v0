@@ -509,70 +509,78 @@ package body Carthage.UI.Models.Planets is
         (Tile               : Carthage.Tiles.Tile_Type;
          Screen_X, Screen_Y : Integer)
       is
+
+         procedure Draw_Stack (Stack : not null access constant
+                                 Carthage.Stacks.Stack_Record'Class);
+
+         ----------------
+         -- Draw_Stack --
+         ----------------
+
+         procedure Draw_Stack (Stack : not null access constant
+                                 Carthage.Stacks.Stack_Record'Class)
+         is
+            Left       : Integer :=
+                           Screen_X - Icon_Size / 2;
+            Right      : Integer := Left + Icon_Size;
+            Top        : Integer :=
+                           Screen_Y + Tile_Height / 2
+                             - Icon_Size;
+            Bottom     : Integer := Top + Icon_Size;
+            Background : Carthage.Colors.Color_Type :=
+                           Stack.Owner.Color;
+            Resource   : constant String :=
+                           "unit"
+                           & Integer'Image (-(Stack.Asset (1).Unit.Index));
+            Size       : constant String :=
+                           Ada.Strings.Fixed.Trim
+                             (Carthage.Stacks.Asset_Count'Image
+                                (Stack.Count),
+                              Ada.Strings.Left);
+         begin
+            if Stack.Has_Movement then
+               declare
+                  Next_Position  : constant Tile_Position :=
+                                     Stack.Next_Tile;
+                  Progress       : constant Float :=
+                                     Stack.Movement_Progress;
+                  Next_X, Next_Y : Integer;
+               begin
+                  Model.Get_Screen_Tile_Centre
+                    (Next_Position, Next_X, Next_Y);
+                  Left := Left
+                    + Integer (Float (Next_X - Screen_X) * Progress);
+                  Top := Top
+                    + Integer (Float (Next_Y - Screen_Y) * Progress);
+                  Right := Left + Icon_Size;
+                  Bottom := Top + Icon_Size;
+               end;
+            end if;
+
+            Model.Rendered_Stacks.Append
+              (Rendered_Stack_Icon'
+                 (Carthage.Stacks.Stack_Type (Stack),
+                  Left, Top, Right, Bottom));
+
+            Background.Alpha := 0.7;
+
+            Renderer.Set_Color (To_Lui_Color (Background));
+            Renderer.Rectangle
+              (Left, Top, Icon_Size, Icon_Size, True);
+            Renderer.Image
+              ((Left, Top, Icon_Size, Icon_Size), Resource);
+            Renderer.Set_Color (Lui.Colors.Black);
+            Renderer.Rectangle
+              (Left + Icon_Size - 12, Top + Icon_Size - 8,
+               12, 8, True);
+            Renderer.Set_Color (Lui.Colors.White);
+            Renderer.Text
+              (Left + Icon_Size - 10, Top + Icon_Size, Size);
+         end Draw_Stack;
+
       begin
-         if (Wizard_Mode or else Tile.Currently_Visible_To (Model.House))
-           and then Tile.Has_Stacks
-           and then not Tile.First_Stack.Is_Empty
-         then
-            declare
-               Left       : Integer :=
-                              Screen_X - Icon_Size / 2;
-               Right      : Integer := Left + Icon_Size;
-               Top        : Integer :=
-                              Screen_Y + Tile_Height / 2
-                                - Icon_Size;
-               Bottom     : Integer := Top + Icon_Size;
-               Stack      : constant Carthage.Stacks.Stack_Type :=
-                              Tile.First_Stack;
-               Background : Carthage.Colors.Color_Type :=
-                              Stack.Owner.Color;
-               Resource   : constant String :=
-                              "unit"
-                              & Integer'Image (-(Stack.Asset (1).Unit.Index));
-               Size       : constant String :=
-                              Ada.Strings.Fixed.Trim
-                                (Carthage.Stacks.Asset_Count'Image
-                                   (Stack.Count),
-                                 Ada.Strings.Left);
-            begin
-               if Stack.Has_Movement then
-                  declare
-                     Next_Position  : constant Tile_Position :=
-                                        Stack.Next_Tile;
-                     Progress       : constant Float :=
-                                        Stack.Movement_Progress;
-                     Next_X, Next_Y : Integer;
-                  begin
-                     Model.Get_Screen_Tile_Centre
-                       (Next_Position, Next_X, Next_Y);
-                     Left := Left
-                       + Integer (Float (Next_X - Screen_X) * Progress);
-                     Top := Top
-                       + Integer (Float (Next_Y - Screen_Y) * Progress);
-                     Right := Left + Icon_Size;
-                     Bottom := Top + Icon_Size;
-                  end;
-               end if;
-
-               Model.Rendered_Stacks.Append
-                 (Rendered_Stack_Icon'
-                    (Stack, Left, Top, Right, Bottom));
-
-               Background.Alpha := 0.7;
-
-               Renderer.Set_Color (To_Lui_Color (Background));
-               Renderer.Rectangle
-                 (Left, Top, Icon_Size, Icon_Size, True);
-               Renderer.Image
-                 ((Left, Top, Icon_Size, Icon_Size), Resource);
-               Renderer.Set_Color (Lui.Colors.Black);
-               Renderer.Rectangle
-                 (Left + Icon_Size - 12, Top + Icon_Size - 8,
-                  12, 8, True);
-               Renderer.Set_Color (Lui.Colors.White);
-               Renderer.Text
-                 (Left + Icon_Size - 10, Top + Icon_Size, Size);
-            end;
+         if Wizard_Mode or else Tile.Currently_Visible_To (Model.House) then
+            Tile.Scan_Stacks (Draw_Stack'Access);
          end if;
       end Draw_Unit_Layer_Tile;
 
