@@ -79,10 +79,11 @@ package Carthage.Tiles is
      with Pre => Tile.Has_Stacks;
 
    procedure Scan_Stacks
-     (Tile : Tile_Record;
-      Process : not null access
+     (Tile          : Tile_Record;
+      Process       : not null access
         procedure (Stack : not null access constant
-                     Carthage.Stacks.Stack_Record'Class));
+                     Carthage.Stacks.Stack_Record'Class);
+      Skip_Empty    : Boolean := True);
 
    function Description
      (Tile : Tile_Record)

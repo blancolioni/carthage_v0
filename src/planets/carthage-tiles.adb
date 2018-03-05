@@ -1,6 +1,7 @@
 with Ada.Strings.Fixed;
 
 with Carthage.Cities;
+with Carthage.Stacks;
 
 package body Carthage.Tiles is
 
@@ -130,14 +131,17 @@ package body Carthage.Tiles is
    -----------------
 
    procedure Scan_Stacks
-     (Tile    : Tile_Record;
-      Process : not null access
+     (Tile          : Tile_Record;
+      Process       : not null access
         procedure (Stack : not null access constant
-                     Carthage.Stacks.Stack_Record'Class))
+                     Carthage.Stacks.Stack_Record'Class);
+      Skip_Empty    : Boolean := True)
    is
    begin
       for Stack of Tile.Stacks loop
-         Process (Stack);
+         if not Skip_Empty or else not Stack.Is_Empty then
+            Process (Stack);
+         end if;
       end loop;
    end Scan_Stacks;
 
