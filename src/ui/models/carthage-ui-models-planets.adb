@@ -68,7 +68,6 @@ package body Carthage.UI.Models.Planets is
          Hex_Layout            : Hex_Layout_Lists.List;
          Show_Hex_Coords       : Boolean;
          Show_Cubic_Coords     : Boolean;
-         Show_Move_Cost        : Boolean;
          Hex_Layout_Changed    : Boolean := True;
       end record;
 
@@ -302,8 +301,6 @@ package body Carthage.UI.Models.Planets is
       Model.Show_Hex_Coords := Carthage.Options.Show_Hex_Coordinates;
       Model.Show_Cubic_Coords :=
         Carthage.Options.Show_Cubic_Coordinates;
-      Model.Show_Move_Cost :=
-        Carthage.Options.Show_Move_Cost;
 
       if Model.Planet.Has_Owner
         and then Model.House = Model.Planet.Owner
@@ -440,17 +437,6 @@ package body Carthage.UI.Models.Planets is
                   Y      => Screen_Y + Tile_Height / 2 - 16,
                   Value  => Coordinate_Type'Image (Cube_Z (Cubic)));
             end;
-         end if;
-
-         if Model.Selected_Stack /= null
-           and then Model.Show_Move_Cost
-         then
-            Renderer.Text
-              (X      => Screen_X,
-               Y      => Screen_Y,
-               Value  =>
-                 Natural'Image
-                   (Model.Selected_Stack.Movement_Cost (Tile)));
          end if;
 
       end Draw_Base_Layer_Tile;
