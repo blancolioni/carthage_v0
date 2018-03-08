@@ -35,6 +35,7 @@ package body Carthage.Combat is
      new Carthage.Updates.Update_Interface with
       record
          Battle_Index : Positive;
+         Weapon       : Carthage.Units.Weapon_Category;
       end record;
 
    overriding procedure Activate
@@ -47,22 +48,47 @@ package body Carthage.Combat is
    overriding procedure Activate
      (Upd : Battle_Update)
    is
+      use Carthage.Units;
       Battle : Battle_Record renames Current_Battles (Upd.Battle_Index);
+      Weapon : Weapon_Category := Upd.Weapon;
    begin
+
       if not Battle.Active then
          return;
       end if;
 
       Attacker (Battle).Log ("attacking " & Defender (Battle).Name);
-      for Weapon in Carthage.Units.Weapon_Category loop
+
+      loop
          declare
-            Round : constant Carthage.Combat.Attack_Record_Array :=
+            Round : constant Attack_Record_Array :=
                       Carthage.Combat.Attack_Round (Battle, Weapon);
          begin
             for Attack of Round loop
                Attacker (Battle).Log (Image (Attack));
             end loop;
+
+            exit when Round'Length > 0;
+
+            if Weapon = Weapon_Category'Last then
+               Weapon := Weapon_Category'First;
+            else
+               Weapon := Weapon_Category'Succ (Weapon);
+            end if;
+
+            if Weapon = Upd.Weapon then
+               Battle.Active := False;
+               exit;
+            end if;
          end;
+      end loop;
+
+      for Stack of Battle.Stacks loop
+         for I in 1 .. Stack.Count loop
+            if not Stack.Asset (I).Alive then
+               Stack.Asset (I).Log ("destroyed");
+            end if;
+         end loop;
       end loop;
 
       for Stack of Battle.Stacks loop
@@ -70,7 +96,19 @@ package body Carthage.Combat is
       end loop;
 
       if Battle.Active then
-         Carthage.Updates.Queue (Upd, Carthage.Calendar.Days (1));
+         declare
+            New_Update : Battle_Update := Upd;
+         begin
+            if Weapon = Weapon_Category'Last then
+               Weapon := Weapon_Category'First;
+            else
+               Weapon := Weapon_Category'Succ (Weapon);
+            end if;
+
+            New_Update.Weapon := Weapon;
+            Carthage.Updates.Queue
+              (New_Update, Carthage.Calendar.Days (1));
+         end;
       end if;
 
    end Activate;
@@ -222,10 +260,6 @@ package body Carthage.Combat is
          then
             Result (I).Defender.Update.Damage
               (Result (I).Damage);
-            if not Result (I).Defender.Alive then
-               Result (I).Defender.Log
-                 ("destroyed by " & Result (I).Attacker.Identifier);
-            end if;
          end if;
       end loop;
 
@@ -285,11 +319,14 @@ package body Carthage.Combat is
       Create (Battle, Attacker.Owner, Defender.Owner);
       Battle.Planet := Planet;
       Battle.Tile := Tile;
+      Battle.Active := True;
       Add_Stack (Battle, Attacker);
       Add_Stack (Battle, Defender);
       Current_Battles.Append (Battle);
       Carthage.Updates.Queue
-        (Battle_Update'(Battle_Index => Current_Battles.Last_Index),
+        (Battle_Update'
+           (Battle_Index => Current_Battles.Last_Index,
+            Weapon       => Carthage.Units.Weapon_Category'First),
          Carthage.Calendar.Days (1));
    end New_Battle;
 
