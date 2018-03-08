@@ -1,8 +1,8 @@
+with Carthage.Identifiers;
+
 package body Carthage.Stacks.Create is
 
-   Current_Stack_Id : String := "A0-A0A0";
-
-   function Next_Stack_Id return String;
+   Stack_Id_Template : constant String := "A0-A0A0";
 
    ----------------------
    -- New_Ground_Stack --
@@ -22,7 +22,9 @@ package body Carthage.Stacks.Create is
 
       procedure Create (Stack : in out Stack_Class) is
       begin
-         Stack.Create_With_Identity (Next_Stack_Id);
+         Stack.Create_With_Identity
+           (Carthage.Identifiers.New_Identifier (Stack_Id_Template)
+            & "-" & Owner.Identifier);
          Stack.Set_Name (Owner.Name);
          Stack.Owner := Owner;
          Stack.Planet := Planet;
@@ -54,6 +56,8 @@ package body Carthage.Stacks.Create is
 
       procedure Create (Stack : in out Stack_Class) is
       begin
+         Stack.Create_With_Identity
+           ("orbit-" & Planet.Identifier & "-" & Owner.Identifier);
          Stack.Set_Name (Owner.Name);
          Stack.Owner := Owner;
          Stack.Planet := Planet;
@@ -66,26 +70,5 @@ package body Carthage.Stacks.Create is
    begin
       return Stack;
    end New_Orbital_Stack;
-
-   -------------------
-   -- Next_Stack_Id --
-   -------------------
-
-   function Next_Stack_Id return String is
-   begin
-      for Ch of reverse Current_Stack_Id loop
-         if Ch = '9' then
-            Ch := '0';
-         elsif Ch = 'Z' then
-            Ch := 'A';
-         elsif Ch in '0' .. '8'
-           or else Ch in 'A' .. 'Z'
-         then
-            Ch := Character'Succ (Ch);
-            exit;
-         end if;
-      end loop;
-      return Current_Stack_Id;
-   end Next_Stack_Id;
 
 end Carthage.Stacks.Create;
