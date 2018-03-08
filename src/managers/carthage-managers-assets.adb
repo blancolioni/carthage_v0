@@ -130,8 +130,8 @@ package body Carthage.Managers.Assets is
                                  Manager.Stacks (Managed_Asset.Stack);
             begin
                if Managed_Stack.Goal.Is_Empty
-                 and then Managed_Stack.Stack.Movement_Cost
-                   (Manager.Planet.Tile (Target)) > 0
+                 and then Managed_Stack.Stack.Can_Enter
+                   (Manager.Planet.Tile (Target))
                then
                   declare
                      Position : constant Tile_Position :=
@@ -496,8 +496,7 @@ package body Carthage.Managers.Assets is
                                  Manager.Stacks (Managed_Asset.Stack);
             begin
                if Managed_Stack.Goal.Is_Empty
-                 and then Managed_Stack.Stack.Movement_Cost
-                   (Asset_Goal.Tile) > 0
+                 and then Managed_Stack.Stack.Can_Enter (Asset_Goal.Tile)
                then
                   return True;
                end if;
