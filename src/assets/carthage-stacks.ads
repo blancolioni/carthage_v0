@@ -152,7 +152,7 @@ package Carthage.Stacks is
    function Movement_Cost
      (Stack : Stack_Record;
       Tile  : Carthage.Tiles.Tile_Type)
-      return Natural;
+      return Float;
 
    function Movement_Duration
      (Stack : Stack_Record;
@@ -262,7 +262,7 @@ private
          Orders             : Stack_Order_Lists.List;
          Current_Path       : Stack_Path_Holders.Holder;
          Current_Path_Index : Natural := 0;
-         Next_Tile_Cost     : Positive := 1;
+         Next_Tile_Cost     : Float := 1.0;
          Next_Tile_Duration : Duration;
          Next_Tile_Start    : Carthage.Calendar.Time;
          Manager            : access Stack_Manager_Interface'Class;
@@ -347,7 +347,7 @@ private
      (Stack : Stack_Record;
       Tile  : Carthage.Tiles.Tile_Type)
       return Boolean
-   is (Stack.Movement_Cost (Tile) > 0);
+   is (Stack.Movement_Cost (Tile) > 0.0);
 
    overriding function Is_Empty (Stack : Stack_Record) return Boolean
    is (Stack.Count = 0);

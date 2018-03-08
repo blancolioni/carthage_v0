@@ -153,13 +153,13 @@ package body Carthage.Stacks.Updates is
          Tile : constant Carthage.Tiles.Tile_Type :=
                   Stack.Planet.Tile (To);
 
-         Cost : constant Natural := Stack.Movement_Cost (Tile);
+         Cost : constant Float := Stack.Movement_Cost (Tile);
 
          Hostile     : Carthage.Stacks.Stack_Type;
          Has_Hostile : Boolean;
       begin
 
-         if Cost = 0 then
+         if Cost = 0.0 then
             Stack.Log
               ("stopping because we cannot move to "
                & Tile.Description);
@@ -302,12 +302,12 @@ package body Carthage.Stacks.Updates is
       function Passable
         (Tile : Carthage.Tiles.Tile_Type)
             return Boolean
-      is (Stack.Movement_Cost (Tile) > 0);
+      is (Stack.Can_Enter (Tile));
 
       function Move_Cost
         (Tile : Carthage.Tiles.Tile_Type)
             return Float
-      is (Float (Stack.Movement_Cost (Tile)));
+      is (Stack.Movement_Cost (Tile));
 
    begin
       case Order.Order_Type is

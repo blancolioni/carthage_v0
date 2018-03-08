@@ -42,12 +42,12 @@ package body Carthage.Stacks is
       function Passable
         (Tile : Carthage.Tiles.Tile_Type)
                   return Boolean
-      is (Stack.Movement_Cost (Tile) > 0);
+      is (Stack.Movement_Cost (Tile) > 0.0);
 
       function Move_Cost
         (Tile : Carthage.Tiles.Tile_Type)
                   return Float
-      is (Float (Stack.Movement_Cost (Tile)));
+      is (Stack.Movement_Cost (Tile));
 
    begin
       return Stack.Planet.Find_Path
@@ -106,23 +106,24 @@ package body Carthage.Stacks is
    function Movement_Cost
      (Stack : Stack_Record;
       Tile  : Carthage.Tiles.Tile_Type)
-      return Natural
+      return Float
    is
-      World  : constant Carthage.Worlds.World_Type :=
-                 Stack.Planet.Category;
-      Terrain : constant Carthage.Tiles.Terrain_Layer_Array := Tile.Terrain;
+      World   : constant Carthage.Worlds.World_Type :=
+                  Stack.Planet.Category;
+      Terrain : constant Carthage.Tiles.Terrain_Layer_Array :=
+                  Tile.Terrain;
       Lowest  : Float := Float'Last;
       Road    : constant Boolean := Tile.Has_Road;
    begin
       if Stack.Count = 0 then
-         return 0;
+         return 0.0;
       end if;
 
       for I in 1 .. Stack.Count loop
          declare
             Category : constant Carthage.Units.Unit_Category :=
                          Stack.Asset (I).Unit.Category;
-            Cost : Float := 1.0;
+            Cost     : Float := 1.0;
          begin
             for T of Terrain loop
                Cost := Cost * World.Movement_Multiplier (T, Category);
@@ -136,14 +137,7 @@ package body Carthage.Stacks is
          end;
       end loop;
 
-      if Lowest = 0.0 then
-         return 0;
-      elsif Float'Truncation (Lowest) = Lowest then
-         return Natural (Lowest);
-      else
-         return Natural (Float'Truncation (Lowest)) + 1;
-      end if;
-
+      return Lowest;
    end Movement_Cost;
 
    -----------------------
@@ -158,7 +152,7 @@ package body Carthage.Stacks is
    begin
       return Duration (3600.0
                        * Float (Stack.Movement)
-                       / Float (Stack.Movement_Cost (Tile)));
+                       / Stack.Movement_Cost (Tile));
    end Movement_Duration;
 
    -----------------------
