@@ -1,4 +1,5 @@
 with Ada.Exceptions;
+with Ada.Strings.Fixed;
 
 package body Carthage.Units.Configure is
 
@@ -64,6 +65,12 @@ package body Carthage.Units.Configure is
          Unit.Image_Resource :=
            Ada.Strings.Unbounded.To_Unbounded_String
              (String'(Config.Get ("icon")));
+
+         Unit.Is_Sceptre :=
+           Ada.Strings.Fixed.Index (Config.Config_Name, "sceptre") > 0;
+         Unit.Is_Noble :=
+           Ada.Strings.Fixed.Index (Config.Config_Name, "noble") > 0;
+
       end Create;
 
       Unit : constant Unit_Type :=

@@ -16,6 +16,10 @@ package Carthage.Stacks is
 
    Maximum_Stack_Size : constant := 20;
 
+   type Stack_Property is
+     (Defender);
+   --  defender: avoid moving and attacking with this stack
+
    type Stack_Manager_Interface is interface;
 
    procedure Take_Resource
@@ -55,6 +59,19 @@ package Carthage.Stacks is
    function Description
      (Item : Stack_Record)
       return String;
+
+   function Has_Property
+     (Stack    : Stack_Record'Class;
+      Property : Stack_Property)
+      return Boolean;
+
+   procedure Set_Property
+     (Stack    : in out Stack_Record'Class;
+      Property : Stack_Property);
+
+   procedure Clear_Property
+     (Stack    : in out Stack_Record'Class;
+      Property : Stack_Property);
 
    procedure On_Hostile_Spotted
      (Manager : in out Stack_Manager_Interface;
@@ -230,6 +247,8 @@ private
    package Stack_Path_Holders is
      new Ada.Containers.Indefinite_Holders (Array_Of_Positions);
 
+   type Stack_Properties is array (Stack_Property) of Boolean;
+
    type Stack_Record is
      new Carthage.Objects.Root_Named_Object
      and Carthage.Assets.Asset_Container_Interface with
@@ -239,6 +258,7 @@ private
          Tile               : Carthage.Tiles.Tile_Type;
          Count              : Asset_Count := 0;
          Assets             : Asset_Array := (others => null);
+         Properties         : Stack_Properties := (others => False);
          Orders             : Stack_Order_Lists.List;
          Current_Path       : Stack_Path_Holders.Holder;
          Current_Path_Index : Natural := 0;
@@ -301,6 +321,12 @@ private
      (Stack : Stack_Record)
       return Carthage.Houses.House_Type
    is (Stack.Owner);
+
+   function Has_Property
+     (Stack    : Stack_Record'Class;
+      Property : Stack_Property)
+      return Boolean
+   is (Stack.Properties (Property));
 
    function Has_Movement
      (Stack : Stack_Record)

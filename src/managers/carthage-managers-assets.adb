@@ -250,7 +250,11 @@ package body Carthage.Managers.Assets is
                                        Stack.Find_Path
                                          (Asset_Goal.Tile);
                            begin
-                              if Path'Length > 1 then
+                              if Stack.Has_Property
+                                (Carthage.Stacks.Defender)
+                              then
+                                 Stack.Log ("skipping defender");
+                              elsif Path'Length > 1 then
                                  Closest_Stack := Position;
                                  Smallest_D := D;
                                  Current_Str := Str;
@@ -652,6 +656,13 @@ package body Carthage.Managers.Assets is
                   Planet => Stack.Planet,
                   Tile   => Stack.Tile,
                   Goal   => <>));
+
+            if not Stack.Has_Property (Carthage.Stacks.Defender)
+              and then (Stack.Asset (I).Unit.Is_Sceptre
+                        or else Stack.Asset (I).Unit.Is_Noble)
+            then
+               Stack.Update.Set_Property (Carthage.Stacks.Defender);
+            end if;
          end loop;
       end Add_Stack;
 

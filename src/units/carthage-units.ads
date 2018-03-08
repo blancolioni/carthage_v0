@@ -42,6 +42,9 @@ package Carthage.Units is
       return Boolean
    is (Unit.Category in Ground_Category);
 
+   function Is_Sceptre (Unit : Unit_Record'Class) return Boolean;
+   function Is_Noble (Unit : Unit_Record'Class) return Boolean;
+
    function Movement
      (Unit : Unit_Record)
       return Natural;
@@ -125,6 +128,8 @@ private
       record
          Index          : Natural := 0;
          Category       : Unit_Category;
+         Is_Sceptre     : Boolean := False;
+         Is_Noble       : Boolean := False;
          Move           : Natural := 0;
          Spot           : Natural := 0;
          Camouflage     : Natural := 0;
@@ -234,6 +239,12 @@ private
 
    function Get (Id : String) return Unit_Type
    is (Db.Get (Id));
+
+   function Is_Sceptre (Unit : Unit_Record'Class) return Boolean
+   is (Unit.Is_Sceptre);
+
+   function Is_Noble (Unit : Unit_Record'Class) return Boolean
+   is (Unit.Is_Noble);
 
    package Unit_Vectors is
      new Ada.Containers.Vectors (Natural, Unit_Type);

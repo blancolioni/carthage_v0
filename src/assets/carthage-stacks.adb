@@ -18,6 +18,18 @@ package body Carthage.Stacks is
       To.Assets (To.Count) := Asset;
    end Add_Asset;
 
+   --------------------
+   -- Clear_Property --
+   --------------------
+
+   procedure Clear_Property
+     (Stack    : in out Stack_Record'Class;
+      Property : Stack_Property)
+   is
+   begin
+      Stack.Properties (Property) := False;
+   end Clear_Property;
+
    ---------------
    -- Find_Path --
    ---------------
@@ -287,6 +299,18 @@ package body Carthage.Stacks is
    begin
       Stack.Manager := Manager;
    end Set_Manager;
+
+   ------------------
+   -- Set_Property --
+   ------------------
+
+   procedure Set_Property
+     (Stack    : in out Stack_Record'Class;
+      Property : Stack_Property)
+   is
+   begin
+      Stack.Properties (Property) := True;
+   end Set_Property;
 
    ----------
    -- Spot --
