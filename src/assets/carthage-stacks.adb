@@ -150,9 +150,9 @@ package body Carthage.Stacks is
       return Duration
    is
    begin
-      return Duration (3600.0
-                       * Float (Stack.Movement)
-                       / Stack.Movement_Cost (Tile));
+      return Duration (7.0 * 24.0 * 60.0 * 60.0
+                       * Stack.Movement_Cost (Tile)
+                       / Float (Stack.Movement));
    end Movement_Duration;
 
    -----------------------
