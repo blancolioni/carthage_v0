@@ -261,6 +261,8 @@ package body Carthage.Stacks.Updates is
                   if Has_Hostile then
                      Attack (Hostile);
                      Stop := True;
+                     Stack.Current_Path_Index := 0;
+                     Stack.Current_Path.Clear;
                   else
                      Stack.Next_Tile_Cost :=
                        Stack.Movement_Cost
