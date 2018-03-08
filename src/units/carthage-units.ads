@@ -21,6 +21,11 @@ package Carthage.Units is
      (Water, Indirect, Air, Direct, Close, Psy,
       Ranged_Space, Direct_Space, Close_Space);
 
+   function Can_Target
+     (Weapon : Weapon_Category;
+      Unit   : Unit_Category)
+      return Boolean;
+
    type Unit_Record is
      new Carthage.Objects.Localised.Root_Localised_Object with private;
 
@@ -253,5 +258,13 @@ private
 
    function Get (Index : Natural) return Unit_Type
    is (Us.Element (Index));
+
+   Weapon_Targets : array (Unit_Category, Weapon_Category) of Boolean;
+
+   function Can_Target
+     (Weapon : Weapon_Category;
+      Unit   : Unit_Category)
+      return Boolean
+   is (Weapon_Targets (Unit, Weapon));
 
 end Carthage.Units;

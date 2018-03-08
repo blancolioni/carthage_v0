@@ -60,10 +60,14 @@ package body Carthage.Combat is
       Attacker (Battle).Log ("attacking " & Defender (Battle).Name);
 
       loop
+
+         Attacker (Battle).Log ("phase: " & Weapon'Img);
+
          declare
             Round : constant Attack_Record_Array :=
                       Carthage.Combat.Attack_Round (Battle, Weapon);
          begin
+
             for Attack of Round loop
                Attacker (Battle).Log (Image (Attack));
             end loop;
@@ -242,15 +246,37 @@ package body Carthage.Combat is
          return Target;
       end Choose_Target;
 
+      Attacker_Targets : Asset_Vectors.Vector;
+      Defender_Targets : Asset_Vectors.Vector;
+
    begin
+
+      for Asset of Battle.Defenders loop
+         if Asset.Alive
+           and then Carthage.Units.Can_Target
+             (Weapon, Asset.Unit.Category)
+         then
+            Attacker_Targets.Append (Asset);
+         end if;
+      end loop;
+
+      for Asset of Battle.Attackers loop
+         if Asset.Alive
+           and then Carthage.Units.Can_Target
+             (Weapon, Asset.Unit.Category)
+         then
+            Defender_Targets.Append (Asset);
+         end if;
+      end loop;
+
       for Asset of Battle.Attackers loop
          if Asset.Alive then
-            Check (Asset, Battle.Defenders);
+            Check (Asset, Attacker_Targets);
          end if;
       end loop;
       for Asset of Battle.Defenders loop
          if Asset.Alive then
-            Check (Asset, Battle.Attackers);
+            Check (Asset, Defender_Targets);
          end if;
       end loop;
 

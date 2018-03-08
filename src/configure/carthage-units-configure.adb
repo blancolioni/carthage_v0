@@ -7,6 +7,33 @@ package body Carthage.Units.Configure is
      (Name : String)
       return Weapon_Category;
 
+   -----------------------
+   -- Configure_Targets --
+   -----------------------
+
+   procedure Configure_Targets
+     (Config : Tropos.Configuration)
+   is
+   begin
+      Weapon_Targets := (others => (others => False));
+      for Unit_Config of Config loop
+         declare
+            Unit : constant Unit_Category :=
+                     Unit_Category'Value (Unit_Config.Config_Name);
+         begin
+            for Weapon_Config of Unit_Config loop
+               declare
+                  Weapon : constant Weapon_Category :=
+                             Weapon_Category'Value
+                               (Weapon_Config.Config_Name);
+               begin
+                  Weapon_Targets (Unit, Weapon) := True;
+               end;
+            end loop;
+         end;
+      end loop;
+   end Configure_Targets;
+
    --------------------
    -- Configure_Unit --
    --------------------

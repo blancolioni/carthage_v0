@@ -89,6 +89,9 @@ package body Carthage.Configure is
    procedure Import_Units
      (Config : Tropos.Configuration);
 
+   procedure Import_Targets
+     (Config : Tropos.Configuration);
+
    function To_Carthage_Id
      (Dat_Identifier   : String;
       Space_Substitute : Character := '-')
@@ -580,6 +583,44 @@ package body Carthage.Configure is
       Tropos.Writer.Write_Config
         (Output, Carthage.Paths.Config_File ("resources.txt"));
    end Import_Resources;
+
+   procedure Import_Targets
+     (Config : Tropos.Configuration)
+   is
+      At_Name : Boolean := True;
+      Name_Config : Tropos.Configuration;
+      Output      : Tropos.Configuration :=
+                      Tropos.New_Config ("targets");
+   begin
+      for Target_Config of Config.Child (1) loop
+         if At_Name then
+            Name_Config := Tropos.New_Config (Target_Config.Config_Name);
+         else
+            declare
+               use Carthage.Units;
+               Weapon : Weapon_Category := Weapon_Category'First;
+            begin
+               for Ch of Target_Config.Config_Name loop
+                  if Ch = '1' then
+                     Name_Config.Add
+                       (Tropos.New_Config
+                          (Ada.Characters.Handling.To_Lower
+                               (Weapon_Category'Image (Weapon))));
+                  end if;
+                  if (Ch = '1' or else Ch = '0')
+                    and then Weapon /= Weapon_Category'Last
+                  then
+                     Weapon := Weapon_Category'Succ (Weapon);
+                  end if;
+               end loop;
+               Output.Add (Name_Config);
+            end;
+         end if;
+         At_Name := not At_Name;
+      end loop;
+      Tropos.Writer.Write_Config
+        (Output, Carthage.Paths.Config_File ("targets.txt"));
+   end Import_Targets;
 
    -----------------------
    -- Import_Technology --
@@ -1258,6 +1299,19 @@ package body Carthage.Configure is
       Ada.Text_IO.Put_Line ("  units");
       Load_Directory_Configuration
         ("units", Carthage.Units.Configure.Configure_Unit'Access);
+
+      if Carthage.Options.Clear_Import_Cache
+        or else not Ada.Directories.Exists
+          (Carthage.Paths.Config_File ("targets.txt"))
+      then
+         Import_Targets
+           (Tropos.Reader.Read_Config
+              (Fading_Suns_Data_File ("TARGET")));
+      end if;
+
+      Carthage.Units.Configure.Configure_Targets
+        (Tropos.Reader.Read_Config
+           (Carthage.Paths.Config_File ("targets.txt")));
 
       Ada.Text_IO.Put_Line ("  tiles");
       Carthage.UI.Maps.Configure_Tile_Resources
