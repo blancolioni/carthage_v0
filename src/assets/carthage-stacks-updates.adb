@@ -36,7 +36,6 @@ package body Carthage.Stacks.Updates is
    overriding procedure Activate
      (Upd : Stack_Update)
    is
-      use Carthage.Calendar;
    begin
       if Upd.Start then
          Db.Update (Upd.Stack.Reference, Start_Movement'Access);

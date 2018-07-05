@@ -364,7 +364,6 @@ package body Carthage.Managers.Assets is
             return True;
          when Recon =>
             declare
-               use type Carthage.Stacks.Asset_Count;
                Asset_Cursor : constant Managed_Asset_List.Cursor :=
                                 Best_Available (Asset_Goal.Planet);
             begin

@@ -80,7 +80,6 @@ package body Carthage.UI.Models.Top is
      (Model : not null access Top_Carthage_Model'Class;
       House : not null access constant Carthage.Houses.House_Record'Class)
    is
-      use type Lui.Render_Layer;
    begin
       Model.House := Carthage.Houses.House_Type (House);
       Model.Initialise
@@ -294,7 +293,6 @@ package body Carthage.UI.Models.Top is
    procedure Show_Galaxy
      (Model : not null access Top_Carthage_Model'Class)
    is
-      use type Lui.Models.Object_Model;
    begin
       if Model.Galaxy_Model = null then
          Model.Galaxy_Model :=

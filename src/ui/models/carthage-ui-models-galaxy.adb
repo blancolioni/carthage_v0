@@ -825,7 +825,7 @@ package body Carthage.UI.Models.Galaxy is
       X, Y  : Natural)
       return String
    is
-      use Carthage.Planets, Carthage.Stacks;
+      use Carthage.Planets;
       Planet : constant Planet_Type :=
                  Model.Closest_System (X, Y, 30);
 --        Stack  : constant Stack_Type := null;

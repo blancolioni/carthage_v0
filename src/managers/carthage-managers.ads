@@ -29,8 +29,7 @@ package Carthage.Managers is
    function Have_Immediate_Capacity
      (Manager : Root_Manager_Type;
       Goal    : Carthage.Goals.Goal_Record'Class)
-      return Boolean
-   is (False);
+      return Boolean;
 
    procedure Get_Resource_Requirements
      (Manager : in out Root_Manager_Type;

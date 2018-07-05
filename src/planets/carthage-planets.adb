@@ -82,8 +82,22 @@ package body Carthage.Planets is
    procedure Get_Tiles (Planet : not null access constant Planet_Record'Class;
                         Tiles  : out Surface_Tiles)
    is
-      function OK (Tile : Carthage.Tiles.Tile_Type) return Boolean
-      is (True);
+      function OK
+        (Tile : Carthage.Tiles.Tile_Type)
+         return Boolean;
+
+      --------
+      -- OK --
+      --------
+
+      function OK
+        (Tile : Carthage.Tiles.Tile_Type)
+         return Boolean
+      is
+         pragma Unreferenced (Tile);
+      begin
+         return True;
+      end OK;
 
    begin
       Planet.Get_Tiles (OK'Access, Tiles);
@@ -204,8 +218,17 @@ package body Carthage.Planets is
       function Is_Land (Tile : Carthage.Tiles.Tile_Type) return Boolean
       is (not Tile.Is_Water);
 
-      function Constant_Cost (Tile : Carthage.Tiles.Tile_Type) return Float
-      is (1.0);
+      function Constant_Cost (Tile : Carthage.Tiles.Tile_Type) return Float;
+
+      -------------------
+      -- Constant_Cost --
+      -------------------
+
+      function Constant_Cost (Tile : Carthage.Tiles.Tile_Type) return Float is
+         pragma Unreferenced (Tile);
+      begin
+         return 1.0;
+      end Constant_Cost;
 
       Path : constant Hexes.Cube_Coordinate_Array :=
                Planet.Grid.Find_Path

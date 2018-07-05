@@ -84,6 +84,16 @@ package body Carthage.Managers is
       Desired.Clear_Stock;
    end Get_Resource_Requirements;
 
+   function Have_Immediate_Capacity
+     (Manager : Root_Manager_Type;
+      Goal    : Carthage.Goals.Goal_Record'Class)
+      return Boolean
+   is
+      pragma Unreferenced (Manager, Goal);
+   begin
+      return False;
+   end Have_Immediate_Capacity;
+
    ------------------------
    -- Transfer_Resources --
    ------------------------

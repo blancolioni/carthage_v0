@@ -369,7 +369,6 @@ package body Carthage.UI.Models.Planets is
             Resource : String;
             Color    : Carthage.Colors.Color_Type)
          is
-            use type Carthage.Colors.Color_Element;
             Rec : constant Lui.Layout_Rectangle :=
                     Lui.Layout_Rectangle'
                       (X      => Screen_X - Tile_Width / 2,

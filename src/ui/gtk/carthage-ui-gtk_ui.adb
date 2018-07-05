@@ -88,7 +88,6 @@ package body Carthage.UI.Gtk_UI is
       Element : not null access Lui.Root_UI_Element'Class;
       Top     : not null access Gtk.Widget.Gtk_Widget_Record'Class)
    is
-      use Glib;
       use Lui;
       use type Gtk.Widget.Gtk_Widget;
    begin
@@ -126,7 +125,6 @@ package body Carthage.UI.Gtk_UI is
    is
       pragma Unreferenced (To);
       use Lui;
-      use type Gtk.Widget.Gtk_Widget;
    begin
       case Feature is
          when UI_Gadget =>
@@ -221,7 +219,6 @@ package body Carthage.UI.Gtk_UI is
    procedure On_Step_Button_Clicked
      (Button : access Gtk.Button.Gtk_Button_Record'Class)
    is
-      use Carthage.Updates;
       Name      : constant String := Button.Get_Name;
       New_Speed : constant Natural :=
                     Character'Pos (Name (Name'Last)) - 48;
@@ -258,7 +255,6 @@ package body Carthage.UI.Gtk_UI is
       Element : not null access Lui.Root_UI_Element'Class;
       Top     : not null access Gtk.Widget.Gtk_Widget_Record'Class)
    is
-      use Glib;
       use Lui;
       use type Gtk.Widget.Gtk_Widget;
    begin

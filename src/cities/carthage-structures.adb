@@ -94,7 +94,6 @@ package body Carthage.Structures is
       Tile      : Carthage.Tiles.Tile_Type)
       return Production_Array
    is
-      use Carthage.Terrain;
       Count : Natural := 0;
       Result : Production_Array (1 .. 10);
    begin
