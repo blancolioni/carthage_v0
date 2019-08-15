@@ -48,16 +48,16 @@ package body Carthage.Import is
 
                   declare
                      Color : constant Color_Type :=
-                               (R     => Color_Element (Palette (B).Red),
-                                G     => Color_Element (Palette (B).Green),
-                                B     => Color_Element (Palette (B).Blue),
-                                Alpha => Color_Element (Palette (B).Alpha));
+                               (R     => Colour_Element (Palette (B).Red),
+                                G     => Colour_Element (Palette (B).Green),
+                                B     => Colour_Element (Palette (B).Blue),
+                                Alpha => Colour_Element (Palette (B).Alpha));
                   begin
                      Set_Color
-                       (Item  => BM,
-                        X     => X - 1,
-                        Y     => Image_Height - Y,
-                        Color => Color);
+                       (Item   => BM,
+                        X      => X - 1,
+                        Y      => Image_Height - Y,
+                        Colour => Color);
                   end;
                end;
             end loop;
