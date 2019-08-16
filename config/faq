@@ -1,0 +1,1101 @@
+
+
+From: kagass@primenet.com.REMOVE.TO.EMAIL (Ichabod Kagass)
+Newsgroups: comp.sys.ibm.pc.games.strategic
+Subject: EFS FAQ [long]
+Date: 1 Mar 1997 15:57:01 -0700
+
+EMPEROR OF THE FADING SUNS FAQ
+v4.0 3/1/97
+
+By Tom Chick
+
+
+CONTENTS
+I. 	GENERAL
+II. 	PRODUCTION
+III. 	MOVEMENT
+IV.	COMBAT
+V.	DIPLOMACY
+VI.	THE CHURCH
+VII.	THE MERCHANT LEAGUE
+VIII.	BYZANTIUM II AND THE REGENCY
+IX.	MISCELLANEOUS
+	A. SPOTTING 
+	B. PLAGUE
+	C. NOBLES
+	E. ET CETERA
+X.	HACKING
+	A. UNITS
+	B. PRODUCTION
+	C. STRUCTURES
+	E. FIXING THE GUNSHIP BUG
+XI.	BUGS
+XII.	WISH LIST
+
+
+I. GENERAL
+
+What is Emperor of the Fading Suns?
+
+Emperor of the Fading Suns is a strategy game developed by Holistic
+Design and distributed by Segasoft.  It is set in a science fiction
+universe based on the Fading Suns role-playing game.  It can be
+described as a blend of Renaissance Italy and Frank Herbert's Dune.
+
+
+What is EFS, EotFS, and EOFS?
+
+EFS has become the most commonly used acronym for Emperor of the
+Fading Suns after an early period of turmoil, strife, and confusion.
+To quote Steve Yancey (syancey@griffin.com) from the newsgroup: "This
+game seems to have more problems than most as far as its identity in
+subject lines: EOTFS, EOFS, EFS, Emperor/Empire [of the] Fading Suns,
+etc.  I decided to go with EFS since that's the acronym the game
+itself goes by when it installs.  There is precedent for including
+"of" though -- MOO2 (not MO2), HOMM2 (not HMM2, but why not HOMAM2??,
+or since we
+have C&C, perhaps HOM&M2?)."  Despite Steve's gallant attempt to cloud
+the issue, everyone seems to have settled on EFS.
+
+
+Who is Holistic Design?
+
+These are the guys who brought us Battles of Destiny, Merchant Prince,
+Hammer of the Gods, and Machiavelli the Prince.
+
+
+What's with those ads for EFS anyway?
+
+Who knows what's going on in the hearts and minds of marketing folk.
+EFS has a, umm, unique advertising campaign in print magazines.  If
+you've ever quickly flipped past an ad with a picture of a kitten, a
+puppy, or some baby ducks under a heartwarming word like "Friendship",
+you've missed the ad for EFS.  Congratulations.
+
+
+What are the system requirements?
+
+Emperor of the Fading Suns requires Windows 95, a 486/66, 35MB of hard
+drive space, a Direct X compatible video card, and a CD-ROM drive.
+The installation routine slaps Direct X 3.0 onto your system and
+reboots your computer whether you like it or not.  
+
+
+Where can I get a demo?
+
+http://www.segasoft.com/emperor/main.html
+
+
+What's the latest version?
+
+Version 1.1.  Version 1.2 is currently in QA at Segasoft.  Holistic
+has assured us that v1.0 and v1.1 games will work with v1.2.
+
+
+Are there any strategy guides available?
+
+Online Gaming Review has a helpful article by
+http://www.ogr.com/specials/guides/efs_guide.shtml
+
+
+II. PRODUCTION
+
+Where are all my Firebirds going?
+
+There is an undocumented maintenance cost of 500Fb/year for each lab.
+
+
+Why am I producing so many Singularities?
+
+There's a bug that causes hyper production of some resources, most
+commonly Singularities.  Holistic says this will be fixed in version
+1.2.  In the meantime, many people feel this renders the game
+virtually unplayable.  There is some speculation that this bug may be
+related to certain House traits.
+
+
+How can I arrange cities to squeeze the maximum production out of my
+planet?
+
+Chris Smith (csmith@stoneboro.uucp.cirr.com) suggests zigging to the
+left or right at the start and end of a five hex line separating
+cities.  Instead of merely counting out six hexes in one direction
+(for instance, city-south-south-south-south-south-new city), jog the
+line in another direction at the beginning and end (in the above
+example, city, southeast-south-south-south-southeast-new city).  Chris
+says that if you do this consistently, it arranges your cities in
+triangular grids with no wasted space.  I'm not sure how this works
+(apparently it's a function of how hexes are arranged), but just
+thinking about it makes my brain hurt.
+
+
+III. MOVEMENT
+
+What is the formula to calculate movement costs from the figures in
+the TERRCOST.DAT file?
+
+Each hex has up to four layers.  For example, you could have mountains
+on top of trees on top of grass.  To figure out the movement cost for
+a unit into a particular type of terrain, you take the movement type
+of the unit, the terrain type, and the type of planet.  Reference
+these numbers in the TERRCOST.DAT table.  Do this for each layer in
+the hex, then multiply each of the layers together to get the actual
+movement cost.  For instance, a militia unit on a jungle world
+entering a mountain + trees + grass hex would have the following
+movement cost:
+
+(Mountain = 1.5) * (trees = 1.5) * (grass = 2.0) = 4.5
+
+Since movement cost is an integer value, it is rounded down to 4.
+
+
+Does the damage incurred by a Transport landing outside a city vary
+with the terrain type on which it lands?
+
+No.
+
+
+Do aircraft have to land? 
+ 
+Yes.  They must end every other turn in a city or on a spaceship.
+
+
+How do I divide up cargo pods?
+
+Drag the pod into an empty unit window and you'll have to option to
+divide the resource between two separate pods.
+
+
+Where is the hot spot to load units onto transports?
+
+Think of the icon of the unit you are loading as a cursor.  The hot
+spot on the cursor is the upper left hand corner.  If you click when
+the hot spot is anywhere in the transport's icon, you should hit it.
+
+
+Is the movement of units carried into orbit and back down supposed to
+be lost?  If movement points are a function of time passing, then the
+paradigm is broken if you can ferry units across the planet on Landers
+and then have them use their movement points as well.
+
+No.  Limitations of the game engine and all that...
+
+
+On a related note, is the movement of carried units in a jump supposed
+to be lost?  Bulk Haulers loaded with Fighters are inordinately
+powerful: you can jump into a system and the Fighters still have their
+movement available to attack any unsuspecting ships.
+
+Holistic replied, "Sounds good to us.  We like attacking each other
+that way."
+
+
+Is cargo supposed to be able to be transferable in space?  
+
+Yes, you're supposed to be able to transfer cargo in space.  However,
+this leads to some "Pony Express" tricks whereby a chain of transports
+can carry a unit all the way across the galaxy in a single turn.
+Also, if you have a waiting Lander, you can warp into a system,
+transfer cargo onto the Lander,  drop planetside, and attack in the
+same turn. 
+
+Henri H. Arsenault (arseno@phy.ulaval.ca) takes advantage of this as a
+convenient way to get around damaging your city-restricted Transports,
+while landing eight units in one turn with a Bulk Hauler and two
+Assault Transports: "You need to have eight units in space ships in
+orbit around the planet.  Let us say that you have the two landers
+already loaded in space.  You land and unload the two landers, leaving
+four units near the city.  You go into orbit to pick up four more
+units by transferring them to the landers from other ships in orbit
+that would be damaged if they landed themselves.  Then you land the
+four new units for a total of eight.  Then you attack the city with
+the eight units."
+
+
+Is there any way to keep cargo from filling up crucial orbital slots
+and restricting fleet size?
+
+No.  In response to a request that they change this, Holistic wrote:
+"This is virtually impossible to code since certain cargo could be
+unloaded in space.  This would then produce an overstacked situation
+we couldn't handle very well.  Sorry.  The stacking in space thing is
+not an ideal thing for many reasons, but it was important to us.  EFS
+is supposed to stress ground combat to a greater degree.  If you could
+move around a few hundred bombardment ships like in many previous
+space conquest games, then the ground units would be fairly useless."
+
+
+IV. COMBAT
+
+What is rank?
+
+Each unit has a rank that determines how close it stands to the battle
+front, so to speak.  When an attack is made against a stack, the
+attacker is more likely to target units with the lowest ranks.  Each
+unit's rank number is in the unit.dat file.  These are listed below in
+alphabetical order.
+
+SPACE UNITS	
+Armored Bulk Hauler	9
+Armored Freighter		9
+Assault Lander		8
+Blow Ship			2
+Bulk Hauler			9
+Cadiz Dreadnought		6
+Carrier			7
+Carrier MkII			7
+Cyber Fighter		1
+Deathmate			0
+Destroyer			4
+Destroyer			2
+Freighter			9
+Frigate			3
+Grappler			1
+Martyr Torp Bmbr		2
+Meson Starbase		5
+Pod Ship			8
+Quick Mercy			1
+Shroud Weaver		4
+Space Fighter		1
+Space Torp Bmbr		2
+Spore Ship			3
+Starbase			5
+Stealth Ship			0
+Vau Carrier			7
+Vau Transport		8
+Veil Seeker			3
+Vlad Cruiser			5
+	
+PLANETSIDE UNITS	
+Anti-Aircraft		6
+Anti-infantry Tank		2
+Anti-Tank Gun		6
+Armor Lgn			4
+Artillery			6
+Assassin			6
+Assault Gun			5
+Assault Lgn			4
+Assault Tank			2
+Atmos Fighter		0
+Battleship			5
+Blademaster			8
+Cargo				9
+Carrier			7
+Chem Shock Lgn		4
+Clergy				6
+Cybercorp			4
+Dervish			7
+Destroyer			2
+Divebomber			1	
+Doppleganger			6
+Engineer			7
+Fanatic Lgn			2
+Gen Warrior Lgn		4
+Gunship			2
+Heavy Inf Lgn		4
+Holy Relic			9
+Hover Anti Air		3
+Hover Tank			2
+Hover Tank Killer		3
+Hvy Tank Killer		3
+Infantry Lgn			4
+Inquisitor			7
+Marauder Lgn			4
+Med Tank			2
+Mega Tank			2
+Merchant			7
+Militia Lgn			4
+Morph Divebomber		1
+Morph Fighter		0
+Naval Transport		8
+Noble				8
+Officer Corp			6
+Peasant			9
+Pestulator Artillery	4
+Plague Bomb			8
+PTS Laser Canon		7
+PTS Meson Canon		7
+PTS Mis. Launcher		7
+Ranger Lgn			4
+Rebel Partisans		4
+Rocket Art			5
+Sceptor			9
+Scientist			9
+Scout Tank			1
+Shock Lgn			4
+SP Anti Air			3
+SP Artillery			5
+Special Forces		4
+Spy				6
+Stealth Tank			3
+Strategic Bmber		4
+Submarine			0
+Symbiot Arcer		2
+Symbiot Butcher		4
+Symbiot Minder		8
+Symbiot Nester		9
+Symbiot Reaver		3
+Symbiot Spitter		0
+Symbiot Tank			1
+Tank Killer			3
+Tracker Lgn			2
+Vau Fighter			0
+Vau Guard			7
+Vau Jet Bike			2
+Vau Mandarin			8
+Vau Warrior			3
+Vau War-Skif			4
+Vau War-Tower		5
+Vau Worker			9
+Warlock			7
+Xyll Warbeast		4
+
+
+How many attacks does a unit get during each attack phase?
+
+Below is the number of times a unit gets to try to hit its chosen
+target during that particular attack phase.  The unit will switch
+targets if it kills its current target and still has attacks
+remaining.
+
+Underwater	4
+Indirect	2
+Air		2
+Direct		3
+Close		4
+Psychic	2
+RangeSp	2
+DirectSp	3
+CloseSp	4
+
+
+Does terrain have any effect on combat?
+
+Cities provide a defensive bonus.  If a player has researched the
+appropriate technologies (e.g. Jungle Environment), then his units get
+a bonus on that world type.  The agility.dat files were intended to
+apply modifiers to agility based on what kind of terrain a unit was
+in, but this was dropped.  The .dat file was left in, although it's
+full of zeroes. 
+
+
+How do I use ground units with Close Space attacks?
+
+Marauder Legions and Symbiot Butchers can be placed in Carriers.  They
+will then add their Close Space attacks in a space battle.  This will
+only work with Carriers; they count as regular cargo in Transports.
+
+
+How is the damage from a successful hit determined?
+
+Each unit has 100 points of health (think of these as hit points).
+When a unit is successfully hit (attacker's accuracy vs. defender's
+agility), the attacker's modified attack strength (attack strength *
+experience modifier * health * relic, attack type, and house
+modifiers) is compared to the defender's modified armor strength
+(armor * experience modifier * health * relic, attack type, and house
+modifier).  The ratio of these numbers is applied to the appropriate
+column in damage.dat and a random number from 1-10 determines the
+number of points done to the target's health.  Following is the table
+from damage.dat.
+
+Attack Damage Table
+
+       1-5  1-4  1-3  1-2  1-1  2-1  3-1  4-1  5-1  6-1  7-1  8-1
+#
+01      1    1    1    5   10   15   20   25   30   40   50   60
+02      2    3    5   10   15   20   25   30   40   50   60   70
+03      3    5   10   15   20   25   30   40   50   60   70   80
+04      5   10   15   20   25   30   40   50   60   70   80   90
+05     10   15   20   25   30   40   50   60   70   80   90  100
+06     15   20   25   30   40   50   60   70   80   90  100  100
+07     20   25   30   40   50   60   70   80   90  100  100  100
+08     25   30   40   50   60   70   80   90  100  100  100  100
+09     30   40   50   60   70   80   90  100  100  100  100  100
+10     40   50   60   70   80   90  100  100  100  100  100  100
+
+
+What are the modifiers for selecting "Assaults" and "Feints" when
+combat is initiated?
+
+Assault:  	Attack strength x 1.2, Armor x  .8
+Feint:		Attack strength x  .8, Armor x 1.2
+
+
+How do Psychic Attacks work?
+
+During the Psychic combat phase, attacks take place as normal
+(attacker's accuracy vs. defender's agility), but Psychic Defense is
+substituted for a unit's armor when damage is determined.
+
+
+Are some units immune to some attacks?
+
+The target.dat file lists which attack types can be used against which
+units.  There are some very significant data here, such as the fact
+that Direct attacks are useless against foot units and Close attacks
+are useless against vehicles.  Below are the types of attacks which
+can affect a given unit type.  Note that *all* units are vulnerable to
+Psychic attacks.
+
+Foot:		Indirect, Close
+Wheel:		Indirect, Direct, RangeSp
+Tread:		Indirect, Direct, RangeSp
+Air:		Air, RangeSp
+Naval:		Underwater, Indirect, Direct, RangeSp
+Space:		RangeSp, DirectSp, CloseSp
+Hover:		Indirect, Direct, RangeSp
+Jump:		RangeSp, DirectSp, CloseSp
+Crawler:	Indirect, Direct, RangeSp
+Lander:	RangeSp, DirectSp, CloseSp
+
+
+What are the strength and armor multipliers for experience?  The
+manual has contradictory information on this.
+
+Experience Multipliers: Green x .8, Expert x 1.0, Elite x 1.2
+
+
+V. DIPLOMACY
+
+What's the difference between "Declare War on Another" and "War Pact"?
+
+"Declare War on Another" means you're asking the other House to
+declare war unilaterally.  "War Pacts" are the simultaneous
+declarations of war from two Houses. 
+
+
+VI. THE CHURCH
+
+Of what use are Clergy?
+
+Clergy are useful for increasing your Flock number, but since the
+whole Sect thing is currently boogered up, Clergy are all but useless.
+Holistic says that Clergy, Scientists, and Merchants are artifacts of
+an earlier version of the game and they will be removed in version
+1.2.
+
+
+How does the Church know when I'm researching proscribed technologies?
+Is this automatic?  Is there anything I can do to hide my labs?  How
+long does it take the Inquisition to strike?  Is there a diplomacy
+check of any kind made or is the Church equally likely to send an
+Inquisition against friends and enemies?
+
+Holistic has been a bit guarded about providing the answers to these
+questions, but it seems that the Church automatically knows when and
+where proscribed tech is being researched and they should immediately
+send an Inquisition.  Some folks have suggested that giving the Church
+maps of worlds with labs makes an Inquisition more likely, but I've
+been unable to confirm this.  Holistic claims their intent was to
+discourage early research of proscribed techs until a House is strong
+enough to fend off the Inquisition.  However, a bug causes the
+Church's orbital slots over Holy Terra to get jammed up so the
+Inquisition can't leave.  Version 1.2 will supposedly fix the traffic
+jam bug and "make the Church a bit more interesting". 
+
+
+VII. THE MERCHANT LEAGUE
+
+What determines when and if an Agora is replenished?
+
+A League freighter must orbit the planet.  It should restock the
+planet on the turn after it arrives.  But there seems to be a problem
+with League ships freezing up and failing to replenish Agoras.
+However, there's something squirrelly about the way that resources are
+available for production when you buy them from the League on the unit
+building screens.  Sometimes unit building is limited by the resources
+in the Agora, but sometimes it's not.
+
+
+VIII. BYZANTIUM II AND THE REGENCY
+
+Why is there no starvation on Byzantium II, even with Universal
+Warehouse turned off?
+
+This is a bug that should be fixed in 1.2.
+
+
+Can stacks including Spies, Assassins, and Dopplegangers attack on
+Byzantium II before combat is allowed?
+
+Yes, but this is a bug.
+
+
+IX. MISCELLANEOUS
+
+A. SPOTTING
+
+How does spotting work in space?
+
+Spotting works in space exactly like it does on the ground, except
+there is no provision for spotting strength dissipating with range.
+In other words, if a unit's camouflage rating +/-2 is higher than its
+opponent's spotting rating, the unit will remain hidden.  Note that
+spotted space units remain spotted until they move, even if the
+spotter is destroyed or leaves.  Note that this also means there is
+*no* way to spot Stealth Raider Ships until they attack.
+
+
+B. PLAGUE
+
+How exactly do Plague Bombs, Hospitals, and the Cure for Necrosis
+work?
+
+If a plague bomb gets used in combat, then it infects everyone within
+a five-hex radius.  These folks get marked as infected, but they do
+not suffer the plague's effects yet.  At the end of the turn units
+infected with the plague make a saving throw.  If they succeed, they
+do not contract the plague.  If they fail, then they have the
+full-blown plague and will be in trouble next turn.
+
+At the beginning of the next turn, the computer checks each of your
+units that have the plague.  If a unit passes the saving throw, then
+it takes no damage that turn and does not infect the area around it.
+If it fails the saving throw then it takes 5-15 points of damage and
+infects a five-hex area around it.
+
+If a random number from 0 to 99 is greater than the unit's Saving
+Throw, it fails.  A unit's Saving Throw is its Health/2 + the
+following bonuses.
+
+Hospital			+ Hospital's Health * Loyatly/3000
+Cure for Necrosis		+ 25 and double hospital bonus
+Foot of St. Ignatius	+ 50 for entire planet
+St. Amalthea's Lancet	+ 100 for stack
+
+Units can also contract the plague if their health is less than 25,
+they are starving, and they fail their saving throw.  Cities can also
+get the plague if their health is less than 25 and they are starving.
+Effects are the same as for units.  Once a unit has contracted the
+plague, there is no way to get rid of it.  Can you say "Disband"?
+
+
+C. NOBLES
+
+I've killed five Nobles from House X, but he's still in the game!
+
+It's possible for a House to collect extra Nobles.  Rebel Nobles can
+be captured and Nobles can be found in Ruins.
+
+
+Are Blademasters still considered nobles for voting purposes on ByzII
+and for Charismatic Leadership stack bonuses?
+
+Yes.
+
+
+D. ET CETERA
+
+How do you ID a planet's type?
+
+By the artwork used for the terrain.
+
+
+Are the Vau ever supposed to do anything?
+
+They are only supposed to respond if you attack them.
+
+
+How do you spell "scepter"?
+
+On Holy Terra in the year 1997, scepter is spelled s-c-e-p-t-e-r.
+Apparently this will change to "sceptor" sometime in the next couple
+of millennia.
+
+
+X. HACKING
+
+EFS is easily hacked by using a text editor to modify the .dat files
+in the dat subdirectory.  Almost all of the information below comes
+from Tom Henderson's informative and thorough posting on the
+newsgroup, much of which I've quoted verbatim.  I can take no
+credit/responsibility for his diligent work, so please regard the next
+section as Tom's contribution to the FAQ.
+
+Following are the files and their contents:
+
+agility.dat		Terrain modifiers to agility (not used)
+arborium.dat		Arborium production by terrain type
+damage.dat		Table used to determine combat damage
+farm.dat		Farm production by terrain type
+mine.dat		Mine production by terrain type
+prod.dat		Resource production for non-harvest cities
+profile.dat		Some kind of AI routine?
+relics.dat		Relics and their effects
+res.dat		Resource descriptions and League prices
+roadcost.dat		Cost of building roads (not used)
+stock.dat		Resources kept in Agoras
+strbuild.dat		Data on each structure type
+target.dat		Determines which attacks affect which units
+tech.dat		The technology tree
+tercolor.dat		Terrain color schemes
+terrcost.dat		Movement costs
+traits.dat		Default traits for each House
+unit.dat		Units stats
+unitrulz.dat		Hmm. Dunno this one.
+unitspot.dat		Terrain modifiers for spotting units
+well.dat		Well production by terrain type
+
+
+A. UNITS
+
+To modify a units stats just go to the unit.dat file.  For the most
+part the values are self-explanatory.  The few that aren't are:
+
+Cargo = cargo carrying capacity, max. four, three may not work
+
+CanBcargo is a flag: 1 = can be carried; 0 = cannot be carried(just
+one little change and you can load your freighters full of
+dreadnoughts)
+
+!Combat is a flag for combat capable or not: 0 = can fight; 1 = can't
+fight (! is the negative symbol in C hence the !combat)
+
+Crd/turn is upkeep in firebirds (I guess somebody on the design team
+still likes credits!)
+
+Cred is the one time credit cost to build.  This is not shown ANYWHERE
+in the game (NOTE: Holistic says, "Like the agility table this was
+stuff we were playing with in the design stage.  However, this code
+was removed since it affected the interface.").
+
+Unit is the id# of a prerequisite unit. -1 = no unit.  Otherwise use
+the # at the start of the unit records.
+
+Bldgs- this specifies where a unit can be built: -1 means it can't be
+built (this is used for special units like Inquisitors); the rest are
+as follows:
+
+0 Palace
+1 Church
+2 Monasteries
+3 Factory
+4 Agora
+5 Wetware
+6 Electronics
+7 Hive (symbiots)
+8 Ceramsteel
+9 Bioplant
+10 Vau city
+11 Chemicals
+12 Cyclotron
+13 Fort
+14 Spaceport  
+15 Ruins
+16 Alien ruins
+17 Shield
+18 mine
+19 Well
+20 Fusorium
+21 ?
+22 Hospital
+23 Lab
+24 Farm
+25 Arborium
+99 anywhere
+
+ReqdTech uses the tech id# from the tech.dat file; you can specify up
+to 4 different techs.
+
+Tax and Flock are either toggles or values; they are, respectively,
+tax income from a unit and the amount of voting flock it provides its
+Sect.
+
+Range is "used internally", according to Holistic.  Whatever that
+means.
+
+Rank is the order units in a stack are attacked during combat; it
+ranges from 0-9: 0 being first and 9 being last.
+
+RoP is uncertain: 1 (true) is used for every unit but Relics,
+Sceptors, and Cargo Pods.  It may have something to do with being a
+live unit.  Perhaps it represents vulnerability to plague or
+starvation?
+
+Lastly the .flc file is listed.  This is the FLIC animation file from
+the FLC directory that will appear when you view the unit.
+
+Tom says "I've changed pretty much all the above to a game in progress
+without any crashes, but it's too soon to say what the effect is on
+the AI if you radically change his force structure."
+
+You can change the existing units and also use the existing "dummy"
+slots (Scientists, for instance, aren't of any use in the game).  To
+add a completely new unit you need to add a new line under an existing
+icon record.  Each of the numbered unit records corresponds to a
+particular icon or piece.  If you look at record #83, you'll see
+militia and tracker; in the game these two units have the same icon.
+To add another piece just copy a line from any record and insert it
+before the "}" of the icon you would like to use.  Tom recommends that
+you either make the new units upgrades or use very different movement
+rates that will show up on the icon; otherwise, you'll go nuts telling
+them apart.  Change the animation file field to any of the files in
+the FLC dir.  If you have access to something that can read/write FLIC
+format animation, then you can write your own.  The Tech codes are a
+little more problematic but if you add numbers to tech.dat's records
+in sequence you'll come up with the 113 id#'s.  
+
+Obviously the values for engineers will have a very large impact on
+the game.  Increasing the movement rates of space ships can change
+things quite a bit as well.  Changing Cargo Pods to Crawler movement
+type will prevent players breaking them off into impromptu "hover
+scout" units.
+
+
+B. TECHNOLOGY
+
+The tech.dat is fairly straightforward.  It lists the tech's name,
+tech
+prerequisites, the cost in Research Points(RPs), where it can be found
+in the archives, and the text that will be displayed when the tech is
+viewed.  The techs are numbered from 0 to 113.  All references to tech
+requirements are indexed by these numbers.  The required tech fields
+can also contain codes.  The 900 codes are used to show categories and
+they remain on the tech screen after being researched.  The "Nothing"
+code of 900 is a special case, of course, and is always available.
+The other 900s are: 990 Microbiology, 991 Physics, 992 Psychosocial
+Engineering, and 993 Applied Technologies.  Note that with the
+exception of Applied Tech, these are *not* just headers.  They're in
+the tech tree and must be researched like any other tech.
+
+The 800 code basically "comments out" the tech from the game.  These
+were apparently techs that were discarded during the design process.
+The useless 800's are:
+
+Plague Bomb Cure
+Xaos
+Power Cells
+Materials
+Ceramsteel Armor
+Monopol Canisters
+Fusion Cannons
+
+Holistic says Vau Psychology should have been removed.  They had
+intended to allow a Vau unit (like the Xyll Warbeast, which is a
+Symbiot unit), but never got around to it.
+
+You can change any of the values of the existing tech but be careful:
+remember that unit.dat and strbuild.dat might need to be adjusted.
+Unfortunately can't add new tech but you can use the slots used by the
+"useless 800" techs, Vau Psychology, and the Applied Tech slot, which
+is just a header.
+
+The archive text files can be modified as well.  Tom has been
+modifying them by adding hard data so they provide bona fide online
+help rather than just flavor.  These files can be found in the
+manowitz subdirectory.  For instance, v1chp006.txt is volume 1 chapter
+6.  You can even change or edit the associated illustrations.  These
+can be found in the pcx formatted files in the same subdirectory.  The
+text files include a tag listing the appropriate illustration.  To
+create your own chapter,  you can add a line to the volume#.txt file
+were "#" is the volume you want to modify.  To avoid changing all the
+following references in tech.dat, add new chapters to the end of the
+file.  After you add the chapter title at the end, create the
+appropriate file name and add any text you want to show up, as well as
+an optional illustration tag.  The easiest way to do this is to copy
+an existing chapter.  Make sure the name of the file is correct.  
+
+Tom gives the following example:
+"To add a chapter about "Excrement Launchers" to volume 5 you'd open
+the volume5.txt file and add the line 'Excrement Launchers' to the end
+of the file (actually you should add it between 'Plague Bomb' and
+'Conclusion').  Save this and open v5chp001.txt (or any of the other
+vol 5 files).  Change the first line to 'Excrement Launcher', change
+the text, modify or delete the illustration tag (the mind boggles at
+what that picture would look like!), and save it as v5chp048.txt
+(Plague Bomb is v5chp47.txt).  You're done!" 
+
+To add your own volume, just create a volume file like those already
+existing and the appropriate chapter files.  Unfortunately it's
+uncertain how to get your new volume to show up on the pull-down menu
+from the main screen, but vol\chapter references in tech.dat work
+fine.
+
+
+C. STRUCTURES
+
+Strbuild.dat is the key file dealing with structures.  It lists the
+name of a structure.  If you number these sequentially, you'll get the
+structure's id#.
+
+water = a flag indicating if the structure can be built on water.
+
+land =  a flag indicating if the structure can be built on land.
+
+road = a flag that indicates whether a structure includes a road (?).
+
+barren = a flag that indicates if a structure can be built on a barren
+world.
+
+neutral = a flag that perhaps indicates whether a particular structure
+retains it's neutral color even if occupied (e.g. a "fertile" space).
+
+build = a flag that indicates if a structure can be constructed. 
+
+Tom notes, "The build flag is kind of neat.  If you set a non
+buildable flag to 1 it will show up on the build list (Arborium will
+get pushed down on top of the road button in the lower left corner).
+This is kind of cool as you can build agoras, ruins, etc.,
+unfortunately these are seeded during setup with goodies so you don't
+get anything."
+
+area = the area around a structure that is used for production.  This
+can be changed, but remember that each one point increase increases
+the no-build radius by two.  Existing overlaps when this value is
+changed seem to cause no problems.  If you want to increase production
+though, Tom recommends increasing yields in the harvesting city's .dat
+file.  Another intriguing possibility is adding an area to all the
+other cities.  This negates the "megacity" strategy of surrounding
+your palace with layer after layer of cities.  If you do this, be sure
+to increase the width of your shield accordingly (this is a variable
+in efs.ini).
+
+Crd/Trn = number of credits the structure costs to operate.  Using
+this you can assign cities a maintenance cost.  Also if you put in
+negative numbers, a city will generate income.  Oddly enough, while
+Labs cost 500 to run, the value doesn't show up here.  This is
+probably because the code that charges the 500 also turns the lab off
+if it isn't paid.  This can't, however, be done from within this
+field: you just get the normal low cash warning.  By the way, if you
+don't think labs should cost 500 just set this field to -500 for labs.
+
+Credits = possibly a one time credit cost.  It doesn't work, however.
+
+Turns2Bld = possibly meant to be the number of turns to build a
+structure.  This also doesn't work
+
+Tech = prerequisite technology.  Note that unlike units and techs,
+only one tech prerequisite is allowed.  This is straightforward; just
+put in the tech code you want.  Techs are arranged sequentially in
+tech.dat with "Nothing" counting as 0.
+
+Value = probably used by the seeding algorithm that sets up the
+initial game. All the values are 100 except "unknown" which is the
+generic city icon you see for unspotted cities. 
+
+Tom notes, "I don't believe it's possible to add new structures
+because of several key things that aren't listed on this chart.  In
+particular there's no link to the art (probably stored in the
+struct#.bin files in the bin directory), no way to set if a structure
+"pops" when entered, or whether a city produces, harvests, or does
+neither.  This leads me to believe that the order of structures is
+fairly hardwired."
+
+
+D. PRODUCTION
+
+Prod.dat holds the core of the economics system.  It is a set of
+records indicating by city what and how much of one resource generates
+another resource.
+
+What you can change: the types and the amounts of both input and
+output resources and whether a particular resource is needed at all.
+All these changes will show up correctly on the build screen and
+production reports.
+
+What you can't change: you can't have more then one output and you 
+can't add new records (e.g. making your palace produce monopols).
+
+Farm.dat, arborium.dat, mine.dat and well.dat contain the production
+values by terrain type and tile set for harvest cities.  Each type of
+terrain can produce up to 3 different resources.  Farm.dat has
+instructions on how to change these values.  You can change the
+amounts and types of existing production.
+
+Tom's ubiquitous hacking disclaimer reads as follows: "ALWAYS back up
+your original .dat dir before making any changes. This info is from my
+own personal investigations and I am not affiliated with Holistic or
+Segasoft or anybody else.  TRY AT YOUR OWN RISK!!!!"
+
+
+E. FIXING THE GUNSHIP BUG
+
+As of version 1.1, there is no way to build Gunships.  There was
+apparently some confusion when the game mastered: the unit chart says
+that Powered Csteel Armor (tech #54) should allow Gunships.  But the
+unit.dat entry links to Gunship to Ceramsteel Armor (tech #38), which
+has been "remmed" out of the tech.dat file.  Therefore, to reinstate
+Gunships, simply change the "Req'd Tech" field in unit.dat from "38"
+to "54".
+
+
+XI. BUGS
+
+Below are a listing of bugs, some of which I haven't been able to
+personally corroborate(labeled "unconfirmed"), some of which Holistic
+claims are fixed in the next patch (v1.2), and some of which Holistic
+says they may address in a later patch (v1.3).
+
+* An AI House won't declare himself Emperor after holding the Regency
+for the time required.  Holistic's playful, but rather alarming reply
+to this was: "If you are losing that bad, why are you still playing
+anyway?"
+
+* On some machines, an intolerable slowdown starts to kick in after
+5020 or so.  Holistic says it is addressed somewhat in v1.2, but they
+will continue to look into it in v1.3.
+
+* Singularities and other resources can mysteriously start
+hyper-producing.  This may be connected to certain House traits.
+Holistic claims it will be fixed in v1.2.
+
+* Even though an Agora's resources have been depleted, you can still
+buy goods from the Merchant League from within the "build units"
+screen.  Holistic claims it will be fixed in v1.2.
+
+* Sometimes units can be built without having the necessary resources
+and sometimes the resource cost isn't deducted from your stores.
+Holistic claims it will be fixed in v1.2.
+
+* Removing technologies from the maintenance queue can cause odd
+problems, including negative research numbers.  Holistic says they
+haven't seen this one.  If anyone has a saved game with this, please
+forward it to them.
+
+* Assigning techs from multiple labs that have completed research on
+the same turn can cause odd problems, such as some labs researching
+"Nothing" instead of the assigned tech. Holistic says of this bug,
+"There are some display glitches but nothing that affects game play to
+[our] knowledge."
+
+* Naval units cannot be disbanded.
+
+* No score is tallied at the end of the games (unconfirmed).  This may
+be addressed in v1.3.
+
+* AI houses, Rebels, and the Symbiots have been known to declare war
+on themselves.  Holistic claims this has no effect on gameplay, but
+may be addressed in v1.3.
+
+* Resources can be shuffled around without moving cargo pods by
+instructing a city to build something and then canceling it.  No
+matter where on the planet the required resources were located, they
+will be deposited in cargo pods in the city that received the build
+orders.  Holistic says they don't have a good idea how to fix this
+without disabling the cancel build feature.
+
+* If you enter a Ruin with Ministry units and discover "lost" units,
+the Ministry units convert to House units (unconfirmed).  Holistic
+says this is legit. 
+
+* Ministry engineers produce House cities.  Holistic says this is
+legit.
+
+* Spies in a stack allow the entire stack to attack on Byzantium II.
+Holistic claims it will be fixed in v1.2.
+
+* The Regent can switch Ministry assignments mid-turn, taking
+advantage of all three Ministries in one turn if he so desires.
+Holistic claims it will be fixed in v1.2.
+
+* The Church suffers from traffic jams by having 20 ships parked in
+orbit over Holy Terra.  This prevents Inquisitors from being ferried
+to offending labs.  Holistic claims it will be fixed in v1.2.
+
+* The computer players do not change their planets' Sect.  Holistic
+says, "No fix planned as yet.  We would like to add more features
+there, but haven't come up with anything that doesn't disrupt the game
+yet."
+
+* Even after changing the Sect of a planet, newly produced units are
+always Orthodox.  Holistic claims it will be fixed in v1.2.
+
+* There is no way to build Gunships.  See HACKING: FIXING THE GUNSHIP
+BUG.  Holistic claims it will be fixed in v1.2.
+
+* The Church Diplomacy screen always registers hearts for each Sect's
+standing with each House.  Holistic says, "This is correct.  The art
+is mostly meaningless."
+
+* Landing Assault Landers brings up a warning that the ship will be
+damaged.  
+
+* If you select "None" in the unit build queue and then at the yes/no
+dialogue box press "No", it asks you yes/no a second time.
+
+* With the insanity trait, loss of production extends to singularities
+such that no singularities can be made (unconfirmed).  Holistic says
+this will be addressed in v1.3.
+
+* Someone reported being able to disband a newly captured unit
+multiple times while in the stack info screen.  The unit finally
+disappeared when he exited the screen, but the resources from the
+multiple disbandings remained (unconfirmed).  Holistic says they
+haven't seen this one.  If anyone has a saved game with this, please
+forward it to them.
+
+* Required units (e.g. an officer is needed to build a spy) aren't
+required when you auto-buy resources from the League.  Holistic says
+this will be addressed in v1.3.
+
+
+XII. WISH LIST
+
+Note that I haven't just thrown in willy nilly every suggestion I've
+received on the wish list.  I've only included upgrades and changes
+that seem reasonable and fairly simple.  I've gotten slews of
+suggestions that I didn't include for various reasons (e.g. ideas
+contrary to the spirit of the game, complicated interface changes,
+minute changes to unit data or the resource chain, etc).  Currently,
+Holistic is aware of all the suggestions below and those that aren't
+listed as being included in v1.2 are under consideration for v1.3.
+
+* There should be overview screens of what units are being produced
+where for better unit management.  Holistic has included a City
+Production screen in v1.2.
+
+* Cities should have a "continue to build" option or an auto-queue.
+Holistic says that the previous unit built remains highlighted in
+v1.2.
+
+* The interface for Bombardment (repeat attacks require excessive
+scrolling and clicking), Landing (we know that some ships will take
+damage), Unloading (an "unload all" button would be convenient), and
+Building Units (confirmation for selected unit to be built is
+unnecessary) should be streamlined.
+
+* Some record of promises made to other Houses (specifically in terms
+of votes and Ministries offered/promised).
+
+* Passwords should be added for PBEM turns.  Some sort of insurance
+that players aren't using hacked .dat files would also be nice. 
+
+* There should be an option to toggle cities on and off for better
+control of production, particularly cities that suck up mid-level
+resources like Electronics that might be needed elsewhere.
+
+* There should be a better breakdown of the budget (i.e. unit
+maintenance, lab maintenance, taxes/planet).
+
+* Being at war with the Church should inflict a loss of planet
+loyalty, equal to or greater than the penalty for being
+excommunicated.
+
+* There should be a way to access the research screen when you get an
+offer for a tech trade.  Also, the tech screen should be more
+convenient to reach (as it is, you have to hunt down a lab).
+
+
+Thanks to Ken Lightner and Andrew Greenberg for providing answers to
+almost *all* of the above questions.  They've exhibited the patience
+of Job as I've pestered them and flooded their inboxes with questions.
+Special thanks to Tom Henderson for letting me include his excellent
+posts on hacking the .dat files.  And certainly thanks to all of you
+fellow c.s.i.p.g.s'ers.
+
+Disclaimer: I am in no way affiliated with Holistic.  I cannot be held
+responsible for any injuries sustained due to reading this FAQ or
+excessive time spent playing EFS.  If your monitor blows up and blinds
+you, sue someone with more money than me.
+
+Please send any comments, corrections, and additions to
+kagass@primenet.com.
+
+
+
+***                                                    ***
+***             No .sig for me, thank you.             ***
+***                                                    ***
+
