@@ -43,6 +43,10 @@ package body Carthage.Managers.Assets is
      (Manager : in out Ground_Asset_Manager_Record;
       Stack   : not null access constant Carthage.Stacks.Stack_Record'Class);
 
+   overriding procedure On_Movement_Ended
+     (Manager : in out Ground_Asset_Manager_Record;
+      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class);
+
    overriding function Have_Immediate_Capacity
      (Manager : Ground_Asset_Manager_Record;
       Goal    : Carthage.Goals.Goal_Record'Class)
@@ -334,7 +338,7 @@ package body Carthage.Managers.Assets is
 
                Manager.Stacks (Stack_Cursor).Goal.Replace_Element
                  (Asset_Goal);
-               Manager.Stacks (Stack_Cursor).Stack.Update.Move_To_Tile
+               Manager.Stacks (Stack_Cursor).Stack.Move_To_Tile
                  (Asset_Goal.City_2.Tile);
                Carthage.Stacks.Updates.Start_Update
                  (Manager.Stacks (Stack_Cursor).Stack);
@@ -834,6 +838,22 @@ package body Carthage.Managers.Assets is
       Manager.Meta_Manager.On_Hostile_Spotted (Stack, Hostile);
    end On_Hostile_Spotted;
 
+   -----------------------
+   -- On_Movement_Ended --
+   -----------------------
+
+   overriding procedure On_Movement_Ended
+     (Manager : in out Ground_Asset_Manager_Record;
+      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class)
+   is
+      Position : constant Managed_Stack_List.Cursor :=
+        Manager.Stack_Maps.Element (Stack.Identifier);
+      Rec      : Managed_Stack_Record renames Manager.Stacks (Position)
+        with Unreferenced;
+   begin
+      Stack.Log ("movement ended");
+   end On_Movement_Ended;
+
    ----------------------
    -- On_Stack_Removed --
    ----------------------
@@ -954,6 +974,10 @@ package body Carthage.Managers.Assets is
    begin
       return Goal;
    end Tile_Reconnaissance_Goal;
+
+   -------------------------
+   -- Transfer_Cargo_Goal --
+   -------------------------
 
    function Transfer_Cargo_Goal
      (From, To : Carthage.Cities.City_Type;
