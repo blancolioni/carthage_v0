@@ -25,9 +25,9 @@ package body Carthage.Stacks.Updates is
      (Upd : Stack_Update);
 
    procedure Start_Movement
-     (Stack : in out Stack_Class);
+     (Stack : not null access Stack_Class);
 
-   procedure Execute (Stack : in out Stack_Class);
+   procedure Execute (Stack : not null access Stack_Class);
 
    --------------
    -- Activate --
@@ -58,7 +58,7 @@ package body Carthage.Stacks.Updates is
    -- Execute --
    -------------
 
-   procedure Execute (Stack : in out Stack_Class) is
+   procedure Execute (Stack : not null access Stack_Class) is
 
       function Match (S : not null access constant
                         Stack_Record'Class)
@@ -242,10 +242,12 @@ package body Carthage.Stacks.Updates is
                Stack.Log ("stopping at " & Stack.Tile.Description);
                Stack.Current_Path_Index := 0;
                Stack.Current_Path.Clear;
+               Stack.Manager.On_Movement_Ended (Stack);
             elsif Path_Index > Path'Last then
                Stack.Log ("end of path at " & Stack.Tile.Description);
                Stack.Current_Path_Index := 0;
                Stack.Current_Path.Clear;
+               Stack.Manager.On_Movement_Ended (Stack);
             else
                Stack.Log ("waypoint at " & Stack.Tile.Description);
                Stack.Current_Path_Index := Path_Index;
@@ -293,7 +295,7 @@ package body Carthage.Stacks.Updates is
    --------------------
 
    procedure Start_Movement
-     (Stack : in out Stack_Class)
+     (Stack : not null access Stack_Class)
    is
       Order : constant Stack_Order_Record :=
                 Stack.Orders.First_Element;
