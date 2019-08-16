@@ -3,6 +3,8 @@ with Ada.Containers.Indefinite_Holders;
 
 with WL.Heaps;
 
+with Carthage.Objects;
+
 with Carthage.Cities;
 with Carthage.Houses;
 with Carthage.Planets;
@@ -236,6 +238,8 @@ package body Carthage.Updates is
       Carthage.Stacks.Scan_Stacks
         (Stack_Look'Access);
 
+      Carthage.Objects.Execute_Object_Updates;
+
       Last_Update := Ada.Calendar.Clock;
 
    end Before_First_Update;
@@ -297,6 +301,9 @@ package body Carthage.Updates is
             Update.Activate;
          end;
       end loop;
+
+      Carthage.Objects.Execute_Object_Updates;
+
    end Update;
 
 --

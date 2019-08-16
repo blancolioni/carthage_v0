@@ -543,7 +543,7 @@ package body Carthage.Managers.Planets is
    is
       use type Carthage.Cities.City_Type;
    begin
-      Manager.Planet.Log ("updating for House " & Manager.House.Name);
+      Manager.Planet.Log ("updating for " & Manager.House.Name);
       Manager.Check_Goals;
 
       if Manager.Palace /= null then

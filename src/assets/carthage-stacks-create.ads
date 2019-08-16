@@ -1,7 +1,8 @@
 package Carthage.Stacks.Create is
 
    function New_Ground_Stack
-     (Owner     : Carthage.Houses.House_Type;
+     (Manager   : access Stack_Manager_Interface'Class;
+      Owner     : Carthage.Houses.House_Type;
       Planet    : Carthage.Planets.Planet_Type;
       Tile      : Carthage.Tiles.Tile_Type)
       return Stack_Type

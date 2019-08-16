@@ -2,6 +2,19 @@ with Carthage.Logging;
 
 package body Carthage.Objects is
 
+   Update_List : Memor.Memor_Update_List;
+
+   -----------------------
+   -- Add_Object_Update --
+   -----------------------
+
+   procedure Add_Object_Update
+     (Update : Memor.Object_Update_Interface'Class)
+   is
+   begin
+      Memor.Add_Update (Update_List, Update);
+   end Add_Object_Update;
+
    --------------------------
    -- Create_With_Identity --
    --------------------------
@@ -14,6 +27,15 @@ package body Carthage.Objects is
       Item.Object_Identifier :=
         Ada.Strings.Unbounded.To_Unbounded_String (Identity);
    end Create_With_Identity;
+
+   ----------------------------
+   -- Execute_Object_Updates --
+   ----------------------------
+
+   procedure Execute_Object_Updates is
+   begin
+      Memor.Execute_Updates (Update_List);
+   end Execute_Object_Updates;
 
    ----------------
    -- Identifier --

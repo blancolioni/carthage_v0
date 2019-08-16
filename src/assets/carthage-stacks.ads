@@ -45,11 +45,11 @@ package Carthage.Stacks is
       return Boolean;
 
    overriding procedure Add_Asset
-     (To    : in out Stack_Record;
+     (To    : Stack_Record;
       Asset : Carthage.Assets.Asset_Type);
 
    overriding procedure Remove_Asset
-     (From  : in out Stack_Record;
+     (From  : Stack_Record;
       Asset : Carthage.Assets.Asset_Type);
 
    overriding function First_Asset
@@ -186,11 +186,11 @@ package Carthage.Stacks is
      with Pre => Index <= Stack.Count;
 
    procedure Move_To_Tile
-     (Stack : in out Stack_Record;
+     (Stack : Stack_Record;
       Tile  : Carthage.Tiles.Tile_Type);
 
    procedure Remove_Dead_Assets
-     (Stack : in out Stack_Record);
+     (Stack : Stack_Record);
 
    procedure Set_Manager
      (Stack : in out Stack_Record;

@@ -117,20 +117,14 @@ package Carthage.Assets is
      with Post'Class => not Has_Asset'Result or else not Container.Is_Empty;
 
    procedure Add_Asset
-     (Container : in out Asset_Container_Interface;
+     (Container : Asset_Container_Interface;
       Asset     : Carthage.Assets.Asset_Type)
-     is abstract
-     with Pre'Class => not Container.Is_Full
-     and then Carthage.Houses."=" (Container.Owner, Asset.Owner)
-     and then not Container.Has_Asset (Asset),
-     Post'class => Container.Has_Asset (Asset);
+   is abstract;
 
    procedure Remove_Asset
-     (Container : in out Asset_Container_Interface;
+     (Container : Asset_Container_Interface;
       Asset     : Carthage.Assets.Asset_Type)
-     is abstract
-     with Pre'class => Container.Has_Asset (Asset),
-     Post'Class => not Container.Has_Asset (Asset);
+   is abstract;
 
    function Variable_Reference
      (Container : not null access constant Asset_Container_Interface)

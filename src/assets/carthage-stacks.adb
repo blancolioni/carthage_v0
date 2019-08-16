@@ -5,17 +5,59 @@ with Carthage.Worlds;
 
 package body Carthage.Stacks is
 
+   type Stack_Add_Asset_Update is
+     new Db.Root_Element_Update with
+      record
+         Asset : Carthage.Assets.Asset_Type;
+      end record;
+
+   overriding procedure Update_Element
+     (Update  : Stack_Add_Asset_Update;
+      Element : not null access Stack_Record'Class);
+
+   type Stack_Remove_Asset_Update is
+     new Db.Root_Element_Update with
+      record
+         Asset : Carthage.Assets.Asset_Type;
+      end record;
+
+   overriding procedure Update_Element
+     (Update  : Stack_Remove_Asset_Update;
+      Element : not null access Stack_Record'Class);
+
+   type Stack_Remove_Dead_Assets_Update is
+     new Db.Root_Element_Update with
+      record
+         null;
+      end record;
+
+   overriding procedure Update_Element
+     (Update  : Stack_Remove_Dead_Assets_Update;
+      Element : not null access Stack_Record'Class);
+
+   type Stack_Move_To_Tile_Update is
+     new Db.Root_Element_Update with
+      record
+         Tile  : Carthage.Tiles.Tile_Type;
+      end record;
+
+   overriding procedure Update_Element
+     (Update  : Stack_Move_To_Tile_Update;
+      Element : not null access Stack_Record'Class);
+
    ---------------
    -- Add_Asset --
    ---------------
 
    overriding procedure Add_Asset
-     (To    : in out Stack_Record;
+     (To    : Stack_Record;
       Asset : Carthage.Assets.Asset_Type)
    is
+      Update : Stack_Add_Asset_Update;
    begin
-      To.Count := To.Count + 1;
-      To.Assets (To.Count) := Asset;
+      Update.Set_Target (To);
+      Update.Asset := Asset;
+      Carthage.Objects.Add_Object_Update (Update);
    end Add_Asset;
 
    --------------------
@@ -62,15 +104,14 @@ package body Carthage.Stacks is
    ------------------
 
    procedure Move_To_Tile
-     (Stack : in out Stack_Record;
+     (Stack : Stack_Record;
       Tile  : Carthage.Tiles.Tile_Type)
    is
+      Update : Stack_Move_To_Tile_Update;
    begin
-      Stack.Log ("moving to " & Tile.Description);
-      Stack.Orders.Append
-        (Stack_Order_Record'
-           (Order_Type    => Move_To_Tile,
-            Destination   => Tile.Position));
+      Update.Set_Target (Stack);
+      Update.Tile := Tile;
+      Carthage.Objects.Add_Object_Update (Update);
    end Move_To_Tile;
 
    --------------
@@ -175,25 +216,14 @@ package body Carthage.Stacks is
    ------------------
 
    overriding procedure Remove_Asset
-     (From  : in out Stack_Record;
+     (From  : Stack_Record;
       Asset : Carthage.Assets.Asset_Type)
    is
-      use type Carthage.Assets.Asset_Type;
-      Found : Boolean := False;
+      Update : Stack_Remove_Asset_Update;
    begin
-      for I in 1 .. From.Count loop
-         if From.Assets (I) = Asset then
-            Found := True;
-         elsif Found then
-            From.Assets (I - 1) := From.Assets (I);
-         end if;
-      end loop;
-      if not Found then
-         raise Program_Error with
-           "assertion failed: " & From.Identifier
-           & ": expected to find asset: " & Asset.Identifier;
-      end if;
-      From.Count := From.Count - 1;
+      Update.Set_Target (From);
+      Update.Asset := Asset;
+      Carthage.Objects.Add_Object_Update (Update);
    end Remove_Asset;
 
    ------------------------
@@ -201,22 +231,12 @@ package body Carthage.Stacks is
    ------------------------
 
    procedure Remove_Dead_Assets
-     (Stack : in out Stack_Record)
+     (Stack : Stack_Record)
    is
-      Target : Asset_Index := 1;
+      Update : Stack_Remove_Dead_Assets_Update;
    begin
-      for I in 1 .. Stack.Count loop
-         if Stack.Assets (I).Alive then
-            if Target < I then
-               Stack.Assets (Target) := Stack.Assets (I);
-            end if;
-            Target := Target + 1;
-         else
-            null;
-         end if;
-      end loop;
-      Stack.Assets (Target .. Stack.Assets'Last) := (others => null);
-      Stack.Count := Target - 1;
+      Update.Set_Target (Stack);
+      Carthage.Objects.Add_Object_Update (Update);
    end Remove_Dead_Assets;
 
    --------------------------------
@@ -397,5 +417,85 @@ package body Carthage.Stacks is
    begin
       return Updateable_Reference'(Base_Update.Element, Base_Update);
    end Update;
+
+   --------------------
+   -- Update_Element --
+   --------------------
+
+   overriding procedure Update_Element
+     (Update  : Stack_Add_Asset_Update;
+      Element : not null access Stack_Record'Class)
+   is
+   begin
+      Element.Count := Element.Count + 1;
+      Element.Assets (Element.Count) := Update.Asset;
+   end Update_Element;
+
+   --------------------
+   -- Update_Element --
+   --------------------
+
+   overriding procedure Update_Element
+     (Update  : Stack_Remove_Asset_Update;
+      Element : not null access Stack_Record'Class)
+   is
+      use type Carthage.Assets.Asset_Type;
+      Found : Boolean := False;
+   begin
+      for I in 1 .. Element.Count loop
+         if Element.Assets (I) = Update.Asset then
+            Found := True;
+         elsif Found then
+            Element.Assets (I - 1) := Element.Assets (I);
+         end if;
+      end loop;
+      if not Found then
+         raise Program_Error with
+         Element.Identifier
+           & ": expected to find asset: " & Update.Asset.Identifier;
+      end if;
+      Element.Count := Element.Count - 1;
+   end Update_Element;
+
+   --------------------
+   -- Update_Element --
+   --------------------
+
+   overriding procedure Update_Element
+     (Update  : Stack_Remove_Dead_Assets_Update;
+      Element : not null access Stack_Record'Class)
+   is
+      pragma Unreferenced (Update);
+      Target : Asset_Index := 1;
+   begin
+      for I in 1 .. Element.Count loop
+         if Element.Assets (I).Alive then
+            if Target < I then
+               Element.Assets (Target) := Element.Assets (I);
+            end if;
+            Target := Target + 1;
+         else
+            null;
+         end if;
+      end loop;
+      Element.Assets (Target .. Element.Assets'Last) := (others => null);
+      Element.Count := Target - 1;
+   end Update_Element;
+
+   --------------------
+   -- Update_Element --
+   --------------------
+
+   overriding procedure Update_Element
+     (Update  : Stack_Move_To_Tile_Update;
+      Element : not null access Stack_Record'Class)
+   is
+   begin
+      Element.Log ("moving to " & Update.Tile.Description);
+      Element.Orders.Append
+        (Stack_Order_Record'
+           (Order_Type    => Move_To_Tile,
+            Destination   => Update.Tile.Position));
+   end Update_Element;
 
 end Carthage.Stacks;

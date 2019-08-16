@@ -181,10 +181,9 @@ package body Carthage.Managers.Assets is
                      declare
                         New_Stack : constant Carthage.Stacks.Stack_Type :=
                                       Carthage.Stacks.Create.New_Ground_Stack
-                                        (Stack.Owner, Stack.Planet,
+                                        (Manager, Stack.Owner, Stack.Planet,
                                          Stack.Tile);
                      begin
-                        New_Stack.Update.Set_Manager (Manager);
                         Asset.Move_To (New_Stack);
                         Manager.Stacks.Append
                           ((New_Stack, others => <>));

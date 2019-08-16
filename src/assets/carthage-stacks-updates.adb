@@ -349,9 +349,8 @@ package body Carthage.Stacks.Updates is
    is
       use Carthage.Calendar;
       Delay_Duration : constant Duration :=
-                         Hours (4)
-                         + Hours (Positive (Stack.Count))
-                         + Duration (WL.Random.Random_Number (1, 7200));
+        Hours (4)
+        + Duration (WL.Random.Random_Number (1, 7200));
    begin
       Carthage.Updates.Queue
         (Item       => Stack_Update'(True, Stack),

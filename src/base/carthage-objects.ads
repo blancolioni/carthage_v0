@@ -40,6 +40,11 @@ package Carthage.Objects is
    procedure Set_Name (Item : in out Root_Named_Object'Class;
                        Name : in     String);
 
+   procedure Add_Object_Update
+     (Update : Memor.Object_Update_Interface'Class);
+
+   procedure Execute_Object_Updates;
+
 private
 
    type Root_Carthage_Object is abstract new Memor.Root_Record_Type with

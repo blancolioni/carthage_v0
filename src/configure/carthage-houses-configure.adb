@@ -472,7 +472,7 @@ package body Carthage.Houses.Configure is
 --                               (Shield_Position, Tile_OK'Access);
             Stack      : constant Carthage.Stacks.Stack_Type :=
                            Carthage.Stacks.Create.New_Ground_Stack
-                             (House, Planet, Planet.Tile (Start));
+                             (null, House, Planet, Planet.Tile (Start));
          begin
             for Asset_Config of Stack_Config loop
                declare

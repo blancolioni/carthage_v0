@@ -9,6 +9,7 @@ with Tropos.Reader;
 with Carthage.Assets.Create;
 with Carthage.Cities.Create;
 
+with Carthage.Objects;
 with Carthage.Houses;
 with Carthage.Stacks;
 with Carthage.Structures;
@@ -366,6 +367,9 @@ package body Carthage.Import.Galaxy is
          null;
       end loop;
 
+      Ada.Text_IO.Put_Line ("executing updates ...");
+      Carthage.Objects.Execute_Object_Updates;
+
    end Read_Galaxy_File;
 
    --------------------
@@ -699,7 +703,7 @@ package body Carthage.Import.Galaxy is
                        elsif Tile.Has_Stacks
                        then Tile.First_Stack
                        else Carthage.Stacks.Create.New_Ground_Stack
-                         (Asset.Owner, Planet, Tile));
+                         (null, Asset.Owner, Planet, Tile));
       begin
          if In_Space then
             Asset.Move_To (Stack);

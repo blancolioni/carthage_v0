@@ -1,5 +1,15 @@
 package body Carthage.Assets is
 
+   type Asset_Set_Container_Update is
+     new Db.Root_Element_Update with
+      record
+         Container : Asset_Container_Type;
+      end record;
+
+   overriding procedure Update_Element
+     (Update  : Asset_Set_Container_Update;
+      Element : not null access Asset_Record'Class);
+
    ------------
    -- Damage --
    ------------
@@ -25,13 +35,15 @@ package body Carthage.Assets is
       Container : not null access constant Asset_Container_Interface'Class)
    is
    begin
-      if Asset.Container /= null then
-         Asset.Container.Variable_Reference.Remove_Asset (Asset_Type (Asset));
-      end if;
+      declare
+         Update : Asset_Set_Container_Update;
+      begin
+         Update.Set_Target (Asset);
+         Update.Container := Asset_Container_Type (Container);
+         Carthage.Objects.Add_Object_Update (Update);
+      end;
 
-      Asset.Update.Container := Container;
-
-      Asset.Container.Variable_Reference.Add_Asset (Asset_Type (Asset));
+      Container.Add_Asset (Asset_Type (Asset));
 
    end Move_To;
 
@@ -61,5 +73,17 @@ package body Carthage.Assets is
    begin
       return Updateable_Reference'(Base_Update.Element, Base_Update);
    end Update;
+
+   --------------------
+   -- Update_Element --
+   --------------------
+
+   overriding procedure Update_Element
+     (Update  : Asset_Set_Container_Update;
+      Element : not null access Asset_Record'Class)
+   is
+   begin
+      Element.Container := Update.Container;
+   end Update_Element;
 
 end Carthage.Assets;
