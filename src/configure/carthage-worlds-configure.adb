@@ -113,26 +113,16 @@ package body Carthage.Worlds.Configure is
            Carthage.Climate.Temperature_Range
              (Float'(Config.Get ("temperature")));
 
-         World.Terrain :=
-           new Frequency_Array (1 .. Terrain_Config.Child_Count);
-
-         for I in World.Terrain'Range loop
-            World.Terrain (I) :=
-              (Terrain =>
-                 Carthage.Terrain.Get
-                   (Terrain_Config.Child (I).Config_Name),
-               Frequency =>
-                 Terrain_Config.Child (I).Value);
+         for Freq_Config of Terrain_Config loop
+            World.Terrain.Append
+              (Terrain_Frequency'
+                 (Terrain   => Carthage.Terrain.Get (Freq_Config.Config_Name),
+                  Frequency => Freq_Config.Value));
          end loop;
 
-         World.Climate_Terrain :=
-           new Climate_Terrain_Array (1 .. Climate_Config.Child_Count);
-
-         for I in World.Climate_Terrain'Range loop
+         for Cfg of Climate_Config loop
             declare
                use Carthage.Climate;
-               Cfg : constant Tropos.Configuration :=
-                       Climate_Config.Child (I);
                Terrain_Name : constant String := Cfg.Config_Name;
                Terrain      : constant Carthage.Terrain.Terrain_Type :=
                                 Carthage.Terrain.Get (Terrain_Name);
@@ -159,13 +149,13 @@ package body Carthage.Worlds.Configure is
                                    (Float'(Cfg.Child ("temperature").Get (2)))
                                  else Temperature_Range'Last);
             begin
-               World.Climate_Terrain (I) :=
-                 Climate_Terrain'
-                   (Terrain       => Terrain,
-                    Humidity_Low  => Humid_Low,
-                    Humidity_High => Humid_High,
-                    Temp_Low      => Temp_Low,
-                    Temp_High     => Temp_High);
+               World.Climate_Terrain.Append
+                 (Climate_Terrain'
+                    (Terrain       => Terrain,
+                     Humidity_Low  => Humid_Low,
+                     Humidity_High => Humid_High,
+                     Temp_Low      => Temp_Low,
+                     Temp_High     => Temp_High));
             end;
          end loop;
 

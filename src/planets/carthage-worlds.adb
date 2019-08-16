@@ -11,7 +11,7 @@ package body Carthage.Worlds is
       return Carthage.Terrain.Terrain_Type
    is
    begin
-      for Item of World.Climate_Terrain.all loop
+      for Item of World.Climate_Terrain loop
          if Temperature in Item.Temp_Low .. Item.Temp_High
            and then Humidity in Item.Humidity_Low .. Item.Humidity_High
          then
@@ -32,7 +32,7 @@ package body Carthage.Worlds is
                    Frequency : Frequency_Range))
    is
    begin
-      for Item of World.Terrain.all loop
+      for Item of World.Terrain loop
          Process (Item.Terrain, Item.Frequency);
       end loop;
    end Scan_Terrain_Frequency;

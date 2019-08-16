@@ -139,8 +139,6 @@ package body Carthage.UI.Models.Top is
       Model.Sidebar_Icon_Size := Layout_Config.Get ("sidebar-icon-size", 64);
 
       declare
-         use Carthage.Resources;
-         Next_Index : Resource_Index := 1;
          Current_X  : Integer := Model.Bottom_Toolbar_Layout.X + 2;
          Current_Y  : constant Integer := Model.Bottom_Toolbar_Layout.Y + 2;
 
@@ -154,21 +152,17 @@ package body Carthage.UI.Models.Top is
          procedure Next_Rectangle
            (Resource : Carthage.Resources.Resource_Type)
          is
+            pragma Unreferenced (Resource);
          begin
-            Model.Resource_Layout (Resource.Index) :=
-              (Rectangle => (Current_X, Current_Y, 36, 48));
-            Next_Index := Next_Index + 1;
+            Model.Resource_Layout.Append
+              (Resource_Layout_Record'
+                 (Rectangle => (Current_X, Current_Y, 36, 48)));
             Current_X := Current_X + 40;
          end Next_Rectangle;
 
       begin
 
-         if Model.Resource_Layout = null then
-            Model.Resource_Layout :=
-              new Resource_Layout_Array
-                (1 .. Carthage.Resources.Last_Index);
-         end if;
-
+         Model.Resource_Layout.Clear;
          Carthage.Resources.Scan (Next_Rectangle'Access);
       end;
 
@@ -196,7 +190,6 @@ package body Carthage.UI.Models.Top is
       Renderer : in out Lui.Rendering.Root_Renderer'Class;
       Layer    : Lui.Render_Layer)
    is
-      use Lui;
 
       procedure Render_Static_UI;
 

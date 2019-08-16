@@ -1,4 +1,5 @@
 private with Ada.Calendar;
+private with Ada.Containers.Vectors;
 
 with WL.String_Maps;
 
@@ -58,9 +59,9 @@ private
          Rectangle : Lui.Layout_Rectangle;
       end record;
 
-   type Resource_Layout_Array is
-     array (Carthage.Resources.Resource_Index range <>)
-     of Resource_Layout_Record;
+   package Resource_Layout_Vectors is
+     new Ada.Containers.Vectors
+       (Carthage.Resources.Resource_Index, Resource_Layout_Record);
 
    package Model_Maps is
      new WL.String_Maps (Carthage_Model);
@@ -80,7 +81,7 @@ private
          Status_Layout         : Lui.Layout_Rectangle;
          Selected_Stack_Layout : Lui.Layout_Rectangle;
          Sidebar_Icon_Size     : Positive := 64;
-         Resource_Layout       : access Resource_Layout_Array;
+         Resource_Layout       : Resource_Layout_Vectors.Vector;
          Galaxy_Model          : Carthage_Model;
          Planet_Models         : Model_Maps.Map;
          Current_Model         : Carthage_Model;

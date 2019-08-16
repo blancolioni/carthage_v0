@@ -1,3 +1,4 @@
+private with Ada.Containers.Vectors;
 private with Memor.Database;
 private with Memor.Element_Vectors;
 
@@ -62,7 +63,8 @@ private
          Frequency : Frequency_Range;
       end record;
 
-   type Frequency_Array is array (Positive range <>) of Terrain_Frequency;
+   package Terrain_Frequency_Vectors is
+     new Ada.Containers.Vectors (Positive, Terrain_Frequency);
 
    type Climate_Terrain is
       record
@@ -73,7 +75,8 @@ private
          Temp_High     : Carthage.Climate.Temperature_Range;
       end record;
 
-   type Climate_Terrain_Array is array (Positive range <>) of Climate_Terrain;
+   package Climate_Terrain_Vectors is
+     new Ada.Containers.Vectors (Positive, Climate_Terrain);
 
    type Resource_Info is
       record
@@ -100,8 +103,8 @@ private
          Smoothness      : Positive;
          Ave_Temperature : Carthage.Climate.Temperature_Range;
          Base_Land       : Carthage.Terrain.Terrain_Type;
-         Terrain         : access Frequency_Array;
-         Climate_Terrain : access Climate_Terrain_Array;
+         Terrain         : Terrain_Frequency_Vectors.Vector;
+         Climate_Terrain : Climate_Terrain_Vectors.Vector;
          Terrain_Info    : Terrain_Vectors.Vector;
          Road_Movement   : Unit_Movement_Array;
       end record;
