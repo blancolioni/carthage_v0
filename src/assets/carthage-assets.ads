@@ -58,6 +58,10 @@ package Carthage.Assets is
      (Asset : Asset_Record)
       return Health_Type;
 
+   function Cargo_Capacity
+     (Asset : Asset_Record)
+      return Natural;
+
    function Alive
      (Asset : Asset_Record)
       return Boolean;
@@ -145,17 +149,17 @@ private
      new Carthage.Objects.Root_Named_Object
      and Carthage.Resources.Stock_Interface with
       record
-         Container   : Asset_Container_Type;
-         Owner       : Carthage.Houses.House_Type;
-         Unit        : Carthage.Units.Unit_Type;
-         Health      : Health_Type := Health_Type'Last;
-         Loyalty     : Loyalty_Type := Loyalty_Type'Last;
-         Experience  : Asset_Experience := Asset_Experience'First;
-         Movement    : Natural := 0;
-         Stock       : Carthage.Resources.Stock_Record;
-         Jumping     : Boolean := False;
-         Launching   : Boolean := False;
-         Landing     : Boolean := False;
+         Container    : Asset_Container_Type;
+         Owner        : Carthage.Houses.House_Type;
+         Unit         : Carthage.Units.Unit_Type;
+         Health       : Health_Type := Health_Type'Last;
+         Loyalty      : Loyalty_Type := Loyalty_Type'Last;
+         Experience   : Asset_Experience := Asset_Experience'First;
+         Movement     : Natural := 0;
+         Stock        : Carthage.Resources.Stock_Record;
+         Jumping      : Boolean := False;
+         Launching    : Boolean := False;
+         Landing      : Boolean := False;
       end record;
 
    overriding function Object_Database
@@ -194,6 +198,11 @@ private
      (Asset : Asset_Record)
       return Natural
    is (Asset.Unit.Movement);
+
+   function Cargo_Capacity
+     (Asset : Asset_Record)
+      return Natural
+   is (Asset.Unit.Cargo);
 
    function Spot
      (Asset : Asset_Record)

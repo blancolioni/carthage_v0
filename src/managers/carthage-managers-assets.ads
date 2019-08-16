@@ -6,6 +6,7 @@ private with WL.String_Maps;
 private with Carthage.Calendar;
 private with Carthage.Assets;
 
+with Carthage.Cities;
 with Carthage.Houses;
 with Carthage.Planets;
 with Carthage.Stacks;
@@ -33,13 +34,18 @@ package Carthage.Managers.Assets is
       Strength : Natural)
       return Carthage.Goals.Goal_Record'Class;
 
+   function Transfer_Cargo_Goal
+     (From, To : Carthage.Cities.City_Type;
+      Resource : Carthage.Resources.Resource_Type)
+      return Carthage.Goals.Goal_Record'Class;
+
    function Planet_Reconnaissance_Goal
      (Planet : Carthage.Planets.Planet_Type)
       return Carthage.Goals.Goal_Record'Class;
 
 private
 
-   type Goal_Class is (None, Recon, Capture);
+   type Goal_Class is (None, Recon, Capture, Transfer);
 
    type Goal_Parameter is (Speed, Spot, Military);
    type Relative_Value is (Low, Medium, High);
@@ -48,15 +54,17 @@ private
      (Class : Goal_Class)
       return Carthage.Goals.Goal_Priority
    is (case Class is
-          when None => Carthage.Goals.Lowest_Priority,
-          when Recon => 20,
-          when Capture => 10);
+          when None     => Carthage.Goals.Lowest_Priority,
+          when Recon    => 20,
+          when Capture  => 10,
+          when Transfer => 25);
 
    type Goal_Parameter_Record is
       record
          Speed     : Relative_Value := Low;
          Spot      : Relative_Value := Low;
          Military  : Relative_Value := Low;
+         Cargo     : Relative_Value := Low;
          Strength  : Natural        := 0;
       end record;
 
@@ -66,6 +74,9 @@ private
          Class      : Goal_Class := None;
          Planet     : Carthage.Planets.Planet_Type;
          Tile       : Carthage.Tiles.Tile_Type;
+         City_1     : Carthage.Cities.City_Type;
+         City_2     : Carthage.Cities.City_Type;
+         Resource   : Carthage.Resources.Resource_Type;
          Parameters : Goal_Parameter_Record;
       end record;
 
@@ -120,6 +131,7 @@ private
          Assets       : Managed_Asset_List.List;
          Spotters     : Asset_Classification_List.List;
          Movers       : Asset_Classification_List.List;
+         Ground_Cargo : Asset_Classification_List.List;
       end record;
 
    procedure Load_Assets

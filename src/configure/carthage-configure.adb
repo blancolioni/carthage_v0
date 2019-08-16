@@ -953,6 +953,7 @@ package body Carthage.Configure is
                      Output.Add ("index", Index);
                      Output.Add ("category", Category);
                      Output.Add ("move", Move);
+                     Output.Add ("cargo", Cargo);
                      Output.Add ("spot", Spot);
                      Output.Add ("camouflage", Camo);
                      Output.Add ("agility", Ag);

@@ -1,7 +1,9 @@
+with Carthage.Assets.Create;
 with Carthage.Assets.Moves;
 with Carthage.Galaxy;
 with Carthage.Stacks.Create;
 with Carthage.Stacks.Updates;
+with Carthage.Units;
 
 package body Carthage.Managers.Assets is
 
@@ -158,6 +160,7 @@ package body Carthage.Managers.Assets is
       case Asset_Goal.Class is
          when None =>
             return True;
+
          when Recon =>
             declare
                use type Carthage.Stacks.Asset_Count;
@@ -293,6 +296,51 @@ package body Carthage.Managers.Assets is
                end if;
             end;
 
+         when Transfer =>
+
+            declare
+               Asset : constant Carthage.Assets.Asset_Type :=
+                 Carthage.Assets.Create.New_Asset
+                   (Unit    => Carthage.Units.Cargo_Pod,
+                    Owner   => Asset_Goal.City_1.Owner);
+               Stack : constant Carthage.Stacks.Stack_Type :=
+                 Carthage.Stacks.Create.New_Ground_Stack
+                   (Manager, Asset.Owner, Manager.Planet,
+                    Asset_Goal.City_1.Tile);
+               Stack_Cursor : Managed_Stack_List.Cursor;
+            begin
+               Manager.Stacks.Append
+                 ((Stack, others => <>));
+               Stack_Cursor := Manager.Stacks.Last;
+
+               Manager.Assets.Append
+                 (Managed_Asset_Record'
+                    (Asset  => Asset,
+                     Stack  => Stack_Cursor,
+                     Planet => Manager.Planet,
+                     Tile   => Asset_Goal.City_1.Tile,
+                     Goal   =>
+                       Asset_Manager_Goal_Holders.To_Holder (Asset_Goal)));
+               Asset.Move_To (Stack);
+               Manager.Stack_Maps.Insert
+                 (Stack.Identifier, Stack_Cursor);
+
+               Asset.Log ("assigned to transfer "
+                          & Asset_Goal.Resource.Name
+                          & " from "
+                          & Asset_Goal.City_1.Name
+                          & " to "
+                          & Asset_Goal.City_2.Name);
+
+               Manager.Stacks (Stack_Cursor).Goal.Replace_Element
+                 (Asset_Goal);
+               Manager.Stacks (Stack_Cursor).Stack.Update.Move_To_Tile
+                 (Asset_Goal.City_2.Tile);
+               Carthage.Stacks.Updates.Start_Update
+                 (Manager.Stacks (Stack_Cursor).Stack);
+               return True;
+            end;
+
       end case;
    end Check_Goal;
 
@@ -406,6 +454,10 @@ package body Carthage.Managers.Assets is
 
          when Capture =>
             return True;
+
+         when Transfer =>
+            return True;
+
       end case;
    end Check_Goal;
 
@@ -511,6 +563,8 @@ package body Carthage.Managers.Assets is
             return Have_Capacity (Manager.Spotters);
          when Capture =>
             return False;
+         when Transfer =>
+            return True;
       end case;
    end Have_Immediate_Capacity;
 
@@ -537,6 +591,8 @@ package body Carthage.Managers.Assets is
             end loop;
             return False;
          when Capture =>
+            return False;
+         when Transfer =>
             return False;
       end case;
    end Have_Immediate_Capacity;
@@ -566,8 +622,15 @@ package body Carthage.Managers.Assets is
            function (Asset : Carthage.Assets.Asset_Type) return Natural)
       is
          use Carthage.Assets;
+         New_Asset      : constant Asset_Type :=
+           Managed_Asset_List.Element
+             (Asset_Cursor).Asset;
+         New_Rating     : constant Natural :=
+           Rate (New_Asset);
       begin
-         if To_List.Is_Empty then
+         if New_Rating = 0 then
+            null;
+         elsif To_List.Is_Empty then
             To_List.Append (Asset_Cursor);
          else
             declare
@@ -576,11 +639,6 @@ package body Carthage.Managers.Assets is
                                     (To_List.First_Element).Asset;
                Current_Rating : constant Natural :=
                                   Rate (Current_First);
-               New_Asset      : constant Asset_Type :=
-                                  Managed_Asset_List.Element
-                                    (Asset_Cursor).Asset;
-               New_Rating     : constant Natural :=
-                                  Rate (New_Asset);
             begin
                if New_Rating = Current_Rating then
                   To_List.Append (Asset_Cursor);
@@ -603,6 +661,10 @@ package body Carthage.Managers.Assets is
 
          function Rate_Spot (Asset : Asset_Type) return Natural
          is (if Asset.Ground_Asset then Asset.Spot else 0);
+
+         function Rate_Ground_Cargo (Asset : Asset_Type) return Natural
+         is (if Asset.Ground_Asset then Asset.Cargo_Capacity else 0);
+
       begin
          for Position in Manager.Assets.Iterate loop
             Add_Asset_Classification
@@ -611,6 +673,9 @@ package body Carthage.Managers.Assets is
             Add_Asset_Classification
               (Position, Manager.Spotters,
                Rate_Spot'Access);
+            Add_Asset_Classification
+              (Position, Manager.Ground_Cargo,
+               Rate_Ground_Cargo'Access);
          end loop;
       end;
 
@@ -798,8 +863,8 @@ package body Carthage.Managers.Assets is
                   Priority   => Default_Priority (Recon),
                   Class      => Recon,
                   Planet     => Planet,
-                  Tile       => null,
-                  Parameters => (Speed => High, Spot => High, others => <>));
+                  Parameters => (Speed => High, Spot => High, others => <>),
+                  others     => <>);
    begin
       return Goal;
    end Planet_Reconnaissance_Goal;
@@ -857,8 +922,11 @@ package body Carthage.Managers.Assets is
                   Class      => Capture,
                   Planet     => null,
                   Tile       => Tile,
+                  City_1     => null,
+                  City_2     => null,
+                  Resource   => null,
                   Parameters =>
-                    (Speed    => Low, Spot => Low,
+                    (Speed    => Low, Spot => Low, Cargo => Low,
                      Military => High, Strength => Strength));
    begin
       return Goal;
@@ -879,10 +947,33 @@ package body Carthage.Managers.Assets is
                   Class      => Recon,
                   Planet     => null,
                   Tile       => Tile,
+                  City_1     => null,
+                  City_2     => null,
+                  Resource   => null,
                   Parameters => (Speed => High, Spot => High, others => <>));
    begin
       return Goal;
    end Tile_Reconnaissance_Goal;
+
+   function Transfer_Cargo_Goal
+     (From, To : Carthage.Cities.City_Type;
+      Resource : Carthage.Resources.Resource_Type)
+      return Carthage.Goals.Goal_Record'Class
+   is
+      Goal : constant Asset_Manager_Goal :=
+        Asset_Manager_Goal'
+          (Carthage.Goals.Goal_Record with
+           Priority   => Default_Priority (Transfer),
+           Class      => Transfer,
+           Planet     => null,
+           Tile       => From.Tile,
+           City_1     => From,
+           City_2     => To,
+           Resource   => Resource,
+           Parameters => (Cargo => High, Speed => Medium, others => <>));
+   begin
+      return Goal;
+   end Transfer_Cargo_Goal;
 
    ------------
    -- Update --

@@ -9,6 +9,8 @@ with Carthage.Structures;
 
 with Carthage.Cities.Updates;
 
+with Carthage.Managers.Assets;
+
 package body Carthage.Managers.Cities is
 
    type City_Resource is
@@ -59,17 +61,19 @@ package body Carthage.Managers.Cities is
      new Root_Manager_Type
      and Carthage.Cities.City_Manager_Interface with
       record
-         Planet        : Carthage.Planets.Planet_Type;
-         Group         : City_Trade_Group;
-         City          : Carthage.Cities.City_Type;
-         Palace        : Carthage.Cities.City_Type;
-         Shield        : Carthage.Cities.City_Type;
-         Agoras        : City_Lists.List;
-         Available     : Carthage.Resources.Stock_Record;
-         Ordered       : Carthage.Resources.Stock_Record;
-         Sources       : City_Resource_Lists.List;
-         Sinks         : City_Resource_Lists.List;
-         City_Requests : City_Request_Maps.Map;
+         Planet         : Carthage.Planets.Planet_Type;
+         Group          : City_Trade_Group;
+         City           : Carthage.Cities.City_Type;
+         Palace         : Carthage.Cities.City_Type;
+         Shield         : Carthage.Cities.City_Type;
+         Agoras         : City_Lists.List;
+         Available      : Carthage.Resources.Stock_Record;
+         Ordered        : Carthage.Resources.Stock_Record;
+         Scheduled      : Carthage.Resources.Stock_Record;
+         Sources        : City_Resource_Lists.List;
+         Sinks          : City_Resource_Lists.List;
+         City_Requests  : City_Request_Maps.Map;
+         Ground_Manager : Manager_Type;
       end record;
 
    type City_Manager_Type is access all City_Manager_Record'Class;
@@ -102,7 +106,8 @@ package body Carthage.Managers.Cities is
    function Create_City_Manager
      (House  : Carthage.Houses.House_Type;
       Group  : City_Trade_Group;
-      City   : not null access constant Carthage.Cities.City_Record'Class)
+      City   : not null access constant Carthage.Cities.City_Record'Class;
+      Ground : Manager_Type)
       return Manager_Type
    is
       Manager : constant City_Manager_Type :=
@@ -111,6 +116,7 @@ package body Carthage.Managers.Cities is
       Manager.House := House;
       Manager.Planet := City.Planet;
       Manager.Group := Group;
+      Manager.Ground_Manager := Ground;
 
       declare
          V : Resource_Quantity_Vectors.Vector;
@@ -357,16 +363,22 @@ package body Carthage.Managers.Cities is
                begin
                   if Whole_Quantity > 0 then
                      City.Log
-                       ("transfer"
+                       ("new goal:"
                         & Natural'Image (Natural (Quantity))
                         & " " & Item.Resource.Name
                         & " to " & To_City.Name);
 
-                     City.Update.Transfer_Resource
-                       (Resource => Item.Resource,
-                        Quantity => Whole_Quantity,
-                        To_City  => To_City);
+                     for I in 1 .. Whole_Quantity loop
+                        Manager.Ground_Manager.Add_Goal
+                          (Carthage.Managers.Assets.Transfer_Cargo_Goal
+                             (From     => City,
+                              To       => To_City,
+                              Resource => Item.Resource));
+                     end loop;
+
                      Manager.Available.Remove (Item.Resource, Whole_Quantity);
+                     Manager.Scheduled.Add (Item.Resource, Whole_Quantity);
+
                   end if;
                end;
             end Process_Request;

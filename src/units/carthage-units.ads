@@ -50,6 +50,10 @@ package Carthage.Units is
    function Is_Sceptre (Unit : Unit_Record'Class) return Boolean;
    function Is_Noble (Unit : Unit_Record'Class) return Boolean;
 
+   function Cargo
+     (Unit : Unit_Record)
+      return Natural;
+
    function Movement
      (Unit : Unit_Record)
       return Natural;
@@ -110,6 +114,8 @@ package Carthage.Units is
 
    function Get (Index : Natural) return Unit_Type;
 
+   function Cargo_Pod return Unit_Type;
+
 private
 
    type Weapon_Record is
@@ -169,6 +175,11 @@ private
      (Unit : Unit_Record)
       return Unit_Category
    is (Unit.Category);
+
+   function Cargo
+     (Unit : Unit_Record)
+      return Natural
+   is (Unit.Cargo);
 
    function Movement
      (Unit : Unit_Record)
@@ -258,6 +269,11 @@ private
 
    function Get (Index : Natural) return Unit_Type
    is (Us.Element (Index));
+
+   Cargo_Pod_Index : Natural := 0;
+
+   function Cargo_Pod return Unit_Type
+   is (Get (Cargo_Pod_Index));
 
    Weapon_Targets : array (Unit_Category, Weapon_Category) of Boolean;
 

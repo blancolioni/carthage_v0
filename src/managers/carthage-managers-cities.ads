@@ -10,7 +10,8 @@ package Carthage.Managers.Cities is
    function Create_City_Manager
      (House  : Carthage.Houses.House_Type;
       Group  : City_Trade_Group;
-      City   : not null access constant Carthage.Cities.City_Record'Class)
+      City   : not null access constant Carthage.Cities.City_Record'Class;
+      Ground : Manager_Type)
       return Manager_Type;
 
 private

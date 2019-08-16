@@ -98,6 +98,10 @@ package body Carthage.Units.Configure is
          Unit.Is_Noble :=
            Ada.Strings.Fixed.Index (Config.Config_Name, "noble") > 0;
 
+         if Ada.Strings.Fixed.Index (Config.Config_Name, "cargo") > 0 then
+            Cargo_Pod_Index := Unit.Index;
+         end if;
+
       end Create;
 
       Unit : constant Unit_Type :=

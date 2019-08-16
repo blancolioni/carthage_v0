@@ -179,7 +179,7 @@ package body Carthage.Managers.Planets is
             Manager.City_Managers.Insert
               (City.Identifier,
                Carthage.Managers.Cities.Create_City_Manager
-                 (House, Group, City));
+                 (House, Group, City, Manager.Ground_Asset_Manager));
          end if;
       end Add_City_Manager;
 
@@ -188,11 +188,11 @@ package body Carthage.Managers.Planets is
       Manager.Planet := Planet;
       Manager.Active := Active;
 
-      Planet.Scan_Cities (Add_City_Manager'Access);
-
       Manager.Ground_Asset_Manager :=
         Carthage.Managers.Assets.Ground_Asset_Manager
           (Meta, House, Planet);
+
+      Planet.Scan_Cities (Add_City_Manager'Access);
 
       Manager.Initialize;
       Add_Manager (Manager);
