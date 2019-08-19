@@ -32,6 +32,15 @@ package Carthage.Cities is
      (City : City_Record)
       return String;
 
+   procedure Add_Scheduled_Transfer
+     (City     : in out City_Record;
+      Item     : Carthage.Resources.Resource_Type;
+      Quantity : Positive);
+
+   procedure Remove_Scheduled_Transfer
+     (City  : in out City_Record;
+      Stock : Carthage.Resources.Stock_Interface'Class);
+
    type City_Manager_Interface is interface;
 
    procedure On_Resource_Arrival
@@ -164,6 +173,7 @@ private
          Health    : Health_Type;
          Loyalty   : Loyalty_Type;
          Stock     : Carthage.Resources.Stock_Record;
+         Scheduled : Carthage.Resources.Stock_Record;
          Orders    : City_Order_Lists.List;
          Agora     : City_Type;
          Progress  : Float := 0.0;

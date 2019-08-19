@@ -335,7 +335,8 @@ package body Carthage.Managers.Assets is
                           & " to "
                           & Asset_Goal.City_2.Identifier);
 
-               Asset_Goal.City_1.Update.Remove_Stock (Asset_Goal.Stock);
+               Asset_Goal.City_1.Update.Remove_Scheduled_Transfer
+                 (Asset_Goal.Stock);
                Asset.Update.Add_Stock (Asset_Goal.Stock);
 
                Manager.Stacks (Stack_Cursor).Goal.Replace_Element

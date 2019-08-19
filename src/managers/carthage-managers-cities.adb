@@ -69,7 +69,6 @@ package body Carthage.Managers.Cities is
          Agoras         : City_Lists.List;
          Available      : Carthage.Resources.Stock_Record;
          Ordered        : Carthage.Resources.Stock_Record;
-         Scheduled      : Carthage.Resources.Stock_Record;
          Sources        : City_Resource_Lists.List;
          Sinks          : City_Resource_Lists.List;
          City_Requests  : City_Request_Maps.Map;
@@ -293,19 +292,31 @@ package body Carthage.Managers.Cities is
                      Manager.City.Log
                        ("new goal:"
                         & Natural'Image (Natural (Quantity))
+                        & " of"
+                        & Natural'Image
+                          (To_City.Whole_Quantity (Item.Resource))
                         & " " & Item.Resource.Name
                         & " to " & To_City.Identifier);
 
                      Add_Transfer (To_City, Item.Resource, Whole_Quantity);
 
                      Manager.Available.Remove (Item.Resource, Whole_Quantity);
-                     Manager.Scheduled.Add (Item.Resource, Whole_Quantity);
+                     Manager.City.Update.Add_Scheduled_Transfer
+                      (Item.Resource, Whole_Quantity);
 
                   end if;
                end;
             end Process_Request;
 
          begin
+            Manager.City.Log
+              ("requested" & Total_Requests'Image
+               & " " & Item.Resource.Identifier
+               & " of" & Available'Image
+               & "; factor = "
+               & Natural'Image (Natural (Factor * 100.0))
+               & "%");
+
             Scan_Requests (Manager.Group,
                            Item.Resource, Process_Request'Access);
          end;

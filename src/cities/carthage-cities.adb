@@ -1,5 +1,19 @@
 package body Carthage.Cities is
 
+   ----------------------------
+   -- Add_Scheduled_Transfer --
+   ----------------------------
+
+   procedure Add_Scheduled_Transfer
+     (City     : in out City_Record;
+      Item     : Carthage.Resources.Resource_Type;
+      Quantity : Positive)
+   is
+   begin
+      City.Stock.Remove (Item, Quantity);
+      City.Scheduled.Add (Item, Quantity);
+   end Add_Scheduled_Transfer;
+
    ------------------
    -- Buy_Resource --
    ------------------
@@ -28,6 +42,18 @@ package body Carthage.Cities is
    begin
       return City.Owner.Identifier & " " & City_Class (City).Identifier;
    end Log_Identifier;
+
+   -------------------------------
+   -- Remove_Scheduled_Transfer --
+   -------------------------------
+
+   procedure Remove_Scheduled_Transfer
+     (City  : in out City_Record;
+      Stock : Carthage.Resources.Stock_Interface'Class)
+   is
+   begin
+      City.Scheduled.Remove_Stock (Stock);
+   end Remove_Scheduled_Transfer;
 
    -----------------
    -- Scan_Cities --
