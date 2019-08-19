@@ -27,6 +27,22 @@ package body Carthage.Resources is
       Stock.Add (Resource, Resource_Quantity (Added_Quantity));
    end Add;
 
+   ---------------
+   -- Add_Stock --
+   ---------------
+
+   procedure Add_Stock
+     (To    : in out Stock_Interface'Class;
+      Stock : Stock_Interface'Class)
+   is
+   begin
+      for Resource of Resource_Vector loop
+         if Stock.Quantity (Resource) > 0.0 then
+            To.Add (Resource, Stock.Quantity (Resource));
+         end if;
+      end loop;
+   end Add_Stock;
+
    -----------------
    -- Clear_Stock --
    -----------------
@@ -77,6 +93,24 @@ package body Carthage.Resources is
    begin
       Stock.Remove (Resource, Resource_Quantity (Removed_Quantity));
    end Remove;
+
+   ------------------
+   -- Remove_Stock --
+   ------------------
+
+   procedure Remove_Stock
+     (From  : in out Stock_Interface'Class;
+      Stock : Stock_Interface'Class)
+   is
+   begin
+      for Resource of Resource_Vector loop
+         if Stock.Quantity (Resource) > 0.0 then
+            pragma Assert
+              (Stock.Quantity (Resource) <= From.Quantity (Resource));
+            From.Remove (Resource, Stock.Quantity (Resource));
+         end if;
+      end loop;
+   end Remove_Stock;
 
    ----------
    -- Scan --

@@ -83,6 +83,14 @@ package Carthage.Resources is
       Removed_Quantity : Natural)
      with Pre => Removed_Quantity <= Stock.Whole_Quantity (Resource);
 
+   procedure Add_Stock
+     (To    : in out Stock_Interface'Class;
+      Stock : Stock_Interface'Class);
+
+   procedure Remove_Stock
+     (From  : in out Stock_Interface'Class;
+      Stock : Stock_Interface'Class);
+
    type Stock_Record is new Stock_Interface with private;
 
    overriding function Quantity
