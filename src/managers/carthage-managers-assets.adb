@@ -335,6 +335,9 @@ package body Carthage.Managers.Assets is
                           & " to "
                           & Asset_Goal.City_2.Identifier);
 
+               Asset_Goal.City_1.Update.Remove_Stock (Asset_Goal.Stock);
+               Asset.Update.Add_Stock (Asset_Goal.Stock);
+
                Manager.Stacks (Stack_Cursor).Goal.Replace_Element
                  (Asset_Goal);
                Manager.Stacks (Stack_Cursor).Stack.Move_To_Tile
@@ -847,10 +850,28 @@ package body Carthage.Managers.Assets is
    is
       Position : constant Managed_Stack_List.Cursor :=
         Manager.Stack_Maps.Element (Stack.Identifier);
-      Rec      : Managed_Stack_Record renames Manager.Stacks (Position)
-        with Unreferenced;
+      Rec      : Managed_Stack_Record renames Manager.Stacks (Position);
    begin
-      Stack.Log ("movement ended");
+      if Rec.Goal.Is_Empty then
+         return;
+      end if;
+
+      declare
+         Goal     : constant Asset_Manager_Goal :=
+           Asset_Manager_Goal (Rec.Goal.Element);
+      begin
+         case Goal.Class is
+            when None =>
+               Stack.Log ("movement ended with no goal");
+            when Recon =>
+               Stack.Log ("recon ended");
+            when Capture =>
+               Stack.Log ("capture movement ended");
+            when Transfer =>
+               Stack.Log ("transfer movement ended");
+               Goal.City_2.Update.Add_Stock (Goal.Stock);
+         end case;
+      end;
    end On_Movement_Ended;
 
    ----------------------
