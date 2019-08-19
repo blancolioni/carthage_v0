@@ -36,7 +36,7 @@ package Carthage.Managers.Assets is
 
    function Transfer_Cargo_Goal
      (From, To : Carthage.Cities.City_Type;
-      Resource : Carthage.Resources.Resource_Type)
+      Cargo    : Carthage.Resources.Stock_Record)
       return Carthage.Goals.Goal_Record'Class;
 
    function Planet_Reconnaissance_Goal
@@ -76,7 +76,7 @@ private
          Tile       : Carthage.Tiles.Tile_Type;
          City_1     : Carthage.Cities.City_Type;
          City_2     : Carthage.Cities.City_Type;
-         Resource   : Carthage.Resources.Resource_Type;
+         Stock      : Carthage.Resources.Stock_Record;
          Parameters : Goal_Parameter_Record;
       end record;
 

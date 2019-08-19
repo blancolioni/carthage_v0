@@ -277,6 +277,10 @@ private
       return access Carthage.Assets.Asset_Container_Interface'Class
    is (Stack.Update.Item);
 
+   overriding function Log_Identifier
+     (Stack : Stack_Record)
+      return String;
+
    function Description
      (Item : Stack_Record)
       return String

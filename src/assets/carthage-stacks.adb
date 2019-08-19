@@ -99,6 +99,15 @@ package body Carthage.Stacks is
          Cost     => Move_Cost'Access);
    end Find_Path;
 
+   overriding function Log_Identifier
+     (Stack : Stack_Record)
+      return String
+   is (Carthage.Objects.Root_Named_Object (Stack).Log_Identifier
+       & "-"
+       & (if Stack.Count = 0 then "EMPTY"
+          else Stack.Assets (1).Identifier)
+       & (if Stack.Count = 1 then "" else " ..."));
+
    ------------------
    -- Move_To_Tile --
    ------------------
