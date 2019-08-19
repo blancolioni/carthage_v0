@@ -329,12 +329,11 @@ package body Carthage.Managers.Assets is
                Manager.Stack_Maps.Insert
                  (Stack.Identifier, Stack_Cursor);
 
-               Asset.Log ("assigned to transfer "
-                          & Asset_Goal.Resource.Name
+               Asset.Log ("assigned to transfer resources"
                           & " from "
-                          & Asset_Goal.City_1.Name
+                          & Asset_Goal.City_1.Identifier
                           & " to "
-                          & Asset_Goal.City_2.Name);
+                          & Asset_Goal.City_2.Identifier);
 
                Manager.Stacks (Stack_Cursor).Goal.Replace_Element
                  (Asset_Goal);
@@ -944,7 +943,7 @@ package body Carthage.Managers.Assets is
                   Tile       => Tile,
                   City_1     => null,
                   City_2     => null,
-                  Resource   => null,
+                  Stock      => <>,
                   Parameters =>
                     (Speed    => Low, Spot => Low, Cargo => Low,
                      Military => High, Strength => Strength));
@@ -969,7 +968,7 @@ package body Carthage.Managers.Assets is
                   Tile       => Tile,
                   City_1     => null,
                   City_2     => null,
-                  Resource   => null,
+                  Stock      => <>,
                   Parameters => (Speed => High, Spot => High, others => <>));
    begin
       return Goal;
@@ -981,7 +980,7 @@ package body Carthage.Managers.Assets is
 
    function Transfer_Cargo_Goal
      (From, To : Carthage.Cities.City_Type;
-      Resource : Carthage.Resources.Resource_Type)
+      Cargo    : Carthage.Resources.Stock_Record)
       return Carthage.Goals.Goal_Record'Class
    is
       Goal : constant Asset_Manager_Goal :=
@@ -993,7 +992,7 @@ package body Carthage.Managers.Assets is
            Tile       => From.Tile,
            City_1     => From,
            City_2     => To,
-           Resource   => Resource,
+           Stock      => Cargo,
            Parameters => (Cargo => High, Speed => Medium, others => <>));
    begin
       return Goal;

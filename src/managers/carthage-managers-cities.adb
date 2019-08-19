@@ -99,6 +99,12 @@ package body Carthage.Managers.Cities is
    procedure Create_Resource_Network
      (Manager : in out City_Manager_Record'Class);
 
+   procedure Create_Transfer_Goals
+     (Manager   : in out City_Manager_Record'Class;
+      Process   : not null access
+        procedure (To_City : Carthage.Cities.City_Type;
+                   Stock   : Carthage.Resources.Stock_Record));
+
    -------------------------
    -- Create_City_Manager --
    -------------------------
@@ -192,6 +198,124 @@ package body Carthage.Managers.Cities is
       Manager.Planet.Scan_Cities (Manager.House, Add_Connection'Access);
 
    end Create_Resource_Network;
+
+   ---------------------------
+   -- Create_Transfer_Goals --
+   ---------------------------
+
+   procedure Create_Transfer_Goals
+     (Manager   : in out City_Manager_Record'Class;
+      Process   : not null access
+        procedure (To_City : Carthage.Cities.City_Type;
+                   Stock   : Carthage.Resources.Stock_Record))
+   is
+      type City_Transfer is
+         record
+            City : Carthage.Cities.City_Type;
+            Stock : Carthage.Resources.Stock_Record;
+         end record;
+
+      package City_Transfer_Lists is
+        new Ada.Containers.Doubly_Linked_Lists (City_Transfer);
+
+      Transfers : City_Transfer_Lists.List;
+
+      procedure Add_Transfer
+        (To_City  : Carthage.Cities.City_Type;
+         Resource : Carthage.Resources.Resource_Type;
+         Quantity : Natural);
+
+      ------------------
+      -- Add_Transfer --
+      ------------------
+
+      procedure Add_Transfer
+        (To_City  : Carthage.Cities.City_Type;
+         Resource : Carthage.Resources.Resource_Type;
+         Quantity : Natural)
+      is
+         use type Carthage.Cities.City_Type;
+      begin
+         for Transfer of Transfers loop
+            if Transfer.City = To_City then
+               Transfer.Stock.Add (Resource, Quantity);
+               return;
+            end if;
+         end loop;
+
+         declare
+            Stock : Carthage.Resources.Stock_Record;
+         begin
+            Stock.Add (Resource, Quantity);
+            Transfers.Append
+              (City_Transfer'
+                 (City  => To_City,
+                  Stock => Stock));
+         end;
+      end Add_Transfer;
+
+   begin
+      for Item of Manager.City.Structure.Production_Outputs loop
+         declare
+            Total_Requests : constant Resource_Quantity :=
+              Get_Total_Requests (Manager.Group, Item.Resource);
+            Available      : constant Resource_Quantity :=
+              Manager.Available.Quantity (Item.Resource);
+            Factor         : constant Float :=
+              (if Available >= Total_Requests
+               then 1.0
+               else Float (Available)
+               / Float (Total_Requests));
+
+            procedure Process_Request
+              (To_City  : Carthage.Cities.City_Type;
+               Quantity : in out Resource_Quantity);
+
+            ---------------------
+            -- Process_Request --
+            ---------------------
+
+            procedure Process_Request
+              (To_City  : Carthage.Cities.City_Type;
+               Quantity : in out Resource_Quantity)
+            is
+            begin
+               if Factor < 1.0 then
+                  Quantity := Resource_Quantity (Factor * Float (Quantity));
+               end if;
+
+               declare
+                  Whole_Quantity : constant Natural :=
+                    Natural
+                      (Float'Truncation (Float (Quantity)));
+               begin
+                  if Whole_Quantity > 0 then
+                     Manager.City.Log
+                       ("new goal:"
+                        & Natural'Image (Natural (Quantity))
+                        & " " & Item.Resource.Name
+                        & " to " & To_City.Identifier);
+
+                     Add_Transfer (To_City, Item.Resource, Whole_Quantity);
+
+                     Manager.Available.Remove (Item.Resource, Whole_Quantity);
+                     Manager.Scheduled.Add (Item.Resource, Whole_Quantity);
+
+                  end if;
+               end;
+            end Process_Request;
+
+         begin
+            Scan_Requests (Manager.Group,
+                           Item.Resource, Process_Request'Access);
+         end;
+      end loop;
+
+      for Transfer of Transfers loop
+         Process (Transfer.City, Transfer.Stock);
+      end loop;
+
+   end Create_Transfer_Goals;
 
    ------------------------
    -- Get_Total_Requests --
@@ -326,88 +450,30 @@ package body Carthage.Managers.Cities is
          end loop;
       end if;
 
-      for Item of Structure.Production_Outputs loop
-         declare
-            Total_Requests : constant Resource_Quantity :=
-                               Get_Total_Requests (Manager.Group,
-                                                   Item.Resource);
-            Available      : constant Resource_Quantity :=
-                               Manager.Available.Quantity (Item.Resource);
-            Factor         : constant Float :=
-                               (if Available >= Total_Requests
-                                then 1.0
-                                else Float (Available)
-                                / Float (Total_Requests));
+      declare
+         procedure Create_Goals
+           (To_City : Carthage.Cities.City_Type;
+            Stock   : Carthage.Resources.Stock_Record);
 
-            procedure Process_Request
-              (To_City  : Carthage.Cities.City_Type;
-               Quantity : in out Resource_Quantity);
+         ------------------
+         -- Create_Goals --
+         ------------------
 
-            ---------------------
-            -- Process_Request --
-            ---------------------
-
-            procedure Process_Request
-              (To_City  : Carthage.Cities.City_Type;
-               Quantity : in out Resource_Quantity)
-            is
-            begin
-               if Factor < 1.0 then
-                  Quantity := Resource_Quantity (Factor * Float (Quantity));
-               end if;
-
-               declare
-                  Whole_Quantity : constant Natural :=
-                                     Natural
-                                       (Float'Truncation (Float (Quantity)));
-               begin
-                  if Whole_Quantity > 0 then
-                     City.Log
-                       ("new goal:"
-                        & Natural'Image (Natural (Quantity))
-                        & " " & Item.Resource.Name
-                        & " to " & To_City.Name);
-
-                     for I in 1 .. Whole_Quantity loop
-                        Manager.Ground_Manager.Add_Goal
-                          (Carthage.Managers.Assets.Transfer_Cargo_Goal
-                             (From     => City,
-                              To       => To_City,
-                              Resource => Item.Resource));
-                     end loop;
-
-                     Manager.Available.Remove (Item.Resource, Whole_Quantity);
-                     Manager.Scheduled.Add (Item.Resource, Whole_Quantity);
-
-                  end if;
-               end;
-            end Process_Request;
-
+         procedure Create_Goals
+           (To_City : Carthage.Cities.City_Type;
+            Stock   : Carthage.Resources.Stock_Record)
+         is
          begin
-            Scan_Requests (Manager.Group,
-                           Item.Resource, Process_Request'Access);
-         end;
---           if Wanted > 0 and then Available > 0 then
---              for Request of Requests.Element (City.Identifier) loop
---                 if Request.Resource = Item.Resource then
---                    declare
---                       Quantity : constant Natural :=
---                                    Natural (Request.Quantity)
---                                    * Available / Wanted;
---                    begin
---                       if Quantity > 0 then
---                          City.Log
---                            ("transferring" & Quantity'Img
---                             & " " & Item.Resource.Identifier
---                             & " to " & Request.City.Identifier);
---                          City.Update.Transfer_Resource
---                            (Item.Resource, Quantity, Request.City);
---                       end if;
---                    end;
---                 end if;
---              end loop;
---           end if;
-      end loop;
+            Manager.Ground_Manager.Add_Goal
+              (Carthage.Managers.Assets.Transfer_Cargo_Goal
+                 (From     => City,
+                  To       => To_City,
+                  Cargo    => Stock));
+         end Create_Goals;
+
+      begin
+         Manager.Create_Transfer_Goals (Create_Goals'Access);
+      end;
 
       declare
          procedure Buy
