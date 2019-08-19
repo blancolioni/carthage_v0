@@ -464,6 +464,33 @@ package body Carthage.Managers.Cities is
             Stock   : Carthage.Resources.Stock_Record)
          is
          begin
+            Manager.City.Log
+              ("new goal: transfer resources to "
+               & To_City.Identifier);
+
+            declare
+               procedure Show
+                 (Resource : Carthage.Resources.Resource_Type;
+                  Quantity : Positive);
+
+               ----------
+               -- Show --
+               ----------
+
+               procedure Show
+                 (Resource : Carthage.Resources.Resource_Type;
+                  Quantity : Positive)
+               is
+               begin
+                  Manager.City.Log
+                    (Resource.Identifier & ":" & Quantity'Img);
+               end Show;
+
+            begin
+               Stock.Scan_Stock
+                 (Show'Access);
+            end;
+
             Manager.Ground_Manager.Add_Goal
               (Carthage.Managers.Assets.Transfer_Cargo_Goal
                  (From     => City,
