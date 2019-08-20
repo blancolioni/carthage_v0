@@ -242,7 +242,7 @@ package body Carthage.Stacks.Updates is
                Stack.Log ("stopping at " & Stack.Tile.Description);
                Stack.Current_Path_Index := 0;
                Stack.Current_Path.Clear;
-               Stack.Manager.On_Movement_Ended (Stack);
+--                 Stack.Manager.On_Movement_Ended (Stack);
             elsif Path_Index > Path'Last then
                Stack.Log ("end of path at " & Stack.Tile.Description);
                Stack.Current_Path_Index := 0;
