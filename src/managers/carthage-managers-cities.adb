@@ -192,10 +192,7 @@ package body Carthage.Managers.Cities is
       end Add_Connection;
 
    begin
-      City.Log ("creating resource network");
-
       Manager.Planet.Scan_Cities (Manager.House, Add_Connection'Access);
-
    end Create_Resource_Network;
 
    ---------------------------
@@ -535,8 +532,6 @@ package body Carthage.Managers.Cities is
             Quantity : Positive)
          is
          begin
-            City.Log
-              ("order" & Quantity'Img & " " & Resource.Identifier);
             City.Update.Buy_Resource (Resource, Quantity);
             Manager.Ordered.Add (Resource, Quantity);
          end Buy;
@@ -550,8 +545,6 @@ package body Carthage.Managers.Cities is
             Quantity : Positive)
          is
          begin
-            City.Log
-              ("sell" & Quantity'Img & " " & Resource.Identifier);
             City.Update.Sell_Resource (Resource, Quantity);
          end Sell;
 
@@ -619,6 +612,10 @@ package body Carthage.Managers.Cities is
             end;
          end if;
       end;
+
+      Carthage.Cities.Update_City
+        (Manager.City,
+         Carthage.Cities.Updates.Execute_City_Orders'Access);
 
       if City.Structure.Has_Production then
          City.Log ("executing production");
