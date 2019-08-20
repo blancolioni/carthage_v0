@@ -14,6 +14,58 @@ package body Carthage.Cities is
       City.Scheduled.Add (Item, Quantity);
    end Add_Scheduled_Transfer;
 
+   procedure After_Agora_Transaction
+     (City            : in out City_Record;
+      Resource        : Carthage.Resources.Resource_Type;
+      Quantity_Change : Integer)
+   is
+      Price   : Agora_Resource_Record renames
+        City.Prices (Resource.Index);
+   begin
+      if Quantity_Change /= 0 then
+         if Quantity_Change > 0 then
+            Price.Buy_Price := Natural'Max (Price.Buy_Price - 1, 1);
+            Price.Sell_Price :=
+              Natural'Max (Price.Sell_Price - 1, Price.Buy_Price + 1);
+         else
+            Price.Buy_Price := Price.Buy_Price + 1;
+            Price.Sell_Price :=
+              Natural'Max (Price.Sell_Price + 1, Price.Buy_Price + 1);
+         end if;
+         City.Log
+           ("price of "
+            & Resource.Identifier
+            & " after "
+            & (if Quantity_Change > 0 then "adding" else "removing")
+            & Natural'Image (abs Quantity_Change)
+            & " now"
+            & Price.Buy_Price'Image
+            & " buy,"
+            & Price.Sell_Price'Image
+            & " sell");
+      end if;
+   end After_Agora_Transaction;
+
+   --------------------
+   -- Agora_Buys_For --
+   --------------------
+
+   function Agora_Buys_For
+     (City     : City_Record;
+      Resource : Carthage.Resources.Resource_Type)
+      return Positive
+   is (City.Prices.Element (Resource.Index).Buy_Price);
+
+   ---------------------
+   -- Agora_Sells_For --
+   ---------------------
+
+   function Agora_Sells_For
+     (City     : City_Record;
+      Resource : Carthage.Resources.Resource_Type)
+      return Positive
+   is (City.Prices.Element (Resource.Index).Sell_Price);
+
    ------------------
    -- Buy_Resource --
    ------------------
@@ -25,6 +77,7 @@ package body Carthage.Cities is
    is
    begin
       if City.Agora /= null then
+         City.Log ("buy" & Quantity'Image & " " & Resource.Name);
          City.Orders.Append
            (City_Order_Record'
               (Buy, City.Agora, Resource, Quantity));
@@ -181,10 +234,6 @@ package body Carthage.Cities is
       New_Quantity : Resource_Quantity)
    is
    begin
---        City.Log ("changing " & Resource.Identifier
---                  & " quantity from"
---                  & Natural'Image (City.Quantity (Resource))
---                  & " to" & New_Quantity'Img);
       City.Stock.Set_Quantity (Resource, New_Quantity);
    end Set_Quantity;
 

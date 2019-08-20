@@ -4,9 +4,6 @@ with Carthage.Resources;
 
 package body Carthage.Cities.Updates is
 
-   procedure Execute_City_Orders
-     (City : in out City_Class);
-
    procedure Execute_Harvester_Production
      (City : in out City_Class);
 
@@ -22,49 +19,74 @@ package body Carthage.Cities.Updates is
          case Order.Class is
             when Buy =>
                declare
+                  use type Carthage.Houses.House_Type;
                   Agora : constant City_Type := Order.Other_City;
+                  Has_Cost : constant Boolean :=
+                    City.Owner /= Agora.Owner;
+                  Agora_Quantity : constant Natural :=
+                    Agora.Whole_Quantity (Order.Resource);
                   Quantity : constant Natural :=
-                               Natural'Min
-                                 (Order.Quantity,
-                                  Agora.Whole_Quantity (Order.Resource));
+                    Natural'Min (Order.Quantity, Agora_Quantity);
                   Cost     : constant Natural :=
-                               Quantity * Order.Resource.Base_Price
-                                 * 11 / 10;
-
+                    Quantity * Agora.Agora_Sells_For (Order.Resource);
                begin
                   if Quantity > 0 then
-                     City.Log
-                       ("buy" & Quantity'Img & " "
-                        & Order.Resource.Name
-                        & " for" & Cost'Img);
-                     City.Owner.Update.Spend (Cost);
-                     Agora.Owner.Update.Earn (Cost);
+                     if Has_Cost then
+                        City.Log
+                          ("buy" & Quantity'Img & " "
+                           & Order.Resource.Name
+                           & " for" & Cost'Img);
+
+                        City.Owner.Update.Spend (Cost);
+                        Agora.Owner.Update.Earn (Cost);
+                        City.Owner.Log_Status;
+                        Agora.Owner.Log_Status;
+
+                        Agora.Update.After_Agora_Transaction
+                          (Order.Resource, -Quantity);
+                     end if;
+
                      Agora.Update.Remove (Order.Resource, Quantity);
                      City.Add (Order.Resource, Quantity);
+
                      if City.Manager /= null then
                         City.Manager.On_Resource_Arrival
                           (Db.Reference (City.Reference),
                            Order.Resource, Quantity);
                      end if;
+                  else
+                     City.Log
+                       ("buy" & Quantity'Img & " "
+                        & Order.Resource.Name
+                        & ": agora has none");
+
                   end if;
                end;
             when Sell =>
                declare
-                  Agora    : constant City_Type := Order.Other_City;
+                  use type Carthage.Houses.House_Type;
+                  Agora : constant City_Type := Order.Other_City;
+                  Has_Cost : constant Boolean :=
+                    City.Owner /= Agora.Owner;
                   Quantity : constant Natural := Order.Quantity;
                   Resource : constant Carthage.Resources.Resource_Type :=
                                Order.Resource;
                   Cost     : constant Natural :=
-                               Quantity * Order.Resource.Base_Price
-                                 * 9 / 10;
-
+                    Quantity * Agora.Agora_Buys_For (Order.Resource);
                begin
-                  City.Log
-                    ("sell" & Quantity'Img & " "
-                     & Resource.Name
-                     & " for" & Cost'Img);
-                  City.Owner.Update.Earn (Cost);
-                  Agora.Owner.Update.Spend (Cost);
+                  if Has_Cost then
+                     City.Log
+                       ("sell" & Quantity'Img & " "
+                        & Resource.Name
+                        & " for" & Cost'Img);
+                     City.Owner.Update.Earn (Cost);
+                     Agora.Owner.Update.Spend (Cost);
+                     City.Owner.Log_Status;
+                     Agora.Owner.Log_Status;
+                     Agora.Update.After_Agora_Transaction
+                       (Order.Resource, Quantity);
+                  end if;
+
                   Agora.Update.Add (Resource, Quantity);
                   City.Remove (Resource, Quantity);
                end;
@@ -183,23 +205,5 @@ package body Carthage.Cities.Updates is
          Output.Scan (Add_Harvested_Resources'Access);
       end;
    end Execute_Harvester_Production;
-
-   --------------------
-   -- Execute_Orders --
-   --------------------
-
-   procedure Execute_Orders is
-   begin
-      Db.Iterate (Execute_City_Orders'Access);
-   end Execute_Orders;
-
-   ------------------------
-   -- Execute_Production --
-   ------------------------
-
-   procedure Execute_Production is
-   begin
-      Db.Iterate (Execute_City_Production'Access);
-   end Execute_Production;
 
 end Carthage.Cities.Updates;

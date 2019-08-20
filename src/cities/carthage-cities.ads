@@ -1,4 +1,5 @@
 private with Ada.Containers.Indefinite_Doubly_Linked_Lists;
+private with Ada.Containers.Vectors;
 private with Memor.Database;
 
 with Carthage.Structures;
@@ -73,6 +74,24 @@ package Carthage.Cities is
    function Is_Agora
      (City : City_Record)
       return Boolean;
+
+   function Agora_Buys_For
+     (City     : City_Record;
+      Resource : Carthage.Resources.Resource_Type)
+      return Positive
+     with Pre => City.Is_Agora;
+
+   function Agora_Sells_For
+     (City     : City_Record;
+      Resource : Carthage.Resources.Resource_Type)
+      return Positive
+     with Pre => City.Is_Agora;
+
+   procedure After_Agora_Transaction
+     (City            : in out City_Record;
+      Resource        : Carthage.Resources.Resource_Type;
+      Quantity_Change : Integer)
+     with Pre => City.Is_Agora;
 
    function Seen_By
      (City  : City_Record;
@@ -160,6 +179,16 @@ private
    package City_Order_Lists is
      new Ada.Containers.Indefinite_Doubly_Linked_Lists (City_Order_Record);
 
+   type Agora_Resource_Record is
+      record
+         Buy_Price  : Positive;
+         Sell_Price : Positive;
+      end record;
+
+   package Agora_Resource_Vectors is
+     new Ada.Containers.Vectors
+       (Carthage.Resources.Resource_Index, Agora_Resource_Record);
+
    type City_Record is
      new Carthage.Objects.Root_Named_Object
      and Carthage.Resources.Stock_Interface with
@@ -176,6 +205,7 @@ private
          Scheduled : Carthage.Resources.Stock_Record;
          Orders    : City_Order_Lists.List;
          Agora     : City_Type;
+         Prices    : Agora_Resource_Vectors.Vector;
          Progress  : Float := 0.0;
       end record;
 

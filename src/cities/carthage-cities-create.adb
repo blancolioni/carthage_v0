@@ -25,9 +25,7 @@ package body Carthage.Cities.Create is
            (Planet.Identifier
             & "-" & Carthage.Tiles.Position_Image (Tile.Position)
             & "-"
-            & Structure.Identifier
-            & ": loyalty" & Loyalty'Img
-            & " health" & Health'Img);
+            & Structure.Identifier);
 
          City.Set_Name (Structure.Name);
          City.Owner := Owner;
@@ -37,6 +35,27 @@ package body Carthage.Cities.Create is
          City.Loyalty := Loyalty;
          City.Health := Health;
          Carthage.Houses.Clear (City.Seen);
+
+         if City.Is_Agora then
+            for I in 1 .. Carthage.Resources.Last_Index loop
+               declare
+                  Resource : constant Carthage.Resources.Resource_Type :=
+                    Carthage.Resources.Get (I);
+                  Base_Price : constant Positive :=
+                    Resource.Base_Price;
+                  Buy_Price  : constant Positive :=
+                    Natural'Max (Base_Price * 95 / 100, 1);
+                  Sell_Price : constant Positive :=
+                    Natural'Max (Base_Price * 105 / 100, Buy_Price + 1);
+               begin
+                  City.Prices.Append
+                    (Agora_Resource_Record'
+                       (Buy_Price  => Buy_Price,
+                        Sell_Price => Sell_Price));
+               end;
+            end loop;
+         end if;
+
       end Create;
 
       City : constant City_Type :=
