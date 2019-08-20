@@ -82,7 +82,7 @@ package Carthage.Stacks is
 
    procedure On_Movement_Ended
      (Manager : in out Stack_Manager_Interface;
-      Stack   : not null access constant Stack_Record'Class)
+      Stack   : not null access Stack_Record'Class)
    is null;
 
    procedure On_Stack_Removed
@@ -199,6 +199,8 @@ package Carthage.Stacks is
    subtype Stack_Class is Stack_Record'Class;
 
    type Stack_Type is access constant Stack_Record'Class;
+
+   procedure Delete_Stack (Stack : not null access Stack_Record'Class);
 
    procedure Scan_Stacks
      (Process : not null access procedure (Stack : Stack_Type));

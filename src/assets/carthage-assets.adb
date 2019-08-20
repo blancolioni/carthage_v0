@@ -26,6 +26,15 @@ package body Carthage.Assets is
       end if;
    end Damage;
 
+   ------------------
+   -- Delete_Asset --
+   ------------------
+
+   procedure Delete_Asset (Asset : Asset_Type) is
+   begin
+      Db.Delete (Asset.Reference);
+   end Delete_Asset;
+
    -------------
    -- Move_To --
    -------------

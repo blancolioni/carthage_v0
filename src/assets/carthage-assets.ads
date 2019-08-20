@@ -74,6 +74,8 @@ package Carthage.Assets is
 
    type Asset_Type is access constant Asset_Record'Class;
 
+   procedure Delete_Asset (Asset : Asset_Type);
+
    type Updateable_Reference (Item : not null access Asset_Record'Class)
    is private with Implicit_Dereference => Item;
 

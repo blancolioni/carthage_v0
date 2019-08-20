@@ -45,7 +45,7 @@ package body Carthage.Managers.Assets is
 
    overriding procedure On_Movement_Ended
      (Manager : in out Ground_Asset_Manager_Record;
-      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class);
+      Stack   : not null access Carthage.Stacks.Stack_Record'Class);
 
    overriding function Have_Immediate_Capacity
      (Manager : Ground_Asset_Manager_Record;
@@ -334,6 +334,27 @@ package body Carthage.Managers.Assets is
                           & Asset_Goal.City_1.Identifier
                           & " to "
                           & Asset_Goal.City_2.Identifier);
+
+               declare
+                  procedure Log_Item
+                    (Resource : Carthage.Resources.Resource_Type;
+                     Quantity : Positive);
+
+                  --------------
+                  -- Log_Item --
+                  --------------
+
+                  procedure Log_Item
+                    (Resource : Carthage.Resources.Resource_Type;
+                     Quantity : Positive)
+                  is
+                  begin
+                     Asset.Log (Resource.Identifier & ":" & Quantity'Image);
+                  end Log_Item;
+
+               begin
+                  Asset_Goal.Stock.Scan_Stock (Log_Item'Access);
+               end;
 
                Asset_Goal.City_1.Update.Remove_Scheduled_Transfer
                  (Asset_Goal.Stock);
@@ -847,11 +868,11 @@ package body Carthage.Managers.Assets is
 
    overriding procedure On_Movement_Ended
      (Manager : in out Ground_Asset_Manager_Record;
-      Stack   : not null access constant Carthage.Stacks.Stack_Record'Class)
+      Stack   : not null access Carthage.Stacks.Stack_Record'Class)
    is
       Position : constant Managed_Stack_List.Cursor :=
         Manager.Stack_Maps.Element (Stack.Identifier);
-      Rec      : Managed_Stack_Record renames Manager.Stacks (Position);
+      Rec      : constant Managed_Stack_Record := Manager.Stacks (Position);
    begin
       if Rec.Goal.Is_Empty then
          return;
@@ -870,7 +891,35 @@ package body Carthage.Managers.Assets is
                Stack.Log ("capture movement ended");
             when Transfer =>
                Stack.Log ("transfer movement ended");
+
+               declare
+                  procedure Report_Resource
+                    (Resource : Carthage.Resources.Resource_Type;
+                     Quantity : Positive);
+
+                  ---------------------
+                  -- Report_Resource --
+                  ---------------------
+
+                  procedure Report_Resource
+                    (Resource : Carthage.Resources.Resource_Type;
+                     Quantity : Positive)
+                  is
+                  begin
+                     Stack.Log ("deliver" & Quantity'Image
+                                & " " & Resource.Name
+                                & " to " & Goal.City_2.Identifier);
+                  end Report_Resource;
+
+               begin
+                  Goal.Stock.Scan_Stock (Report_Resource'Access);
+               end;
+
                Goal.City_2.Update.Add_Stock (Goal.Stock);
+               Stack.Log ("deleting stack");
+               Ground_Asset_Manager_Record'Class (Manager)
+                 .On_Stack_Removed (Carthage.Stacks.Stack_Type (Stack));
+               Carthage.Stacks.Delete_Stack (Stack);
          end case;
       end;
    end On_Movement_Ended;

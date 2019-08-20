@@ -72,6 +72,32 @@ package body Carthage.Stacks is
       Stack.Properties (Property) := False;
    end Clear_Property;
 
+   ------------------
+   -- Delete_Stack --
+   ------------------
+
+   procedure Delete_Stack (Stack : not null access Stack_Record'Class) is
+      use type Carthage.Tiles.Tile_Type;
+   begin
+      if Stack.Tile /= null then
+         Stack.Tile.Update.Remove_Stack (Stack);
+      end if;
+      for I in 1 .. Stack.Count loop
+         Carthage.Assets.Delete_Asset (Stack.Assets (1));
+      end loop;
+
+      Stack.Current_Path.Clear;
+      Stack.Current_Path_Index := 0;
+      Stack.Orders.Clear;
+      Stack.Properties := (others => False);
+      Stack.Count := 0;
+      Stack.Owner := null;
+      Stack.Planet := null;
+      Stack.Tile := null;
+
+      Db.Delete (Stack.Reference);
+   end Delete_Stack;
+
    ---------------
    -- Find_Path --
    ---------------
