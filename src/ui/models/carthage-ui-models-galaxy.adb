@@ -71,6 +71,8 @@ package body Carthage.UI.Models.Galaxy is
          Selected_Planet    : Carthage.Planets.Planet_Type;
       end record;
 
+   type Galaxy_Model_Access is access all Root_Galaxy_Model'Class;
+
    overriding procedure Update
      (Model : in out Root_Galaxy_Model);
 
@@ -180,7 +182,26 @@ package body Carthage.UI.Models.Galaxy is
 --     Border_Color     : constant Lui.Colors.Color_Type :=
 --                           (1.0, 1.0, 1.0, 1.0);
 
-   type Galaxy_Model_Access is access all Root_Galaxy_Model'Class;
+   type Galaxy_Minimap_Model is
+     new Lui.Models.Root_Object_Model with
+      record
+         Galaxy : Galaxy_Model_Access;
+      end record;
+
+   overriding procedure Render
+     (Minimap   : in out Galaxy_Minimap_Model;
+      Renderer  : in out Lui.Rendering.Root_Renderer'Class;
+      Layer     : Lui.Render_Layer);
+
+   overriding function Border
+     (Model : Galaxy_Minimap_Model)
+      return Lui.Colors.Color_Type
+   is (Lui.Colors.To_Color (255, 236, 139));
+
+   procedure Get_Screen_Position
+     (Model              : Galaxy_Minimap_Model'Class;
+      X, Y               : Carthage.Planets.Coordinate;
+      Screen_X, Screen_Y : out Integer);
 
    ----------------------
    -- After_Transition --
@@ -365,6 +386,13 @@ package body Carthage.UI.Models.Galaxy is
       Model.Initialise ("galaxy", 1);
       Model.House := Carthage.Houses.House_Type (House);
       Model.Create_Model;
+      Model.Minimap :=
+        new Galaxy_Minimap_Model'
+          (Lui.Models.Root_Object_Model with
+             Galaxy => Model);
+      Model.Minimap.Initialise
+        (Name              => "galaxy-minimap",
+         Last_Render_Layer => 1);
       return Carthage_Model (Model);
    end Galaxy_Model;
 
@@ -405,6 +433,22 @@ package body Carthage.UI.Models.Galaxy is
       Screen_X := Integer (Local_X * Float (Model.Width));
       Screen_Y := Integer (Local_Y * Float (Model.Height));
 
+   end Get_Screen_Position;
+
+   -------------------------
+   -- Get_Screen_Position --
+   -------------------------
+
+   procedure Get_Screen_Position
+     (Model              : Galaxy_Minimap_Model'Class;
+      X, Y               : Carthage.Planets.Coordinate;
+      Screen_X, Screen_Y : out Integer)
+   is
+      Local_X : constant Float := Float (X);
+      Local_Y : constant Float := Float (Y);
+   begin
+      Screen_X := Integer (Local_X * Float (Model.Width));
+      Screen_Y := Integer (Local_Y * Float (Model.Height));
    end Get_Screen_Position;
 
    ----------
@@ -507,6 +551,72 @@ package body Carthage.UI.Models.Galaxy is
          end if;
       end if;
    end On_Key_Press;
+
+   ------------
+   -- Render --
+   ------------
+
+   overriding procedure Render
+     (Minimap   : in out Galaxy_Minimap_Model;
+      Renderer  : in out Lui.Rendering.Root_Renderer'Class;
+      Layer     : Lui.Render_Layer)
+   is
+      pragma Unreferenced (Layer);
+      Model : constant Galaxy_Model_Access := Minimap.Galaxy;
+   begin
+      for Star_Pass in Boolean loop
+
+         for System of Model.Rendered_Planets loop
+            declare
+               Screen_X, Screen_Y : Integer;
+            begin
+               Minimap.Get_Screen_Position
+                 (System.Planet.X, System.Planet.Y,
+                  Screen_X, Screen_Y);
+
+               if Star_Pass then
+                  Renderer.Set_Color
+                    (if System.Planet.Has_Owner
+                     then To_Lui_Color
+                       (System.Planet.Owner.Color)
+                     else Lui.Colors.To_Color
+                       (100, 100, 100));
+
+                  Renderer.Circle
+                    (X      => Screen_X,
+                     Y      => Screen_Y,
+                     Radius => 4,
+                     Filled => True);
+
+               else
+
+                  for Connection of System.Connections loop
+                     declare
+                        use Carthage.Planets;
+                        To          : Rendered_Planet renames
+                          Model.Rendered_Planets
+                            (Connection);
+                        To_X        : constant Coordinate := To.Planet.X;
+                        To_Y        : constant Coordinate := To.Planet.Y;
+                        To_Screen_X : Integer;
+                        To_Screen_Y : Integer;
+                     begin
+                        Minimap.Get_Screen_Position
+                          (To_X, To_Y, To_Screen_X, To_Screen_Y);
+                        Renderer.Set_Color (0.4, 0.4, 0.4, 0.8);
+                        Renderer.Set_Line_Width (1.0);
+                        Renderer.Line
+                          (X1         => Screen_X,
+                           Y1         => Screen_Y,
+                           X2         => To_Screen_X,
+                           Y2         => To_Screen_Y);
+                     end;
+                  end loop;
+               end if;
+            end;
+         end loop;
+      end loop;
+   end Render;
 
    ------------
    -- Render --

@@ -273,6 +273,21 @@ package body Carthage.UI.Models.Top is
          Right_Offset  => 10,
          Bottom_Offset => Top.Bottom_Toolbar_Layout.Height + 10);
 
+      if Top.Current_Model.Minimap_Model /= null then
+         Top.Add_Inline_Model
+           (Model         => Top.Current_Model.Minimap_Model,
+            Anchor            =>
+              Lui.Models.Model_Anchor'
+                (Left          => True,
+                 Top           => True,
+                 Left_Offset   => Top.Mini_Map_Layout.X,
+                 Top_Offset    => Top.Mini_Map_Layout.Y,
+                 others        => <>),
+            Resizeable_Width  => False,
+            Resizeable_Height => False,
+            W                 => Top.Mini_Map_Layout.Width,
+            H                 => Top.Mini_Map_Layout.Height);
+      end if;
       --        if Model.Current_Model.Minimap_Model /= null then
       --           Model.Add_Inline_Model
       --         (Model.Mini_Map_Layout, Model.Current_Model.Minimap_Model);
