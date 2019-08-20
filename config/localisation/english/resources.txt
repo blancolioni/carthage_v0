@@ -1,0 +1,13 @@
+biochems,biochemicals
+chemicals,chemicals
+ceramsteel,ceramsteel
+electronics,electronics
+energy,energy
+exotica,exotica
+food,food
+gems,gems
+metal,metal
+monopols,monopoles
+singularities,singularities
+trace,trace elements
+wetware,wetware
